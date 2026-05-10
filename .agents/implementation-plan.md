@@ -14,41 +14,35 @@ app/
 Research artifacts live under `research/`. Product implementation should live under `app/frontend` and `app/backend` when those directories are created.
 
 
-## Phase 0: Research First
+## Phase 0: Research — COMPLETE
 
-Before implementing product features, collect lightweight research notes for:
+Research completed on 2026-05-10:
+- Android audio latency: `research/features/2026-05-10_rn-android-audio-latency/` → not a blocker
+- Market analysis: `research/features/2026-05-10_android-mvp-market/` → Android has largest gap
 
-- copyright-safe audio strategy
-- synthesis-first audio design
-- React Native audio playback and synthesis options
-- Android audio latency constraints
-- MIDI export
-- shadcn/ui setup
-- React Native compatibility with shadcn-style component architecture
-- CI and release automation
-- local AI audio generation feasibility
-- compute requirements for local ML
+See `.agents/tech-stack.md` for the decided library choices.
 
-Do not block the MVP on exhaustive research. Keep notes concise and actionable.
-
-## Phase 1: Android MVP
+## Phase 1: Android MVP — IN PROGRESS
 
 Goal:
 
 Create a single-screen Android prototype that maps vibe tags to playable sound and DAW-ready suggestions.
 
-Suggested stack:
+Actual stack (decided):
 
-- React Native
-- Expo if it does not block required audio/MIDI features
-- TypeScript
-- shadcn-style component structure where practical
-- React Native audio libraries selected after research
-- Skia or React Native SVG only if needed for visuals
+- React Native 0.81 + Expo SDK 54 + TypeScript
+- Expo Router for navigation
+- `react-native-audio-api` (Oboe backend, <15ms Android latency)
+- NativeWind v4 (Tailwind CSS for RN)
+- Zustand for state
+
+App root: `app/frontend/`
+
+Source structure: `app/frontend/src/` (see `.agents/coding-standards.md`)
 
 Early persistence:
 
-- local app storage
+- Zustand in-memory store (no AsyncStorage yet)
 
 Initial feature set:
 

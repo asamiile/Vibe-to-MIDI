@@ -11,3 +11,11 @@ __pycache__/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Environment secrets (all subdirectories)
+.env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
