@@ -6,16 +6,10 @@ The product goal is to help users turn a vibe, movement, or sound image into DAW
 
 ## AI Agents
 
-- Use this in the VS Code Codex extension input:
+- Automate Research commands:
 
 ```text
-/research-feature <feature idea or research goal>
-```
-
-Example:
-
-```text
-/research-feature DAWで使う音色選択を直感的に支援するMVP
+/research-feature
 ```
 
 ## Research
