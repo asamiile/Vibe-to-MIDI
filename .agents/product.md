@@ -6,6 +6,26 @@ Vibe-to-MIDI is an Android-first music learning and production assistant.
 
 It is not a traditional music theory course. It is a tool for converting intuitive musical intent into practical DAW choices.
 
+## Learning Philosophy
+
+Vibe-to-MIDI reverses the common music-learning flow.
+
+Traditional flow:
+
+```text
+learn music theory -> make music
+```
+
+Vibe-to-MIDI flow:
+
+```text
+make something first -> learn why it works
+```
+
+The app should not force users to study concepts before creating sound. Users should start from vibe, emotion, movement, and sound image, then hear and touch the result before theory is introduced.
+
+Learning should happen through making. Theory is revealed as context for a sound the user already created or heard.
+
 ## First Problem
 
 The user has a sound image in mind, but cannot translate it into notes, scales, chords, rhythms, or sound design choices.

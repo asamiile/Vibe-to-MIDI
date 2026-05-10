@@ -1,0 +1,13 @@
+# Research local environments
+research/.venv/
+research/.jupyter/
+research/.jupyter-data/
+research/.jupyter-runtime/
+research/.ipython/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/

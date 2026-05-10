@@ -31,6 +31,19 @@ If direct shadcn/ui usage is not practical in React Native, keep the same spirit
 
 The interface should feel like a playable visual instrument, not a text-heavy course.
 
+## Learning UX Rule
+
+Do not introduce theory before the user creates or hears something.
+
+Preferred interaction order:
+
+1. User selects or manipulates a vibe.
+2. App generates sound and visual response.
+3. App shows DAW-ready choices.
+4. App optionally reveals the theory behind the result.
+
+Avoid lesson-first UI. The user should feel like they are making music first, then learning from the result.
+
 Prioritize:
 
 - low explanation

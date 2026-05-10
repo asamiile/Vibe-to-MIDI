@@ -1,5 +1,19 @@
 # Implementation Plan
 
+## Repository Layout
+
+Planned top-level structure:
+
+```text
+research/
+app/
+  frontend/
+  backend/
+```
+
+Research artifacts live under `research/`. Product implementation should live under `app/frontend` and `app/backend` when those directories are created.
+
+
 ## Phase 0: Research First
 
 Before implementing product features, collect lightweight research notes for:
@@ -43,6 +57,13 @@ Initial feature set:
 - generated rhythm playback
 - visual response
 - suggested scale/chords/bass/rhythm/sound hints
+
+Learning Flow Requirements:
+
+1. Let the user create or hear something first.
+2. Show DAW-ready musical choices immediately after playback.
+3. Reveal theory only as an optional explanation of the generated result.
+4. Avoid blocking creation behind lessons, quizzes, or terminology.
 
 ## Phase 2: Pattern Editor
 
