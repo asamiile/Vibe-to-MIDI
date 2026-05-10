@@ -12,6 +12,22 @@ source research/.venv/bin/activate
 uv pip install -r research/requirements.txt
 ```
 
+## Create A Research Notebook
+
+Create a feature research scaffold from the repository root:
+
+```bash
+python research/tools/new_feature_research.py "Android audio preview"
+```
+
+This creates:
+
+```text
+research/features/<yyyy-mm-dd>_android-audio-preview/
+  notebooks/analysis.ipynb
+  figures/
+```
+
 ## Run Jupyter
 
 Use research-local Jupyter directories so the command does not write to `~/.jupyter`:
