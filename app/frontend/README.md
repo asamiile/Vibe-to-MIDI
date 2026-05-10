@@ -2,6 +2,8 @@
 
 React Native / Expo Android app.
 
+For commands (setup, run, tests, build), see the [root README](../../README.md).
+
 ---
 
 ## Stack
@@ -12,66 +14,23 @@ React Native / Expo Android app.
 | Language | TypeScript (strict) |
 | Navigation | Expo Router |
 | Audio | react-native-audio-api (Oboe, <15ms Android latency) |
-| Styling | NativeWind v4 (Tailwind CSS) |
+| Styling | NativeWind v4 (Tailwind CSS v3) |
 | State | Zustand |
 | Build | EAS Build |
 
-See [../../.agents/tech-stack.md](../../.agents/tech-stack.md) for full library decisions and rationale.
+See [../../.agents/tech-stack.md](../../.agents/tech-stack.md) for library decisions and rationale.
 
 ---
 
-## Setup
+## Dev Build — why it's required
 
-```bash
-npm install --legacy-peer-deps
-```
+`react-native-audio-api` uses native Oboe code compiled into the APK. Expo Go is a pre-built sandbox that doesn't include custom native modules, so audio is silently disabled there. A Dev Build is a custom Expo client that includes the native module.
 
-> `--legacy-peer-deps` is required: expo-router has a react-dom peer dep conflict with react@19.
-
----
-
-## Run (Metro bundler only)
-
-```bash
-npx expo start
-```
-
-Audio will not work without a Dev Build. Use this for UI-only iteration.
-
----
-
-## Dev Build (required for audio)
-
-`react-native-audio-api` uses native Oboe code and cannot run in Expo Go.
-
-### Option A — EAS cloud build
-
-```bash
-eas build --profile development --platform android
-```
-
-Downloads a pre-built APK. Fastest if Android SDK is not installed locally.
-
-### Option B — local build
-
-Requires Android Studio + Android SDK (API 26+).
-
-```bash
-npx expo run:android
-```
-
-After the first native build, JS-only changes reload instantly.
+Once installed, JS/TS code changes hot-reload without rebuilding. Rebuild is only needed when adding/removing native modules or changing `app.json` native config.
 
 ---
 
 ## Tests
-
-```bash
-npx jest --no-coverage      # run all tests
-npx tsc --noEmit            # type check
-```
-
-Test files in `__tests__/`:
 
 | File | Coverage |
 |------|---------|
@@ -79,7 +38,7 @@ Test files in `__tests__/`:
 | `notes.test.ts` | MIDI ↔ note name, frequency |
 | `scales.test.ts` | Scale generation by mode |
 
-Audio engine (`react-native-audio-api`) is tested manually on device — it requires native Oboe and cannot run in Node/Jest.
+Audio engine is not unit-tested — it requires native Oboe and cannot run in Node/Jest.
 
 ---
 

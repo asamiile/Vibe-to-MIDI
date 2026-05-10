@@ -6,7 +6,6 @@ Turn a vibe, movement, or sound image into DAW-ready musical choices, then learn
 
 Target genres: techno, house, ambient, minimal, melodic techno, experimental electronic.
 
----
 
 ## Project structure
 
@@ -18,7 +17,6 @@ research/           ← Market research and feature research notebooks
 .github/workflows/  ← CI (typecheck + tests)
 ```
 
----
 
 ## Prerequisites
 
@@ -26,44 +24,58 @@ research/           ← Market research and feature research notebooks
 |------|---------|-------|
 | Node.js | 20+ | `node --version` |
 | npm | 10+ | bundled with Node |
-| Android Studio | latest | for Android SDK and emulator |
-| Android SDK | API 26+ (Android 8.0) | install via Android Studio SDK Manager |
-| ADB | bundled with Android Studio | used for device connection |
 | EAS CLI | 7+ | `npm install -g eas-cli` — for cloud builds |
+| Android Studio | latest | optional — for local builds and emulator |
 
----
 
-## App: quick start
+## App
+
+### Setup
 
 ```bash
 cd app/frontend
-npm install --legacy-peer-deps
-npx expo start
+npm ci --legacy-peer-deps
 ```
 
-> `react-native-audio-api` requires a **Dev Build** — Expo Go will not work for audio.
-> See [app/frontend/README.md](app/frontend/README.md) for full build instructions.
-
----
-
-## Tests
+### Run
 
 ```bash
-cd app/frontend
-npx jest --no-coverage    # unit tests (34 passing)
+npx expo start    # then press 'a' to open on Android
+```
+
+> Audio requires a Dev Build — Expo Go will not play sound.
+
+### Tests
+
+```bash
+npx jest --no-coverage    # unit tests
 npx tsc --noEmit          # type check
 ```
 
----
+### Dev Build (required for audio)
 
-## CI
+First time only:
 
-GitHub Actions runs on every PR and push to `main`:
-- `npm ci --legacy-peer-deps`
-- `npx tsc --noEmit`
-- `npx jest --ci --no-coverage`
+```bash
+npm install -g eas-cli
+eas login
+eas init
+```
 
----
+**Option A — EAS cloud build** (no local Android SDK needed):
+
+```bash
+eas build --profile development --platform android
+```
+
+**Option B — local build** (requires Android Studio + SDK API 26+):
+
+```bash
+npx expo run:android
+```
+
+After the first build, JS changes hot-reload without rebuilding.
+
 
 ## Research
 
@@ -76,7 +88,6 @@ jupyter lab
 
 See [research/README.md](research/README.md) for setup, environment, and research rules.
 
----
 
 ## AI Agents
 
