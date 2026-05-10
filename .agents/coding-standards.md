@@ -65,3 +65,38 @@ Avoid:
 When behavior is non-obvious, add concise docs near the code or update `.agents/`.
 
 Do not paste long research excerpts into source files.
+
+## Commit Message Convention
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/) so that GitHub Releases and changelogs can be generated automatically.
+
+Format: `<type>(<scope>): <summary>`
+
+| Type | When to use |
+|------|-------------|
+| `feat` | New user-facing feature |
+| `fix` | Bug fix |
+| `docs` | Documentation only |
+| `style` | Formatting, no logic change |
+| `refactor` | Code restructure with no feature or fix |
+| `test` | Adding or fixing tests |
+| `chore` | Build, tooling, dependency updates |
+| `perf` | Performance improvement |
+| `ci` | CI/CD configuration |
+
+### Rules
+
+- Use lowercase for type and summary.
+- Use the imperative mood: "add feature" not "added feature".
+- Keep the summary line under 72 characters.
+- Add a body (blank line + text) when the *why* is non-obvious.
+- Mark breaking changes with `!` after the type: `feat!: rename API`.
+
+### Examples
+
+```
+feat(vibe-map): add emotional intensity scale
+fix(midi-export): correct note duration rounding
+docs: update agent coding standards
+chore: upgrade react-native to 0.74
+```
