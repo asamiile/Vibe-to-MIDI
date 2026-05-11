@@ -171,6 +171,33 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
         <ReasonText>{cue.scaleReason}. {cue.chordReason}</ReasonText>
       </View>
 
+      <View className="mb-[18px]">
+        <SectionTitle>Sound layers</SectionTitle>
+        <View className="flex-row flex-wrap gap-2">
+          {suggestion.soundLayers.map((layer) => (
+            <View
+              key={layer.role}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 8,
+                borderRadius: 6,
+                borderWidth: 1,
+                borderColor: layer.optional ? '#334155' : '#0e7490',
+                backgroundColor: layer.optional ? '#0f172a' : '#0c2a33',
+                opacity: layer.optional ? 0.5 : 1,
+              }}
+            >
+              <Text style={{ color: '#94a3b8', fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
+                {layer.role}
+              </Text>
+              <Text style={{ color: layer.optional ? '#475569' : '#e2e8f0', fontSize: 12, fontWeight: '600' }}>
+                {layer.descriptor}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
     </View>
   );
 }

@@ -48,7 +48,11 @@ export function DawStepsPanel({ suggestion }: Props) {
         <StepText>Tempo: {bpm} BPM</StepText>
         <StepText>Bass notes: {bassNotes.join('  ')}</StepText>
         <StepText>Hit steps: {hitSteps.join(', ')}</StepText>
-        <StepText>Sound: {suggestion.soundHint}</StepText>
+        {suggestion.soundLayers.map((layer) => (
+          <StepText key={layer.role}>
+            {layer.role.charAt(0).toUpperCase() + layer.role.slice(1)}: {layer.descriptor}
+          </StepText>
+        ))}
       </View>
 
       <View className="rounded-md border border-slate-800 bg-slate-900 p-3">

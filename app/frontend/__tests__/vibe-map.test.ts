@@ -32,7 +32,11 @@ describe('getMusicalSuggestion', () => {
     expect(s.rhythmPattern).toHaveLength(16);
     expect(s.rhythmPattern.some(Boolean)).toBe(true);
 
-    expect(s.soundHint.length).toBeGreaterThan(0);
+    expect(s.soundLayers).toHaveLength(4);
+    s.soundLayers.forEach((layer) => {
+      expect(['bass', 'pad', 'lead', 'drum']).toContain(layer.role);
+      expect(layer.descriptor.length).toBeGreaterThan(0);
+    });
 
     const [min, max] = s.bpmRange;
     expect(min).toBeGreaterThan(0);

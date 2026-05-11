@@ -26,7 +26,7 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 function WhyItWorksPanel({ suggestion }: { suggestion: MusicalSuggestion }) {
-  const { scale, chord, bassNotes, rhythmPattern, soundHint, bpmRange } = suggestion;
+  const { scale, chord, bassNotes, rhythmPattern, soundLayers, bpmRange } = suggestion;
 
   const scaleLabel = `${scale.root} ${scale.mode.replace('_', ' ')}`;
   const chordLabel = `${chord.root} ${chord.quality.replace('_', ' ')}`;
@@ -40,7 +40,13 @@ function WhyItWorksPanel({ suggestion }: { suggestion: MusicalSuggestion }) {
       <Row label="BPM" value={bpmLabel} />
       <Row label="Bass notes" value={bassLabel} />
       <Row label="Rhythm" value={rhythmLabel} />
-      <Row label="Sound" value={soundHint} />
+      {soundLayers.map((layer) => (
+        <Row
+          key={layer.role}
+          label={layer.role.charAt(0).toUpperCase() + layer.role.slice(1)}
+          value={layer.descriptor}
+        />
+      ))}
       <Row label="Scale" value={scaleLabel} />
       <Row label="Chord" value={chordLabel} />
     </View>
