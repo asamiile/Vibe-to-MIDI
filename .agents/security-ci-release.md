@@ -19,6 +19,7 @@ Required practices:
 - document licenses for audio assets
 - review dependencies before adding
 - ignore generated files unless they are required
+- update `app/frontend/src/data/licenseNotices.ts` when runtime dependencies or bundled assets change
 
 ## CI Automation
 
@@ -39,6 +40,7 @@ Later checks:
 - bundle size check
 - Playwright smoke test
 - audio asset license validation
+- in-app license screen coverage for runtime notices
 
 ## Release Automation
 

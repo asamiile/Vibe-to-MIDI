@@ -39,6 +39,8 @@ Reference context includes Berghain, Boiler Room, and Cercle-style electronic mu
 
 - Product direction: `.agents/product.md`
 - Implementation plan: `.agents/implementation-plan.md`
+- **Tech stack (libraries, versions, config)**: `.agents/tech-stack.md`
+- **Android dev setup and build commands**: `.agents/android-dev-guide.md`
 - Coding standards: `.agents/coding-standards.md`
 - Design policy: `.agents/design-system.md`
 - Security, CI, release: `.agents/security-ci-release.md`
