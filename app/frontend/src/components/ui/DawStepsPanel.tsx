@@ -36,14 +36,7 @@ export function DawStepsPanel({ suggestion }: Props) {
     .filter((step): step is number => step !== null);
 
   return (
-    <View className="mb-2 mt-0.5 border-t border-slate-800 pt-4">
-      <Text className="mb-1 text-lg font-extrabold text-slate-200">
-        Use in MIDI / DAW
-      </Text>
-      <Text className="mb-3.5 text-[13px] leading-[18px] text-slate-400">
-        When you find a sound you like, copy these values into a 1-bar MIDI clip.
-      </Text>
-
+    <View className="mb-2">
       <View className="mb-3.5 rounded-md border border-slate-700 bg-gray-900 p-3">
         <StepText>Tempo: {bpm} BPM</StepText>
         <StepText>Bass notes: {bassNotes.join('  ')}</StepText>

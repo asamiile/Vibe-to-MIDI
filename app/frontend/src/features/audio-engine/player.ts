@@ -78,11 +78,12 @@ export function playPreview(
   });
 
   const loopDuration = stepDuration * 16;
+  let loopStart = now;
   let stopped = false;
+  let loopTimer: ReturnType<typeof setTimeout>;
 
-  function loop() {
+  function scheduleLoop() {
     if (stopped) return;
-    const loopStart = now + loopDuration;
     suggestion.bassNotes.forEach((midi, i) => {
       const start = loopStart + i * stepDuration * 4;
       scheduleNote(ctx, noteFreq(midi), start, stepDuration * 3.5, gain, 'sawtooth', scheduledNodes);
@@ -94,9 +95,11 @@ export function playPreview(
       scheduleNote(ctx, 80, start, stepDuration * 0.4, gain * 0.5, 'square', scheduledNodes);
       scheduleNote(ctx, 1200, start, stepDuration * 0.12, gain * 0.16, 'square', scheduledNodes);
     });
+    loopStart += loopDuration;
+    loopTimer = setTimeout(scheduleLoop, loopDuration * 1000 - 100);
   }
 
-  const loopTimer = setTimeout(loop, loopDuration * 1000 - 100);
+  scheduleLoop();
   return {
     stop: () => {
       stopped = true;

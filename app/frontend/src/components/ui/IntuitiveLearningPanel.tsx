@@ -49,14 +49,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
   const bassRange = Math.max(1, highestBass - lowestBass);
 
   return (
-    <View className="mb-[18px] mt-1">
-      <Text className="mb-1.5 text-[22px] font-extrabold text-slate-200">
-        Explore the loop
-      </Text>
-      <Text className="mb-3.5 text-[13px] leading-[18px] text-slate-400">
-        Press play, feel the current loop, then change one thing.
-      </Text>
-
+    <View className="mb-[18px]">
       <View className="mb-[18px] flex-row flex-wrap gap-2">
         <LayerChip label="Pulse" detail={`${cue.rhythmFeel} rhythm hits`} />
         <LayerChip label="Bass" detail={`${cue.bassMotion} motion`} />
