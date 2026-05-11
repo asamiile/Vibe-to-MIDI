@@ -14,6 +14,13 @@ export interface PlayerHandle {
 const NO_OP_HANDLE: PlayerHandle = { stop: () => {} };
 
 type AudioCtx = NonNullable<ReturnType<typeof getAudioContext>>;
+type Oscillator = ReturnType<AudioCtx['createOscillator']>;
+type Gain = ReturnType<AudioCtx['createGain']>;
+
+interface ScheduledNode {
+  oscillator: Oscillator;
+  gain: Gain;
+}
 
 function scheduleNote(
   ctx: AudioCtx,
@@ -21,7 +28,8 @@ function scheduleNote(
   startTime: number,
   duration: number,
   gainValue: number,
-  type: OscillatorType
+  type: OscillatorType,
+  scheduledNodes: ScheduledNode[]
 ): void {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -35,6 +43,7 @@ function scheduleNote(
 
   osc.connect(gain);
   gain.connect(ctx.destination);
+  scheduledNodes.push({ oscillator: osc, gain });
 
   osc.start(startTime);
   osc.stop(startTime + duration);
@@ -53,14 +62,15 @@ export function playPreview(
   const stepDuration = 60 / bpm / 4;
   const { gain = 0.3 } = options;
   const now = ctx.currentTime + 0.05;
+  const scheduledNodes: ScheduledNode[] = [];
 
   suggestion.bassNotes.forEach((midi, i) => {
-    scheduleNote(ctx, noteFreq(midi), now + i * stepDuration * 4, stepDuration * 3.5, gain, 'sawtooth');
+    scheduleNote(ctx, noteFreq(midi), now + i * stepDuration * 4, stepDuration * 3.5, gain, 'sawtooth', scheduledNodes);
   });
 
   suggestion.rhythmPattern.forEach((hit, step) => {
     if (!hit) return;
-    scheduleNote(ctx, 80, now + step * stepDuration, stepDuration * 0.4, gain * 0.5, 'square');
+    scheduleNote(ctx, 80, now + step * stepDuration, stepDuration * 0.4, gain * 0.5, 'square', scheduledNodes);
   });
 
   const loopDuration = stepDuration * 16;
@@ -70,14 +80,30 @@ export function playPreview(
     if (stopped) return;
     const loopStart = now + loopDuration;
     suggestion.bassNotes.forEach((midi, i) => {
-      scheduleNote(ctx, noteFreq(midi), loopStart + i * stepDuration * 4, stepDuration * 3.5, gain, 'sawtooth');
+      scheduleNote(ctx, noteFreq(midi), loopStart + i * stepDuration * 4, stepDuration * 3.5, gain, 'sawtooth', scheduledNodes);
     });
     suggestion.rhythmPattern.forEach((hit, step) => {
       if (!hit) return;
-      scheduleNote(ctx, 80, loopStart + step * stepDuration, stepDuration * 0.4, gain * 0.5, 'square');
+      scheduleNote(ctx, 80, loopStart + step * stepDuration, stepDuration * 0.4, gain * 0.5, 'square', scheduledNodes);
     });
   }
 
   const loopTimer = setTimeout(loop, loopDuration * 1000 - 100);
-  return { stop: () => { stopped = true; clearTimeout(loopTimer); } };
+  return {
+    stop: () => {
+      stopped = true;
+      clearTimeout(loopTimer);
+      scheduledNodes.splice(0).forEach(({ oscillator, gain }) => {
+        gain.gain.cancelScheduledValues(ctx.currentTime);
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        try {
+          oscillator.stop(ctx.currentTime);
+        } catch {
+          // Already stopped or not yet startable on this native implementation.
+        }
+        oscillator.disconnect?.();
+        gain.disconnect?.();
+      });
+    },
+  };
 }

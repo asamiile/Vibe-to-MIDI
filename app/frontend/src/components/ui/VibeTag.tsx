@@ -12,6 +12,7 @@ interface Props {
 export function VibeTag({ id, label, active, onPress }: Props) {
   return (
     <Pressable
+      android_disableSound
       onPress={() => onPress(id)}
       style={({ pressed }) => ({
         paddingVertical: 10,

@@ -3,6 +3,7 @@ import { View, Text, ScrollView } from 'react-native';
 import type { MusicalSuggestion } from '../../features/vibe-map/types';
 import { midiToNoteName } from '../../lib/notes';
 import { getMidBpm } from '../../features/vibe-map/engine';
+import { IntuitiveLearningPanel } from './IntuitiveLearningPanel';
 
 interface Props {
   suggestion: MusicalSuggestion;
@@ -42,6 +43,7 @@ export function SuggestionPanel({ suggestion }: Props) {
       <Row label="Rhythm" value={rhythmLabel} />
       <Row label="BPM" value={bpmLabel} />
       <Row label="Sound" value={soundHint} />
+      <IntuitiveLearningPanel suggestion={suggestion} />
     </ScrollView>
   );
 }

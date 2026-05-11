@@ -59,42 +59,40 @@ export default function HomeScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#060a10' }}>
       <StatusBar barStyle="light-content" backgroundColor="#060a10" />
 
-      {/* Header */}
       <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
         <Text style={{ color: '#64748b', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}>
           Vibe-to-MIDI
         </Text>
-        <Text style={{ color: '#e2e8f0', fontSize: 22, fontWeight: '700', marginTop: 2 }}>
-          {activeVibeId ? VIBE_LABELS[activeVibeId] : 'Select a vibe'}
-        </Text>
       </View>
 
-      <View style={{ flex: 1, flexDirection: 'row' }}>
-        {/* Vibe tag grid */}
-        <View style={{ width: 160, paddingHorizontal: 8 }}>
-          <FlatList
-            data={VIBE_IDS}
-            keyExtractor={(id) => id}
-            numColumns={1}
-            renderItem={({ item }) => (
+      <View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: '#1e293b' }}>
+        <FlatList
+          data={VIBE_IDS}
+          keyExtractor={(id) => id}
+          horizontal
+          renderItem={({ item }) => (
+            <View style={{ width: 132 }}>
               <VibeTag
                 id={item}
                 label={VIBE_LABELS[item]}
                 active={item === activeVibeId}
                 onPress={handleVibePress}
               />
-            )}
-            showsVerticalScrollIndicator={false}
-          />
-        </View>
+            </View>
+          )}
+          contentContainerStyle={{ paddingHorizontal: 12 }}
+          showsHorizontalScrollIndicator={false}
+        />
+      </View>
 
-        {/* Right panel */}
-        <View style={{ flex: 1, borderLeftWidth: 1, borderLeftColor: '#1e293b' }}>
+      <View style={{ flex: 1 }}>
+        <View style={{ flex: 1 }}>
           {suggestion ? (
             <>
               <SuggestionPanel suggestion={suggestion} />
               {/* Play / Stop button */}
               <Pressable
+                android_disableSound
                 onPress={handlePlayPress}
                 style={({ pressed }) => ({
                   margin: 16,
