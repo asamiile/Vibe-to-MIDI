@@ -19,15 +19,19 @@ Skip for bug fixes, styling, internal refactors, and test additions.
 
 1. Read `.agents/market-research-python.md` for research conventions.
 2. Derive a unique feature slug: `<yyyy-mm-dd>_<kebab-case-slug>`.
-3. Create `research/features/<slug>/notebooks/analysis.ipynb`.
-4. Create `research/features/<slug>/figures/` (empty, for generated charts).
-5. Write the Feature Hypothesis section inside the notebook.
-6. Gather information from public sources (official docs, npm, GitHub, web search).
-7. Add findings as inline DataFrames or markdown cells in the notebook.
-8. Generate comparison charts when they aid the decision; save to `figures/`.
-9. Write the Decision Summary section inside the notebook.
-10. State the recommendation: **Build / Defer / Narrow / Reject**.
-11. Commit the notebook and figures.
+3. Create and switch to a new git branch: `research/<slug>`.
+   ```bash
+   git checkout -b research/<slug>
+   ```
+4. Create `research/features/<slug>/notebooks/analysis.ipynb`.
+5. Create `research/features/<slug>/figures/` (empty, for generated charts).
+6. Write the Feature Hypothesis section inside the notebook.
+7. Gather information from public sources (official docs, npm, GitHub, web search).
+8. Add findings as inline DataFrames or markdown cells in the notebook.
+9. Generate comparison charts when they aid the decision; save to `figures/`.
+10. Write the Decision Summary section inside the notebook.
+11. State the recommendation: **Build / Defer / Narrow / Reject**.
+12. Commit the notebook and figures on the research branch.
 
 ## Output requirements
 
@@ -64,6 +68,16 @@ jupyter nbconvert --to notebook --execute \
 ```
 
 If execution fails due to missing data or imports, leave cells unexecuted and note the reason in the Decision Summary.
+
+## Branch naming
+
+```
+research/<yyyy-mm-dd>_<kebab-case-slug>
+```
+
+Example: `research/2026-05-11_mood-sound-types`
+
+The branch name must match the research directory slug exactly so the two can be cross-referenced.
 
 ## Commit message
 
