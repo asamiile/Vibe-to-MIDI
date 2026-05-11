@@ -190,7 +190,7 @@ export default function HomeScreen() {
             <View className="flex-1 pt-3">
               <View className="flex-row items-center justify-between gap-3 px-5 pb-3.5">
                 <Text className="flex-1 text-[28px] font-black text-slate-200">
-                  Listen
+                  Mood?
                 </Text>
                 <View className="flex-row gap-2">
                   <HeaderAction
@@ -229,30 +229,81 @@ export default function HomeScreen() {
             </View>
           ) : suggestion ? (
             <>
+              {/* Action bar for Learn / MIDI screens */}
+              <View className="flex-row items-center gap-2 px-5 pb-2 pt-3">
+                <Pressable
+                  android_disableSound
+                  onPress={() => setViewMode('listen')}
+                  className="min-h-9 items-center justify-center rounded-md border px-3"
+                  style={({ pressed }) => ({
+                    backgroundColor: '#0f172a',
+                    borderColor: '#334155',
+                    opacity: pressed ? 0.75 : 1,
+                  })}
+                >
+                  <Text className="text-xs font-black text-slate-200">← BACK</Text>
+                </Pressable>
+
+                <Pressable
+                  android_disableSound
+                  onPress={() => openActiveMode('learn')}
+                  className="min-h-9 flex-1 items-center justify-center rounded-md border"
+                  style={({ pressed }) => ({
+                    backgroundColor: viewMode === 'learn' ? '#164e63' : '#0f172a',
+                    borderColor: viewMode === 'learn' ? '#22d3ee' : '#334155',
+                    opacity: pressed ? 0.75 : 1,
+                  })}
+                >
+                  <Text
+                    className="text-xs font-black"
+                    style={{ color: viewMode === 'learn' ? '#ecfeff' : '#cbd5e1' }}
+                  >
+                    Learn
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  android_disableSound
+                  onPress={() => openActiveMode('details')}
+                  className="min-h-9 flex-1 items-center justify-center rounded-md border"
+                  style={({ pressed }) => ({
+                    backgroundColor: viewMode === 'details' ? '#164e63' : '#0f172a',
+                    borderColor: viewMode === 'details' ? '#22d3ee' : '#334155',
+                    opacity: pressed ? 0.75 : 1,
+                  })}
+                >
+                  <Text
+                    className="text-xs font-black"
+                    style={{ color: viewMode === 'details' ? '#ecfeff' : '#cbd5e1' }}
+                  >
+                    MIDI
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  android_disableSound
+                  disabled={!audioAvailable}
+                  onPress={handlePlayPress}
+                  className="min-h-9 items-center justify-center rounded-md border px-3"
+                  style={({ pressed }) => ({
+                    backgroundColor: !audioAvailable ? '#0b111c' : isPlaying ? '#7f1d1d' : '#14532d',
+                    borderColor: !audioAvailable ? '#1e293b' : isPlaying ? '#ef4444' : '#22c55e',
+                    opacity: pressed ? 0.75 : 1,
+                  })}
+                >
+                  <Text
+                    className="text-xs font-black"
+                    style={{ color: !audioAvailable ? '#334155' : '#e2e8f0' }}
+                  >
+                    {isPlaying ? '■ STOP' : '▶ PLAY'}
+                  </Text>
+                </Pressable>
+              </View>
+
               <SuggestionPanel
                 suggestion={suggestion}
                 mode={viewMode === 'learn' ? 'explore' : 'use'}
-                onBack={() => setViewMode('listen')}
               />
-              <Pressable
-                className="m-4 items-center rounded-md py-3"
-                android_disableSound
-                disabled={!audioAvailable}
-                onPress={handlePlayPress}
-                style={({ pressed }) => ({
-                  backgroundColor: !audioAvailable ? '#1f2937' : isPlaying ? '#7f1d1d' : '#14532d',
-                  opacity: pressed ? 0.7 : 1,
-                })}
-              >
-                <Text className="text-[13px] font-semibold tracking-[1px] text-slate-200">
-                  {!audioAvailable ? 'DEV BUILD REQUIRED' : isPlaying ? '■  STOP' : '▶  PLAY'}
-                </Text>
-              </Pressable>
-              {!audioAvailable && (
-                <Text className="mb-2 text-center text-[10px] text-slate-600">
-                  Audio requires Dev Build
-                </Text>
-              )}
             </>
           ) : (
             <View className="flex-1 items-center justify-center">
