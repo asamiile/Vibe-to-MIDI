@@ -42,5 +42,8 @@ describe('getLearningCue', () => {
     expect(cue.scaleNotes[0]).toBe('A3');
     expect(cue.scaleReason).toContain('flat second');
     expect(cue.firstMove.length).toBeGreaterThan(0);
+    expect(cue.tryChange.length).toBeGreaterThan(0);
+    expect(cue.resultWord.length).toBeGreaterThan(0);
+    expect(cue.whatChanged.length).toBeGreaterThan(0);
   });
 });

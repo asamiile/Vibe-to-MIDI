@@ -10,9 +10,24 @@ interface Props {
 
 const STEP_LABELS = ['1', 'e', '&', 'a'];
 
+function LayerChip({ label, detail }: { label: string; detail: string }) {
+  return (
+    <View
+      className="min-w-24 flex-1 rounded-md border border-slate-800 bg-slate-900 p-2.5"
+    >
+      <Text className="mb-1 text-[13px] font-extrabold text-slate-200">
+        {label}
+      </Text>
+      <Text className="text-[11px] leading-[15px] text-slate-400">
+        {detail}
+      </Text>
+    </View>
+  );
+}
+
 function SectionTitle({ children }: { children: string }) {
   return (
-    <Text style={{ color: '#94a3b8', fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>
+    <Text className="mb-2 text-[10px] uppercase tracking-[1px] text-slate-400">
       {children}
     </Text>
   );
@@ -20,7 +35,7 @@ function SectionTitle({ children }: { children: string }) {
 
 function ReasonText({ children }: { children: React.ReactNode }) {
   return (
-    <Text style={{ color: '#94a3b8', fontSize: 12, lineHeight: 17, marginTop: 8 }}>
+    <Text className="mt-2 text-xs leading-[17px] text-slate-400">
       {children}
     </Text>
   );
@@ -34,24 +49,42 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
   const bassRange = Math.max(1, highestBass - lowestBass);
 
   return (
-    <View style={{ marginTop: 4, marginBottom: 18 }}>
-      <Text style={{ color: '#e2e8f0', fontSize: 18, fontWeight: '800', marginBottom: 6 }}>
-        Try this
+    <View className="mb-[18px] mt-1">
+      <Text className="mb-1.5 text-[22px] font-extrabold text-slate-200">
+        Explore the loop
       </Text>
-      <Text style={{ color: '#94a3b8', fontSize: 13, lineHeight: 18, marginBottom: 14 }}>
-        Make one small change and listen for the mood shift.
+      <Text className="mb-3.5 text-[13px] leading-[18px] text-slate-400">
+        Press play, feel the current loop, then change one thing.
       </Text>
 
-      <View style={{ padding: 12, borderRadius: 6, backgroundColor: '#111827', borderWidth: 1, borderColor: '#334155', marginBottom: 18 }}>
-        <SectionTitle>First move</SectionTitle>
-        <Text style={{ color: '#e2e8f0', fontSize: 14, lineHeight: 20, fontWeight: '600' }}>
-          {cue.firstMove}
+      <View className="mb-[18px] flex-row flex-wrap gap-2">
+        <LayerChip label="Pulse" detail={`${cue.rhythmFeel} rhythm hits`} />
+        <LayerChip label="Bass" detail={`${cue.bassMotion} motion`} />
+        <LayerChip label="Color" detail={`${suggestion.scale.root} ${suggestion.scale.mode.replace('_', ' ')}`} />
+      </View>
+
+      <View className="mb-[18px] rounded-lg border border-slate-700 bg-gray-900 p-3.5">
+        <SectionTitle>Try this</SectionTitle>
+        <Text className="mb-2.5 text-[15px] font-bold leading-[21px] text-slate-200">
+          {cue.tryChange}
+        </Text>
+        <View className="self-start rounded bg-cyan-900 px-2.5 py-1.5">
+          <Text className="text-xs font-extrabold text-cyan-100">
+            Result: {cue.resultWord}
+          </Text>
+        </View>
+      </View>
+
+      <View className="mb-[18px] rounded-lg border border-slate-800 bg-slate-900 p-3.5">
+        <SectionTitle>What changed?</SectionTitle>
+        <Text className="text-sm font-semibold leading-5 text-slate-300">
+          {cue.whatChanged}
         </Text>
       </View>
 
-      <View style={{ marginBottom: 18 }}>
+      <View className="mb-[18px]">
         <SectionTitle>Pulse</SectionTitle>
-        <View style={{ flexDirection: 'row', gap: 4 }}>
+        <View className="flex-row gap-1">
           {cue.pulseMap.map((kind, index) => {
             const isHit = kind !== 'rest';
             const isDownbeat = kind === 'downbeat';
@@ -79,9 +112,9 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
         <ReasonText>{cue.rhythmReason}</ReasonText>
       </View>
 
-      <View style={{ marginBottom: 18 }}>
+      <View className="mb-[18px]">
         <SectionTitle>Bass motion</SectionTitle>
-        <View style={{ height: 86, flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+        <View className="h-[86px] flex-row items-end gap-2">
           {bassNoteNames.map((note, index) => {
             const offset = ((suggestion.bassNotes[index] - lowestBass) / bassRange) * 34;
             return (
@@ -114,9 +147,9 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
         <ReasonText>{cue.bassReason}</ReasonText>
       </View>
 
-      <View style={{ marginBottom: 18 }}>
+      <View className="mb-[18px]">
         <SectionTitle>Scale color</SectionTitle>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+        <View className="flex-row flex-wrap gap-1.5">
           {cue.scaleNotes.map((note, index) => (
             <View
               key={note}

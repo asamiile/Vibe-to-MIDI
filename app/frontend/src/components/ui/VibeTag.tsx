@@ -12,14 +12,10 @@ interface Props {
 export function VibeTag({ id, label, active, onPress }: Props) {
   return (
     <Pressable
+      className="m-1 rounded-md border px-4 py-2.5"
       android_disableSound
       onPress={() => onPress(id)}
       style={({ pressed }) => ({
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        margin: 4,
-        borderRadius: 6,
-        borderWidth: 1,
         borderColor: active ? '#e2e8f0' : '#334155',
         backgroundColor: pressed
           ? '#1e293b'
@@ -30,12 +26,10 @@ export function VibeTag({ id, label, active, onPress }: Props) {
       })}
     >
       <Text
+        className="text-[13px] uppercase tracking-[0.5px]"
         style={{
           color: active ? '#e2e8f0' : '#64748b',
-          fontSize: 13,
           fontWeight: active ? '600' : '400',
-          letterSpacing: 0.5,
-          textTransform: 'uppercase',
         }}
       >
         {label}

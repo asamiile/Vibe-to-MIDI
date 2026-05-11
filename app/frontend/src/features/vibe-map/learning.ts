@@ -15,6 +15,9 @@ export interface LearningCue {
   scaleReason: string;
   chordReason: string;
   firstMove: string;
+  tryChange: string;
+  resultWord: string;
+  whatChanged: string;
 }
 
 const SCALE_REASONS: Record<ScaleMode, string> = {
@@ -70,6 +73,9 @@ export function getLearningCue(suggestion: MusicalSuggestion): LearningCue {
     scaleReason: SCALE_REASONS[suggestion.scale.mode],
     chordReason: `${suggestion.chord.root} ${suggestion.chord.quality.replace('_', ' ')} gives the loop its harmonic center.`,
     firstMove: getFirstMove(rhythmFeel, bassMotion),
+    tryChange: getTryChange(rhythmFeel, bassMotion, suggestion.bassNotes),
+    resultWord: getResultWord(rhythmFeel, bassMotion),
+    whatChanged: getWhatChanged(rhythmFeel, bassMotion),
   };
 }
 
@@ -91,4 +97,35 @@ function getFirstMove(rhythmFeel: RhythmFeel, bassMotion: BassMotion): string {
   if (bassMotion === 'static') return 'Keep the bass on one note first, then change the last note to create motion.';
   if (bassMotion === 'rising') return 'Place the lowest bass note first and let the later notes lift the phrase.';
   return 'Copy the rhythm first, then move only one bass note and listen to the mood change.';
+}
+
+function getTryChange(
+  rhythmFeel: RhythmFeel,
+  bassMotion: BassMotion,
+  bassNotes: readonly number[]
+): string {
+  const firstNote = midiToNoteName(bassNotes[0]);
+  const lastNote = midiToNoteName(bassNotes[bassNotes.length - 1]);
+
+  if (bassMotion !== 'static') return `Change the last bass note ${lastNote} back to ${firstNote}.`;
+  if (rhythmFeel === 'sparse') return 'Add one extra hit on step 13, then compare the space.';
+  return 'Mute one hit in the second half, then listen for more space.';
+}
+
+function getResultWord(rhythmFeel: RhythmFeel, bassMotion: BassMotion): string {
+  if (bassMotion === 'rising') return 'more locked';
+  if (bassMotion === 'falling') return 'less heavy';
+  if (bassMotion === 'mixed') return 'more stable';
+  if (rhythmFeel === 'sparse') return 'more driving';
+  if (rhythmFeel === 'busy') return 'more spacious';
+  return 'more minimal';
+}
+
+function getWhatChanged(rhythmFeel: RhythmFeel, bassMotion: BassMotion): string {
+  if (bassMotion === 'rising') return 'The bass stops climbing, so the loop feels more hypnotic and less like a phrase.';
+  if (bassMotion === 'falling') return 'The bass loses its downward pull, so the loop feels lighter.';
+  if (bassMotion === 'mixed') return 'The bass has less direction, so your attention moves back to the pulse.';
+  if (rhythmFeel === 'sparse') return 'One extra hit reduces the empty space and makes the loop move faster.';
+  if (rhythmFeel === 'busy') return 'Removing a hit gives the groove more air and makes the bass easier to hear.';
+  return 'A smaller rhythm change makes the loop feel simpler without changing the notes.';
 }

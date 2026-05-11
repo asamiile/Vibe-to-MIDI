@@ -11,8 +11,8 @@ import {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <View style={{ marginBottom: 24 }}>
-      <Text style={{ color: '#94a3b8', fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>
+    <View className="mb-6">
+      <Text className="mb-2.5 text-[11px] uppercase tracking-[1px] text-slate-400">
         {title}
       </Text>
       {children}
@@ -24,55 +24,41 @@ export default function LicensesScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#060a10' }}>
-      <View
-        style={{
-          paddingHorizontal: 20,
-          paddingTop: 16,
-          paddingBottom: 12,
-          borderBottomWidth: 1,
-          borderBottomColor: '#1e293b',
-        }}
-      >
+    <SafeAreaView className="flex-1 bg-[#060a10]">
+      <View className="border-b border-slate-800 px-5 pb-3 pt-4">
         <Pressable
+          className="self-start py-1.5 pr-3"
           android_disableSound
           onPress={() => router.back()}
           style={({ pressed }) => ({
-            alignSelf: 'flex-start',
-            paddingVertical: 6,
-            paddingRight: 12,
             opacity: pressed ? 0.7 : 1,
           })}
         >
-          <Text style={{ color: '#38bdf8', fontSize: 13, fontWeight: '700' }}>Back</Text>
+          <Text className="text-[13px] font-bold text-sky-400">Back</Text>
         </Pressable>
-        <Text style={{ color: '#e2e8f0', fontSize: 24, fontWeight: '700', marginTop: 8 }}>
+        <Text className="mt-2 text-2xl font-bold text-slate-200">
           Licenses
         </Text>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 20 }} showsVerticalScrollIndicator={false}>
         <Section title="Audio">
-          <Text style={{ color: '#cbd5e1', fontSize: 14, lineHeight: 20 }}>{AUDIO_NOTICE}</Text>
+          <Text className="text-sm leading-5 text-slate-300">{AUDIO_NOTICE}</Text>
         </Section>
 
         <Section title="Open source software">
           {RUNTIME_LICENSE_NOTICES.map((notice) => (
             <View
               key={notice.packageName}
-              style={{
-                paddingVertical: 12,
-                borderBottomWidth: 1,
-                borderBottomColor: '#1e293b',
-              }}
+              className="border-b border-slate-800 py-3"
             >
-              <Text style={{ color: '#e2e8f0', fontSize: 14, fontWeight: '700' }}>
+              <Text className="text-sm font-bold text-slate-200">
                 {notice.packageName}
               </Text>
-              <Text style={{ color: '#94a3b8', fontSize: 12, marginTop: 4 }}>
+              <Text className="mt-1 text-xs text-slate-400">
                 {notice.license}
               </Text>
-              <Text style={{ color: '#64748b', fontSize: 11, marginTop: 4 }}>
+              <Text className="mt-1 text-[11px] text-slate-500">
                 {notice.repository}
               </Text>
             </View>
@@ -81,17 +67,17 @@ export default function LicensesScreen() {
 
         <Section title="Bundled assets">
           {BUNDLED_ASSET_LICENSE_NOTICES.length === 0 ? (
-            <Text style={{ color: '#cbd5e1', fontSize: 14, lineHeight: 20 }}>
+            <Text className="text-sm leading-5 text-slate-300">
               No third-party bundled media assets are currently listed.
             </Text>
           ) : (
             BUNDLED_ASSET_LICENSE_NOTICES.map((asset) => (
-              <View key={`${asset.kind}-${asset.name}`} style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#1e293b' }}>
-                <Text style={{ color: '#e2e8f0', fontSize: 14, fontWeight: '700' }}>{asset.name}</Text>
-                <Text style={{ color: '#94a3b8', fontSize: 12, marginTop: 4 }}>
+              <View key={`${asset.kind}-${asset.name}`} className="border-b border-slate-800 py-3">
+                <Text className="text-sm font-bold text-slate-200">{asset.name}</Text>
+                <Text className="mt-1 text-xs text-slate-400">
                   {asset.kind} · {asset.license}
                 </Text>
-                <Text style={{ color: '#64748b', fontSize: 11, marginTop: 4 }}>
+                <Text className="mt-1 text-[11px] text-slate-500">
                   {asset.creator} · checked {asset.dateChecked}
                 </Text>
               </View>
@@ -101,7 +87,7 @@ export default function LicensesScreen() {
 
         <Section title="Release checks">
           {LICENSE_RELEASE_CHECKLIST.map((item) => (
-            <Text key={item} style={{ color: '#64748b', fontSize: 11, lineHeight: 16, marginBottom: 6 }}>
+            <Text key={item} className="mb-1.5 text-[11px] leading-4 text-slate-500">
               {item}
             </Text>
           ))}

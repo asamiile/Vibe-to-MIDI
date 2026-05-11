@@ -12,8 +12,8 @@ const STEP_LABELS = ['1', 'e', '&', 'a'];
 
 function StepText({ children }: { children: React.ReactNode }) {
   return (
-    <View style={{ marginBottom: 8 }}>
-      <Text style={{ color: '#cbd5e1', fontSize: 13, lineHeight: 19, fontWeight: '600' }}>
+    <View className="mb-2">
+      <Text className="text-[13px] font-semibold leading-[19px] text-slate-300">
         {children}
       </Text>
     </View>
@@ -22,7 +22,7 @@ function StepText({ children }: { children: React.ReactNode }) {
 
 function MiniLabel({ children }: { children: string }) {
   return (
-    <Text style={{ color: '#94a3b8', fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>
+    <Text className="mb-2 text-[10px] uppercase tracking-[1px] text-slate-400">
       {children}
     </Text>
   );
@@ -36,67 +36,38 @@ export function DawStepsPanel({ suggestion }: Props) {
     .filter((step): step is number => step !== null);
 
   return (
-    <View
-      style={{
-        paddingTop: 16,
-        borderTopWidth: 1,
-        borderTopColor: '#1e293b',
-        marginTop: 2,
-        marginBottom: 8,
-      }}
-    >
-      <Text style={{ color: '#e2e8f0', fontSize: 18, fontWeight: '800', marginBottom: 4 }}>
+    <View className="mb-2 mt-0.5 border-t border-slate-800 pt-4">
+      <Text className="mb-1 text-lg font-extrabold text-slate-200">
         Use in MIDI / DAW
       </Text>
-      <Text style={{ color: '#94a3b8', fontSize: 13, lineHeight: 18, marginBottom: 14 }}>
+      <Text className="mb-3.5 text-[13px] leading-[18px] text-slate-400">
         When you find a sound you like, copy these values into a 1-bar MIDI clip.
       </Text>
 
-      <View
-        style={{
-          padding: 12,
-          borderRadius: 6,
-          backgroundColor: '#111827',
-          borderWidth: 1,
-          borderColor: '#334155',
-          marginBottom: 14,
-        }}
-      >
+      <View className="mb-3.5 rounded-md border border-slate-700 bg-gray-900 p-3">
         <StepText>Tempo: {bpm} BPM</StepText>
         <StepText>Bass notes: {bassNotes.join('  ')}</StepText>
         <StepText>Hit steps: {hitSteps.join(', ')}</StepText>
         <StepText>Sound: {suggestion.soundHint}</StepText>
       </View>
 
-      <View
-        style={{
-          padding: 12,
-          borderRadius: 6,
-          backgroundColor: '#0f172a',
-          borderWidth: 1,
-          borderColor: '#1e293b',
-        }}
-      >
+      <View className="rounded-md border border-slate-800 bg-slate-900 p-3">
         <MiniLabel>16-step clip</MiniLabel>
-        <View style={{ flexDirection: 'row', gap: 4 }}>
+        <View className="flex-row gap-1">
           {suggestion.rhythmPattern.map((hit, index) => (
-            <View key={`daw-step-${index}`} style={{ flex: 1, gap: 4 }}>
+            <View key={`daw-step-${index}`} className="flex-1 gap-1">
               <View
+                className="h-8 items-center justify-center rounded border"
                 style={{
-                  height: 32,
-                  borderRadius: 4,
-                  borderWidth: 1,
                   borderColor: hit ? '#22d3ee' : '#1e293b',
                   backgroundColor: hit ? '#0e7490' : '#111827',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                 }}
               >
-                <Text style={{ color: hit ? '#ecfeff' : '#475569', fontSize: 10, fontWeight: '700' }}>
+                <Text className="text-[10px] font-bold" style={{ color: hit ? '#ecfeff' : '#475569' }}>
                   {hit ? 'hit' : ''}
                 </Text>
               </View>
-              <Text style={{ color: index % 4 === 0 ? '#cbd5e1' : '#475569', textAlign: 'center', fontSize: 9 }}>
+              <Text className="text-center text-[9px]" style={{ color: index % 4 === 0 ? '#cbd5e1' : '#475569' }}>
                 {STEP_LABELS[index % 4]}
               </Text>
             </View>

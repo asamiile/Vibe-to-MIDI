@@ -44,6 +44,16 @@ Preferred interaction order:
 
 Avoid lesson-first UI. The user should feel like they are making music first, then learning from the result.
 
+## Core User Flow
+
+Design the app around this user experience:
+
+1. Listen.
+2. If the sound feels interesting, open the practical details.
+3. If the user wants to learn, open the learning view.
+
+The first screen after choosing a vibe should prioritize listening, not explanation. Keep DAW-ready details and learning content behind explicit actions such as `Use in DAW` and `Learn`.
+
 Prioritize:
 
 - low explanation

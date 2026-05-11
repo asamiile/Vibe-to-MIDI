@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import type { MusicalSuggestion } from '../../features/vibe-map/types';
 import { midiToNoteName } from '../../lib/notes';
@@ -8,17 +8,23 @@ import { DawStepsPanel } from './DawStepsPanel';
 
 interface Props {
   suggestion: MusicalSuggestion;
+  mode: SuggestionTab;
+  onBack: () => void;
 }
 
 type SuggestionTab = 'explore' | 'use';
 
+interface SuggestionOnlyProps {
+  suggestion: MusicalSuggestion;
+}
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <View style={{ marginBottom: 12 }}>
-      <Text style={{ color: '#475569', fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>
+    <View className="mb-3">
+      <Text className="mb-0.5 text-[10px] uppercase tracking-[1px] text-slate-600">
         {label}
       </Text>
-      <Text style={{ color: '#e2e8f0', fontSize: 14, fontWeight: '500' }}>
+      <Text className="text-sm font-medium text-slate-200">
         {value}
       </Text>
     </View>
@@ -36,28 +42,23 @@ function TabButton({
 }) {
   return (
     <Pressable
+      className="min-h-10 flex-1 items-center justify-center rounded-md border"
       android_disableSound
       onPress={onPress}
       style={({ pressed }) => ({
-        flex: 1,
-        minHeight: 40,
-        borderRadius: 6,
-        alignItems: 'center',
-        justifyContent: 'center',
         backgroundColor: active ? '#0e7490' : '#111827',
-        borderWidth: 1,
         borderColor: active ? '#22d3ee' : '#1e293b',
         opacity: pressed ? 0.75 : 1,
       })}
     >
-      <Text style={{ color: active ? '#ecfeff' : '#94a3b8', fontSize: 12, fontWeight: '800' }}>
+      <Text className="text-xs font-extrabold" style={{ color: active ? '#ecfeff' : '#94a3b8' }}>
         {label}
       </Text>
     </Pressable>
   );
 }
 
-function WhyItWorksPanel({ suggestion }: Props) {
+function WhyItWorksPanel({ suggestion }: SuggestionOnlyProps) {
   const { scale, chord, bassNotes, rhythmPattern, soundHint, bpmRange } = suggestion;
 
   const scaleLabel = `${scale.root} ${scale.mode.replace('_', ' ')}`;
@@ -67,8 +68,8 @@ function WhyItWorksPanel({ suggestion }: Props) {
   const bpmLabel = `${getMidBpm(suggestion)} BPM (${bpmRange[0]}-${bpmRange[1]})`;
 
   return (
-    <View style={{ paddingTop: 16, borderTopWidth: 1, borderTopColor: '#1e293b' }}>
-      <Text style={{ color: '#e2e8f0', fontSize: 18, fontWeight: '800', marginBottom: 12 }}>
+    <View className="border-t border-slate-800 pt-4">
+      <Text className="mb-3 text-lg font-extrabold text-slate-200">
         Why it works
       </Text>
       <Row label="BPM" value={bpmLabel} />
@@ -81,33 +82,34 @@ function WhyItWorksPanel({ suggestion }: Props) {
   );
 }
 
-export function SuggestionPanel({ suggestion }: Props) {
-  const [activeTab, setActiveTab] = useState<SuggestionTab>('explore');
-
-  useEffect(() => {
-    setActiveTab('explore');
-  }, [suggestion.vibeId]);
-
+export function SuggestionPanel({ suggestion, mode, onBack }: Props) {
   return (
     <ScrollView
-      style={{ flex: 1 }}
+      className="flex-1"
       contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
       showsVerticalScrollIndicator={false}
     >
-      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
-        <TabButton
-          active={activeTab === 'explore'}
-          label="Explore"
-          onPress={() => setActiveTab('explore')}
-        />
-        <TabButton
-          active={activeTab === 'use'}
-          label="Use in DAW"
-          onPress={() => setActiveTab('use')}
-        />
+      <View className="mb-4 flex-row items-center gap-2.5">
+        <Pressable
+          className="py-2 pr-2.5"
+          android_disableSound
+          onPress={onBack}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <Text className="text-[13px] font-extrabold text-sky-400">Back</Text>
+        </Pressable>
+        <View className="flex-1">
+          <TabButton
+            active
+            label={mode === 'explore' ? 'Learning' : 'Use in DAW'}
+            onPress={() => {}}
+          />
+        </View>
       </View>
 
-      {activeTab === 'explore' ? (
+      {mode === 'explore' ? (
         <IntuitiveLearningPanel suggestion={suggestion} />
       ) : (
         <>
