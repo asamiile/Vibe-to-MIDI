@@ -6,6 +6,7 @@ import {
   Pressable,
   StatusBar,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '../src/data/store';
 import { getAllVibeIds } from '../src/features/vibe-map/engine';
@@ -32,6 +33,7 @@ const VIBE_LABELS: Record<VibeId, string> = {
 };
 
 export default function HomeScreen() {
+  const router = useRouter();
   const { activeVibeId, suggestion, isPlaying, selectVibe, setPlaying } =
     useAppStore();
   const playerRef = useRef<PlayerHandle | null>(null);
@@ -60,9 +62,24 @@ export default function HomeScreen() {
       <StatusBar barStyle="light-content" backgroundColor="#060a10" />
 
       <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
-        <Text style={{ color: '#64748b', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}>
-          Vibe-to-MIDI
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={{ color: '#64748b', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}>
+            Vibe-to-MIDI
+          </Text>
+          <Pressable
+            android_disableSound
+            onPress={() => router.push('/licenses')}
+            style={({ pressed }) => ({
+              paddingVertical: 6,
+              paddingLeft: 12,
+              opacity: pressed ? 0.7 : 1,
+            })}
+          >
+            <Text style={{ color: '#64748b', fontSize: 11, fontWeight: '700', textTransform: 'uppercase' }}>
+              Licenses
+            </Text>
+          </Pressable>
+        </View>
       </View>
 
       <View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: '#1e293b' }}>

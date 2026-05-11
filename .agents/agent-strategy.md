@@ -31,6 +31,25 @@ Future agents should be able to handle:
 - local ML feasibility research
 - browser visual QA
 
+## Feature Implementation License Workflow
+
+When implementing a feature, check whether the change adds or changes any:
+
+- runtime dependency
+- generated or bundled audio file
+- MIDI file
+- image, icon, font, or other binary asset
+- sample, preset, loop, stem, or reference media
+
+If yes, update the license surface in the same change:
+
+1. Verify the license allows commercial app distribution and redistribution where relevant.
+2. Update `app/frontend/src/data/licenseNotices.ts`; this is the source of truth for the app's Licenses screen.
+3. For audio or media assets, record source URL, creator, license, attribution requirement, redistribution permission, and date checked.
+4. If rights are unclear, do not commit the asset; use generated synthesis or a documented CC0/original replacement.
+
+If no license-relevant item was added, mention that in the final response for the feature.
+
 ## Skills To Expand Later
 
 Potential future skills:

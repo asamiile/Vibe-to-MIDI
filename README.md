@@ -76,6 +76,12 @@ npx expo run:android
 
 After the first build, JS changes hot-reload without rebuilding.
 
+### Licenses and notices
+
+Current preview audio is generated at runtime with oscillator synthesis. No third-party audio files, loops, stems, samples, or MIDI files are bundled in the app.
+
+The source of truth for app-displayed license notices is [app/frontend/src/data/licenseNotices.ts](app/frontend/src/data/licenseNotices.ts). Before public release, regenerate dependency notices from the lockfile and include required license text and copyright notices there.
+
 
 ## Research
 
