@@ -65,12 +65,16 @@ export function playPreview(
   const scheduledNodes: ScheduledNode[] = [];
 
   suggestion.bassNotes.forEach((midi, i) => {
-    scheduleNote(ctx, noteFreq(midi), now + i * stepDuration * 4, stepDuration * 3.5, gain, 'sawtooth', scheduledNodes);
+    const start = now + i * stepDuration * 4;
+    scheduleNote(ctx, noteFreq(midi), start, stepDuration * 3.5, gain, 'sawtooth', scheduledNodes);
+    scheduleNote(ctx, noteFreq(midi + 12), start, stepDuration * 3.5, gain * 0.28, 'triangle', scheduledNodes);
   });
 
   suggestion.rhythmPattern.forEach((hit, step) => {
     if (!hit) return;
-    scheduleNote(ctx, 80, now + step * stepDuration, stepDuration * 0.4, gain * 0.5, 'square', scheduledNodes);
+    const start = now + step * stepDuration;
+    scheduleNote(ctx, 80, start, stepDuration * 0.4, gain * 0.5, 'square', scheduledNodes);
+    scheduleNote(ctx, 1200, start, stepDuration * 0.12, gain * 0.16, 'square', scheduledNodes);
   });
 
   const loopDuration = stepDuration * 16;
@@ -80,11 +84,15 @@ export function playPreview(
     if (stopped) return;
     const loopStart = now + loopDuration;
     suggestion.bassNotes.forEach((midi, i) => {
-      scheduleNote(ctx, noteFreq(midi), loopStart + i * stepDuration * 4, stepDuration * 3.5, gain, 'sawtooth', scheduledNodes);
+      const start = loopStart + i * stepDuration * 4;
+      scheduleNote(ctx, noteFreq(midi), start, stepDuration * 3.5, gain, 'sawtooth', scheduledNodes);
+      scheduleNote(ctx, noteFreq(midi + 12), start, stepDuration * 3.5, gain * 0.28, 'triangle', scheduledNodes);
     });
     suggestion.rhythmPattern.forEach((hit, step) => {
       if (!hit) return;
-      scheduleNote(ctx, 80, loopStart + step * stepDuration, stepDuration * 0.4, gain * 0.5, 'square', scheduledNodes);
+      const start = loopStart + step * stepDuration;
+      scheduleNote(ctx, 80, start, stepDuration * 0.4, gain * 0.5, 'square', scheduledNodes);
+      scheduleNote(ctx, 1200, start, stepDuration * 0.12, gain * 0.16, 'square', scheduledNodes);
     });
   }
 

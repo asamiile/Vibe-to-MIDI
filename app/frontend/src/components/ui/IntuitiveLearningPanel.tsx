@@ -34,10 +34,20 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
   const bassRange = Math.max(1, highestBass - lowestBass);
 
   return (
-    <View style={{ marginTop: 8, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#1e293b' }}>
-      <Text style={{ color: '#e2e8f0', fontSize: 16, fontWeight: '700', marginBottom: 12 }}>
-        Learn by feeling
+    <View style={{ marginTop: 4, marginBottom: 18 }}>
+      <Text style={{ color: '#e2e8f0', fontSize: 18, fontWeight: '800', marginBottom: 6 }}>
+        Try this
       </Text>
+      <Text style={{ color: '#94a3b8', fontSize: 13, lineHeight: 18, marginBottom: 14 }}>
+        Make one small change and listen for the mood shift.
+      </Text>
+
+      <View style={{ padding: 12, borderRadius: 6, backgroundColor: '#111827', borderWidth: 1, borderColor: '#334155', marginBottom: 18 }}>
+        <SectionTitle>First move</SectionTitle>
+        <Text style={{ color: '#e2e8f0', fontSize: 14, lineHeight: 20, fontWeight: '600' }}>
+          {cue.firstMove}
+        </Text>
+      </View>
 
       <View style={{ marginBottom: 18 }}>
         <SectionTitle>Pulse</SectionTitle>
@@ -128,12 +138,6 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
         <ReasonText>{cue.scaleReason}. {cue.chordReason}</ReasonText>
       </View>
 
-      <View style={{ padding: 12, borderRadius: 6, backgroundColor: '#111827', borderWidth: 1, borderColor: '#334155' }}>
-        <SectionTitle>Try first</SectionTitle>
-        <Text style={{ color: '#e2e8f0', fontSize: 13, lineHeight: 18 }}>
-          {cue.firstMove}
-        </Text>
-      </View>
     </View>
   );
 }

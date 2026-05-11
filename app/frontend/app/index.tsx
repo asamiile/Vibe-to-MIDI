@@ -37,6 +37,7 @@ export default function HomeScreen() {
   const { activeVibeId, suggestion, isPlaying, selectVibe, setPlaying } =
     useAppStore();
   const playerRef = useRef<PlayerHandle | null>(null);
+  const audioAvailable = isAudioAvailable();
 
   function handleVibePress(id: VibeId) {
     playerRef.current?.stop();
@@ -47,6 +48,7 @@ export default function HomeScreen() {
 
   function handlePlayPress() {
     if (!suggestion) return;
+    if (!audioAvailable) return;
     if (isPlaying) {
       playerRef.current?.stop();
       playerRef.current = null;
@@ -110,21 +112,22 @@ export default function HomeScreen() {
               {/* Play / Stop button */}
               <Pressable
                 android_disableSound
+                disabled={!audioAvailable}
                 onPress={handlePlayPress}
                 style={({ pressed }) => ({
                   margin: 16,
                   paddingVertical: 12,
                   borderRadius: 6,
                   alignItems: 'center',
-                  backgroundColor: isPlaying ? '#7f1d1d' : '#14532d',
+                  backgroundColor: !audioAvailable ? '#1f2937' : isPlaying ? '#7f1d1d' : '#14532d',
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
                 <Text style={{ color: '#e2e8f0', fontWeight: '600', fontSize: 13, letterSpacing: 1 }}>
-                  {isPlaying ? '■  STOP' : '▶  PLAY'}
+                  {!audioAvailable ? 'DEV BUILD REQUIRED' : isPlaying ? '■  STOP' : '▶  PLAY'}
                 </Text>
               </Pressable>
-              {!isAudioAvailable() && (
+              {!audioAvailable && (
                 <Text style={{ color: '#475569', fontSize: 10, textAlign: 'center', marginBottom: 8 }}>
                   Audio requires Dev Build
                 </Text>

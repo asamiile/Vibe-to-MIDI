@@ -59,6 +59,27 @@ Avoid:
 - decorative UI that hides the tool
 - visual complexity that makes the musical output unclear
 
+## Try This Rule
+
+For beginner-facing learning UI, prefer actionable "Try this" guidance over abstract explanation.
+
+Every learning explanation should answer:
+
+- what to place in the DAW
+- where to place it in the clip or grid
+- what to change next to hear a difference
+
+Good pattern:
+
+```text
+Try this:
+Keep only steps 1 and 9. This creates space.
+Change C2 back to A1 if you want it more hypnotic.
+Move C2 to D2 if you want more tension.
+```
+
+Use theory labels such as scale, mode, and chord after the practical action, not before it. The user should be able to follow the instruction in Ableton or another DAW without understanding the theory term first.
+
 ## Layout Direction
 
 Initial screen:
