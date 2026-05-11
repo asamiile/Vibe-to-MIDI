@@ -10,6 +10,13 @@
 - Keep files named by responsibility, not by implementation novelty.
 - Use ASCII unless the existing file clearly uses another character set.
 
+## Styling
+
+- Use NativeWind (Tailwind CSS) `className` for all static styles.
+- Use inline `style` only for dynamic values that depend on runtime state (e.g., colors driven by `isPlaying`, opacity driven by `pressed`).
+- Do not mix `className` and inline `style` for the same property.
+- Avoid hardcoded hex colors in inline styles when an equivalent Tailwind color token exists.
+
 ## Suggested Source Structure
 
 ```text

@@ -43,12 +43,20 @@ export interface ChordSpec {
 
 export type RhythmPattern = readonly boolean[];
 
+export type SoundRole = 'bass' | 'pad' | 'lead' | 'drum';
+
+export interface SoundLayer {
+  role: SoundRole;
+  descriptor: string;
+  optional?: true;
+}
+
 export interface MusicalSuggestion {
   vibeId: VibeId;
   scale: ScaleSpec;
   chord: ChordSpec;
   bassNotes: readonly number[];
   rhythmPattern: RhythmPattern;
-  soundHint: string;
+  soundLayers: readonly SoundLayer[];
   bpmRange: readonly [number, number];
 }

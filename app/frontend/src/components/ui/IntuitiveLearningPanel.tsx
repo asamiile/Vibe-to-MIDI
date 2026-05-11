@@ -49,14 +49,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
   const bassRange = Math.max(1, highestBass - lowestBass);
 
   return (
-    <View className="mb-[18px] mt-1">
-      <Text className="mb-1.5 text-[22px] font-extrabold text-slate-200">
-        Explore the loop
-      </Text>
-      <Text className="mb-3.5 text-[13px] leading-[18px] text-slate-400">
-        Press play, feel the current loop, then change one thing.
-      </Text>
-
+    <View className="mb-[18px]">
       <View className="mb-[18px] flex-row flex-wrap gap-2">
         <LayerChip label="Pulse" detail={`${cue.rhythmFeel} rhythm hits`} />
         <LayerChip label="Bass" detail={`${cue.bassMotion} motion`} />
@@ -169,6 +162,33 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
           ))}
         </View>
         <ReasonText>{cue.scaleReason}. {cue.chordReason}</ReasonText>
+      </View>
+
+      <View className="mb-[18px]">
+        <SectionTitle>Sound layers</SectionTitle>
+        <View className="flex-row flex-wrap gap-2">
+          {suggestion.soundLayers.map((layer) => (
+            <View
+              key={layer.role}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 8,
+                borderRadius: 6,
+                borderWidth: 1,
+                borderColor: layer.optional ? '#334155' : '#0e7490',
+                backgroundColor: layer.optional ? '#0f172a' : '#0c2a33',
+                opacity: layer.optional ? 0.5 : 1,
+              }}
+            >
+              <Text style={{ color: '#94a3b8', fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
+                {layer.role}
+              </Text>
+              <Text style={{ color: layer.optional ? '#475569' : '#e2e8f0', fontSize: 12, fontWeight: '600' }}>
+                {layer.descriptor}
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
 
     </View>

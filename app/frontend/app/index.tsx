@@ -1,20 +1,20 @@
-import React, { useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   Pressable,
   StatusBar,
+  Modal,
   useWindowDimensions,
+  BackHandler,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '../src/data/store';
-import { getAllVibeIds, getMusicalSuggestion } from '../src/features/vibe-map/engine';
-import { playPreview } from '../src/features/audio-engine/player';
+import { getAllVibeIds } from '../src/features/vibe-map/engine';
 import { isAudioAvailable } from '../src/features/audio-engine/adapter';
 import { SuggestionPanel } from '../src/components/ui/SuggestionPanel';
 import type { VibeId } from '../src/features/vibe-map/types';
-import type { PlayerHandle } from '../src/features/audio-engine/player';
 
 const VIBE_IDS = getAllVibeIds();
 
@@ -39,14 +39,14 @@ function VibeButton({
   playing,
   audioAvailable,
   size,
-  onPlay,
+  onPress,
 }: {
   label: string;
   active: boolean;
   playing: boolean;
   audioAvailable: boolean;
   size: number;
-  onPlay: () => void;
+  onPress: () => void;
 }) {
   return (
     <View className="m-1" style={{ width: size, height: size }}>
@@ -54,7 +54,7 @@ function VibeButton({
         className="h-full w-full items-center justify-center rounded-md border p-2"
         android_disableSound
         disabled={!audioAvailable}
-        onPress={onPlay}
+        onPress={onPress}
         hitSlop={4}
         style={({ pressed }) => ({
           backgroundColor: active ? (playing ? '#14532d' : '#0f172a') : '#0b111c',
@@ -80,10 +80,12 @@ function VibeButton({
 function HeaderAction({
   label,
   disabled,
+  active,
   onPress,
 }: {
   label: string;
   disabled: boolean;
+  active?: boolean;
   onPress: () => void;
 }) {
   return (
@@ -93,54 +95,149 @@ function HeaderAction({
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => ({
-        backgroundColor: disabled ? '#111827' : '#0f172a',
-        borderColor: disabled ? '#1e293b' : '#334155',
+        backgroundColor: disabled ? '#111827' : active ? '#164e63' : '#0f172a',
+        borderColor: disabled ? '#1e293b' : active ? '#22d3ee' : '#334155',
         opacity: pressed ? 0.75 : 1,
       })}
     >
-      <Text className="text-xs font-black" style={{ color: disabled ? '#334155' : '#cbd5e1' }}>
+      <Text className="text-xs font-black" style={{ color: disabled ? '#334155' : active ? '#ecfeff' : '#cbd5e1' }}>
         {label}
       </Text>
     </Pressable>
   );
 }
 
+function CogButton({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable
+      className="min-h-9 w-9 items-center justify-center rounded-md border"
+      android_disableSound
+      onPress={onPress}
+      style={({ pressed }) => ({
+        backgroundColor: '#0f172a',
+        borderColor: '#334155',
+        opacity: pressed ? 0.75 : 1,
+      })}
+    >
+      <Text style={{ color: '#64748b', fontSize: 16 }}>⚙</Text>
+    </Pressable>
+  );
+}
+
+function PlayButton({
+  isPlaying,
+  audioAvailable,
+  disabled,
+  onPress,
+}: {
+  isPlaying: boolean;
+  audioAvailable: boolean;
+  disabled?: boolean;
+  onPress: () => void;
+}) {
+  const off = !audioAvailable || disabled;
+  return (
+    <Pressable
+      className="min-h-9 w-9 items-center justify-center rounded-full border-2"
+      android_disableSound
+      disabled={off}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        borderColor: off ? '#1e293b' : isPlaying ? '#ef4444' : '#22c55e',
+        opacity: pressed ? 0.6 : 1,
+      })}
+    >
+      <Text style={{
+        color: off ? '#334155' : isPlaying ? '#ef4444' : '#22c55e',
+        fontSize: 16,
+        lineHeight: 20,
+      }}>
+        {isPlaying ? '■' : '▶'}
+      </Text>
+    </Pressable>
+  );
+}
+
+function SettingsModal({
+  visible,
+  onClose,
+  onLicenses,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onLicenses: () => void;
+}) {
+  return (
+    <Modal
+      visible={visible}
+      transparent={false}
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <SafeAreaView className="flex-1 bg-[#060a10]">
+        <StatusBar barStyle="light-content" backgroundColor="#060a10" />
+        <View className="flex-row items-center justify-between px-5 pb-3.5 pt-3">
+          <Text className="text-[28px] font-black text-slate-200">Menu</Text>
+          <Pressable
+            className="min-h-9 w-9 items-center justify-center rounded-md border"
+            android_disableSound
+            onPress={onClose}
+            style={({ pressed }) => ({
+              backgroundColor: '#0f172a',
+              borderColor: '#334155',
+              opacity: pressed ? 0.75 : 1,
+            })}
+          >
+            <Text style={{ color: '#64748b', fontSize: 16 }}>✕</Text>
+          </Pressable>
+        </View>
+        <View className="flex-1 px-5 pt-2">
+          <Pressable
+            className="border-b border-slate-800 py-4"
+            android_disableSound
+            onPress={() => { onClose(); onLicenses(); }}
+            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+          >
+            <Text className="text-base font-semibold text-slate-300">Licenses</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    </Modal>
+  );
+}
+
 export default function HomeScreen() {
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const { activeVibeId, suggestion, isPlaying, selectVibe, setPlaying } =
-    useAppStore();
-  const playerRef = useRef<PlayerHandle | null>(null);
+  const { activeVibeId, suggestion, isPlaying, selectVibe, play, stop } = useAppStore();
   const audioAvailable = isAudioAvailable();
   const [viewMode, setViewMode] = useState<ViewMode>('listen');
+  const [settingsVisible, setSettingsVisible] = useState(false);
   const vibeButtonSize = Math.floor((width - 40 - 24) / 3);
 
-  function stopPlayback() {
-    playerRef.current?.stop();
-    playerRef.current = null;
-    setPlaying(false);
-  }
+  useEffect(() => {
+    if (viewMode === 'listen') return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      setViewMode('listen');
+      return true;
+    });
+    return () => sub.remove();
+  }, [viewMode]);
 
-  function handleVibePlay(id: VibeId) {
+  function handleVibePress(id: VibeId) {
     if (!audioAvailable) return;
-    if (activeVibeId === id && isPlaying) {
-      stopPlayback();
-      return;
+    if (activeVibeId === id) {
+      isPlaying ? stop() : play();
+    } else {
+      selectVibe(id);
+      play();
     }
-
-    stopPlayback();
-    const nextSuggestion = getMusicalSuggestion(id);
-    selectVibe(id);
-    setViewMode('listen');
-    playerRef.current = playPreview(nextSuggestion);
-    setPlaying(true);
   }
 
   function openMode(id: VibeId, mode: ViewMode) {
     if (activeVibeId !== id) {
-      stopPlayback();
+      selectVibe(id);
     }
-    selectVibe(id);
     setViewMode(mode);
   }
 
@@ -149,40 +246,9 @@ export default function HomeScreen() {
     openMode(activeVibeId, mode);
   }
 
-  function handlePlayPress() {
-    if (!suggestion) return;
-    if (!audioAvailable) return;
-    if (isPlaying) {
-      stopPlayback();
-    } else {
-      playerRef.current = playPreview(suggestion);
-      setPlaying(true);
-    }
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-[#060a10]">
       <StatusBar barStyle="light-content" backgroundColor="#060a10" />
-
-      <View className="px-5 pb-2 pt-4">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-[11px] uppercase tracking-[2px] text-slate-500">
-            Vibe-to-MIDI
-          </Text>
-          <Pressable
-            className="py-1.5 pl-3"
-            android_disableSound
-            onPress={() => router.push('/licenses')}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.7 : 1,
-            })}
-          >
-            <Text className="text-[11px] font-bold uppercase text-slate-500">
-              Licenses
-            </Text>
-          </Pressable>
-        </View>
-      </View>
 
       <View className="flex-1">
         <View className="flex-1">
@@ -194,15 +260,16 @@ export default function HomeScreen() {
                 </Text>
                 <View className="flex-row gap-2">
                   <HeaderAction
-                    label="Learn"
-                    disabled={!activeVibeId}
-                    onPress={() => openActiveMode('learn')}
-                  />
-                  <HeaderAction
                     label="MIDI"
                     disabled={!activeVibeId}
                     onPress={() => openActiveMode('details')}
                   />
+                  <HeaderAction
+                    label="Learn"
+                    disabled={!activeVibeId}
+                    onPress={() => openActiveMode('learn')}
+                  />
+                  <CogButton onPress={() => setSettingsVisible(true)} />
                 </View>
               </View>
               {!audioAvailable && (
@@ -221,7 +288,7 @@ export default function HomeScreen() {
                       playing={active && isPlaying}
                       audioAvailable={audioAvailable}
                       size={vibeButtonSize}
-                      onPlay={() => handleVibePlay(item)}
+                      onPress={() => handleVibePress(item)}
                     />
                   );
                 })}
@@ -229,81 +296,40 @@ export default function HomeScreen() {
             </View>
           ) : suggestion ? (
             <>
-              {/* Action bar for Learn / MIDI screens */}
-              <View className="flex-row items-center gap-2 px-5 pb-2 pt-3">
-                <Pressable
-                  android_disableSound
-                  onPress={() => setViewMode('listen')}
-                  className="min-h-9 items-center justify-center rounded-md border px-3"
-                  style={({ pressed }) => ({
-                    backgroundColor: '#0f172a',
-                    borderColor: '#334155',
-                    opacity: pressed ? 0.75 : 1,
-                  })}
-                >
-                  <Text className="text-xs font-black text-slate-200">← BACK</Text>
-                </Pressable>
-
-                <Pressable
-                  android_disableSound
-                  onPress={() => openActiveMode('learn')}
-                  className="min-h-9 flex-1 items-center justify-center rounded-md border"
-                  style={({ pressed }) => ({
-                    backgroundColor: viewMode === 'learn' ? '#164e63' : '#0f172a',
-                    borderColor: viewMode === 'learn' ? '#22d3ee' : '#334155',
-                    opacity: pressed ? 0.75 : 1,
-                  })}
-                >
-                  <Text
-                    className="text-xs font-black"
-                    style={{ color: viewMode === 'learn' ? '#ecfeff' : '#cbd5e1' }}
-                  >
-                    Learn
+              <View className="flex-row items-center justify-between gap-3 px-5 pb-3.5 pt-3">
+                <View className="flex-1 flex-row items-center gap-3">
+                  <Text className="text-[28px] font-black text-slate-200">
+                    {viewMode === 'details' ? 'MIDI?' : 'Learn?'}
                   </Text>
-                </Pressable>
-
-                <Pressable
-                  android_disableSound
-                  onPress={() => openActiveMode('details')}
-                  className="min-h-9 flex-1 items-center justify-center rounded-md border"
-                  style={({ pressed }) => ({
-                    backgroundColor: viewMode === 'details' ? '#164e63' : '#0f172a',
-                    borderColor: viewMode === 'details' ? '#22d3ee' : '#334155',
-                    opacity: pressed ? 0.75 : 1,
-                  })}
-                >
-                  <Text
-                    className="text-xs font-black"
-                    style={{ color: viewMode === 'details' ? '#ecfeff' : '#cbd5e1' }}
-                  >
-                    MIDI
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  android_disableSound
-                  disabled={!audioAvailable}
-                  onPress={handlePlayPress}
-                  className="min-h-9 items-center justify-center rounded-md border px-3"
-                  style={({ pressed }) => ({
-                    backgroundColor: !audioAvailable ? '#0b111c' : isPlaying ? '#7f1d1d' : '#14532d',
-                    borderColor: !audioAvailable ? '#1e293b' : isPlaying ? '#ef4444' : '#22c55e',
-                    opacity: pressed ? 0.75 : 1,
-                  })}
-                >
-                  <Text
-                    className="text-xs font-black"
-                    style={{ color: !audioAvailable ? '#334155' : '#e2e8f0' }}
-                  >
-                    {isPlaying ? '■ STOP' : '▶ PLAY'}
-                  </Text>
-                </Pressable>
+                  <PlayButton
+                    isPlaying={isPlaying}
+                    audioAvailable={audioAvailable}
+                    onPress={() => isPlaying ? stop() : play()}
+                  />
+                </View>
+                <View className="flex-row gap-2">
+                  <HeaderAction
+                    label="MIDI"
+                    disabled={false}
+                    active={viewMode === 'details'}
+                    onPress={() => openActiveMode('details')}
+                  />
+                  <HeaderAction
+                    label="Learn"
+                    disabled={false}
+                    active={viewMode === 'learn'}
+                    onPress={() => openActiveMode('learn')}
+                  />
+                  <CogButton onPress={() => setSettingsVisible(true)} />
+                </View>
               </View>
 
-              <SuggestionPanel
-                suggestion={suggestion}
-                mode={viewMode === 'learn' ? 'explore' : 'use'}
-              />
+              <View className="flex-1">
+                <SuggestionPanel
+                  suggestion={suggestion}
+                  mode={viewMode === 'learn' ? 'explore' : 'use'}
+                />
+              </View>
             </>
           ) : (
             <View className="flex-1 items-center justify-center">
@@ -314,6 +340,12 @@ export default function HomeScreen() {
           )}
         </View>
       </View>
+
+      <SettingsModal
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
+        onLicenses={() => router.push('/licenses')}
+      />
     </SafeAreaView>
   );
 }
