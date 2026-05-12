@@ -5,8 +5,8 @@ import { useAppStore } from '../../data/store';
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
 import { VIBE_LABELS } from '../../features/vibe-map/labels';
 import { WaveformVisualizer } from './WaveformVisualizer';
-import { ALL_AUDIO_LAYERS } from '../../features/audio-engine/player';
-import type { AudioLayer } from '../../features/audio-engine/player';
+import { ALL_AUDIO_LAYERS } from '../../features/audio-engine/constants';
+import type { AudioLayer } from '../../features/audio-engine/constants';
 
 const LAYER_LABELS: Record<AudioLayer, string> = {
   kick: 'KICK',

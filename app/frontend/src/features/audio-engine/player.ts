@@ -1,19 +1,10 @@
 import { getAudioContext } from './adapter';
-import { noteFreq, noteNameToMidi } from '../../lib/notes';
+import { noteFreq } from '../../lib/notes';
+import { getChordNotes } from '../../lib/chords';
 import type { MusicalSuggestion } from '../vibe-map/types';
 import { getMidBpm } from '../vibe-map/engine';
-
-export type AudioLayer = 'kick' | 'bass' | 'noise' | 'melody';
-export const ALL_AUDIO_LAYERS: readonly AudioLayer[] = ['kick', 'bass', 'noise', 'melody'];
-
-export const AUDIO_PARAMS = {
-  bpmMin: 80,
-  bpmMax: 120,
-  kick:   { startFreq: 120, endFreq: 30, pitchDecayMs: 140, filterFreq: 110, filterQ: 2.0, decayMs: 450 },
-  bass:   { gainRatio: 1.0, octaveBlend: 0.28, filterFreq: 400, filterQ: 0.8 },
-  noise:  { filterFreq: 9000, filterQ: 0.8, decayMs: 60, gainRatio: 0.35 },
-  melody: { gainRatio: 0.42, attackMs: 6, decayMs: 180, sustainRatio: 0.35, filterFreq: 1400, filterQ: 1.0 },
-} as const;
+import { AUDIO_PARAMS } from './constants';
+import type { AudioLayer } from './constants';
 
 interface PlayOptions {
   gain?: number;
@@ -204,17 +195,6 @@ function scheduleSynth(
   osc.stop(startTime + duration);
 }
 
-const CHORD_INTERVALS = {
-  minor: [0, 3, 7],
-  major: [0, 4, 7],
-  diminished: [0, 3, 6],
-  minor7: [0, 3, 7, 10],
-  major7: [0, 4, 7, 11],
-  dominant7: [0, 4, 7, 10],
-  sus4: [0, 5, 7],
-  minor9: [0, 3, 7, 10, 14],
-} as const;
-
 interface MelodyStep {
   midiNotes: readonly number[];
   step: number;
@@ -222,9 +202,7 @@ interface MelodyStep {
 }
 
 function buildMelodySteps(suggestion: MusicalSuggestion): MelodyStep[] {
-  const root = noteNameToMidi(suggestion.chord.root, 3);
-  const intervals = CHORD_INTERVALS[suggestion.chord.quality];
-  const midiNotes: readonly number[] = intervals.map((interval) => root + interval);
+  const midiNotes: readonly number[] = getChordNotes(suggestion.chord.root, suggestion.chord.quality, 3);
   const pattern = suggestion.chordStabPattern ?? suggestion.rhythmPattern;
   return pattern
     .map((hit, step) => (hit ? { midiNotes, step, durationSteps: 1 } : null))

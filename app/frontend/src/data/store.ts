@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 import type { VibeId, MusicalSuggestion } from '../features/vibe-map/types';
 import { getMusicalSuggestion } from '../features/vibe-map/engine';
-import { playPreview, ALL_AUDIO_LAYERS } from '../features/audio-engine/player';
-import type { PlayerHandle, AudioLayer } from '../features/audio-engine/player';
+import { playPreview } from '../features/audio-engine/player';
+import type { PlayerHandle } from '../features/audio-engine/player';
+import { ALL_AUDIO_LAYERS } from '../features/audio-engine/constants';
+import type { AudioLayer } from '../features/audio-engine/constants';
 
 let _player: PlayerHandle | null = null;
 
