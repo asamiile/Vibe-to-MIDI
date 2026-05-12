@@ -14,22 +14,10 @@ import { useAppStore } from '../src/data/store';
 import { getAllVibeIds } from '../src/features/vibe-map/engine';
 import { isAudioAvailable } from '../src/features/audio-engine/adapter';
 import { SuggestionPanel } from '../src/components/ui/SuggestionPanel';
+import { VIBE_LABELS } from '../src/features/vibe-map/labels';
 import type { VibeId } from '../src/features/vibe-map/types';
 
 const VIBE_IDS = getAllVibeIds();
-
-const VIBE_LABELS: Record<VibeId, string> = {
-  dark: 'Dark',
-  floating: 'Floating',
-  tense: 'Tense',
-  repetitive: 'Repetitive',
-  underground: 'Underground',
-  wide: 'Wide',
-  hypnotic: 'Hypnotic',
-  metallic: 'Metallic',
-  warm: 'Warm',
-  unstable: 'Unstable',
-};
 
 type ViewMode = 'listen' | 'details' | 'learn';
 

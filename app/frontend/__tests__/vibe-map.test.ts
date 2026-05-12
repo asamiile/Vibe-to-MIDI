@@ -4,11 +4,12 @@ import type { VibeId } from '../src/features/vibe-map/types';
 const ALL_VIBES: VibeId[] = [
   'dark', 'floating', 'tense', 'repetitive', 'underground',
   'wide', 'hypnotic', 'metallic', 'warm', 'unstable',
+  'groovy', 'nostalgic', 'retrowave', 'gritty', 'euphoric', 'cinematic',
 ];
 
 describe('getAllVibeIds', () => {
-  it('returns all 10 vibe ids', () => {
-    expect(getAllVibeIds()).toHaveLength(10);
+  it('returns all 16 vibe ids', () => {
+    expect(getAllVibeIds()).toHaveLength(16);
   });
 });
 
@@ -34,7 +35,7 @@ describe('getMusicalSuggestion', () => {
 
     expect(s.soundLayers).toHaveLength(4);
     s.soundLayers.forEach((layer) => {
-      expect(['bass', 'pad', 'lead', 'drum']).toContain(layer.role);
+      expect(['bass', 'pad', 'lead', 'drum', 'arp', 'pluck', 'keys']).toContain(layer.role);
       expect(layer.descriptor.length).toBeGreaterThan(0);
     });
 

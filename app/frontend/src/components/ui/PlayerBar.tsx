@@ -3,20 +3,8 @@ import { View, Text, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppStore } from '../../data/store';
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
+import { VIBE_LABELS } from '../../features/vibe-map/labels';
 import { WaveformVisualizer } from './WaveformVisualizer';
-
-const VIBE_LABELS: Record<string, string> = {
-  dark: 'Dark',
-  floating: 'Floating',
-  tense: 'Tense',
-  repetitive: 'Repetitive',
-  underground: 'Underground',
-  wide: 'Wide',
-  hypnotic: 'Hypnotic',
-  metallic: 'Metallic',
-  warm: 'Warm',
-  unstable: 'Unstable',
-};
 
 export function PlayerBar() {
   const { bottom } = useSafeAreaInsets();

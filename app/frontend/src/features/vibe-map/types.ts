@@ -8,7 +8,13 @@ export type VibeId =
   | 'hypnotic'
   | 'metallic'
   | 'warm'
-  | 'unstable';
+  | 'unstable'
+  | 'groovy'
+  | 'nostalgic'
+  | 'retrowave'
+  | 'gritty'
+  | 'euphoric'
+  | 'cinematic';
 
 export type ScaleMode =
   | 'minor'
@@ -43,7 +49,7 @@ export interface ChordSpec {
 
 export type RhythmPattern = readonly boolean[];
 
-export type SoundRole = 'bass' | 'pad' | 'lead' | 'drum';
+export type SoundRole = 'bass' | 'pad' | 'lead' | 'drum' | 'arp' | 'pluck' | 'keys';
 
 export interface SoundLayer {
   role: SoundRole;

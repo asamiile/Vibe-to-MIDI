@@ -103,7 +103,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     soundLayers: [
       { role: 'bass', descriptor: 'looping arp bass' },
       { role: 'pad',  descriptor: 'evolving filter pad' },
-      { role: 'lead', descriptor: 'repeating arpeggio' },
+      { role: 'arp',  descriptor: 'repeating arpeggio' },
       { role: 'drum', descriptor: 'steady 16th hi-hat' },
     ],
     bpmRange: [122, 134],
@@ -152,5 +152,95 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
       { role: 'drum', descriptor: 'irregular syncopated kick' },
     ],
     bpmRange: [118, 132],
+  },
+
+  groovy: {
+    vibeId: 'groovy',
+    scale: { root: 'D', mode: 'dorian' },
+    chord: { root: 'D', quality: 'minor7' },
+    bassNotes: [38, 43, 45, 43],        // D2, G2, A2, G2
+    rhythmPattern: [true, false, false, false, true, false, false, true, true, false, false, false, true, false, true, false],
+    soundLayers: [
+      { role: 'bass',  descriptor: 'warm funk bass, tight' },
+      { role: 'pluck', descriptor: 'chord stab, muted short' },
+      { role: 'drum',  descriptor: 'four-on-floor, open hat offbeat' },
+      { role: 'pad',   descriptor: 'none', optional: true },
+    ],
+    bpmRange: [118, 128],
+  },
+
+  nostalgic: {
+    vibeId: 'nostalgic',
+    scale: { root: 'F', mode: 'major' },
+    chord: { root: 'F', quality: 'major7' },
+    bassNotes: [41, 45, 48, 46],        // F2, A2, C3, Bb2
+    rhythmPattern: [true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false],
+    soundLayers: [
+      { role: 'bass', descriptor: 'warm vinyl bass, soft' },
+      { role: 'keys', descriptor: 'lo-fi Rhodes, dusty tape' },
+      { role: 'drum', descriptor: 'boom-bap, vinyl crackle' },
+      { role: 'pad',  descriptor: 'none', optional: true },
+    ],
+    bpmRange: [65, 85],
+  },
+
+  retrowave: {
+    vibeId: 'retrowave',
+    scale: { root: 'A', mode: 'minor' },
+    chord: { root: 'A', quality: 'minor' },
+    bassNotes: [33, 40, 33, 31],        // A1, E2, A1, G1
+    rhythmPattern: [true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false],
+    soundLayers: [
+      { role: 'bass', descriptor: 'gated synth bass, 80s' },
+      { role: 'arp',  descriptor: 'rising 8th-note arp, bright' },
+      { role: 'pad',  descriptor: 'wide detuned saw pad' },
+      { role: 'drum', descriptor: 'gated reverb snare, punchy' },
+    ],
+    bpmRange: [80, 110],
+  },
+
+  gritty: {
+    vibeId: 'gritty',
+    scale: { root: 'A', mode: 'minor' },
+    chord: { root: 'A', quality: 'minor' },
+    bassNotes: [33, 33, 40, 33],        // A1, A1, E2, A1
+    rhythmPattern: [true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, true],
+    soundLayers: [
+      { role: 'bass', descriptor: '808 sub, long decay' },
+      { role: 'lead', descriptor: 'eerie pluck, pitch-shifted' },
+      { role: 'drum', descriptor: 'trap hi-hat, triplet roll' },
+      { role: 'pad',  descriptor: 'none', optional: true },
+    ],
+    bpmRange: [130, 150],
+  },
+
+  euphoric: {
+    vibeId: 'euphoric',
+    scale: { root: 'A', mode: 'major' },
+    chord: { root: 'A', quality: 'major' },
+    bassNotes: [45, 52, 45, 49],        // A2, E3, A2, C#3
+    rhythmPattern: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
+    soundLayers: [
+      { role: 'bass', descriptor: 'driving saw bass' },
+      { role: 'arp',  descriptor: 'cascading 16th-note arp' },
+      { role: 'pad',  descriptor: 'wide supersawtooth, bright' },
+      { role: 'drum', descriptor: 'kick-heavy four-on-floor' },
+    ],
+    bpmRange: [128, 140],
+  },
+
+  cinematic: {
+    vibeId: 'cinematic',
+    scale: { root: 'D', mode: 'harmonic_minor' },
+    chord: { root: 'D', quality: 'minor' },
+    bassNotes: [38, 38, 45, 41],        // D2, D2, A2, F2
+    rhythmPattern: [true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+    soundLayers: [
+      { role: 'bass', descriptor: 'deep orchestral bass, slow' },
+      { role: 'pad',  descriptor: 'dark string pad, swelling' },
+      { role: 'lead', descriptor: 'none', optional: true },
+      { role: 'drum', descriptor: 'none', optional: true },
+    ],
+    bpmRange: [80, 100],
   },
 };
