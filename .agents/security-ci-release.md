@@ -1,68 +1,41 @@
-# Security, CI, and Release Automation
+# Security, CI, and Release
+
+Use installed Expo CI/CD and deployment skills for generic workflow and store guidance. This file keeps repo-specific guardrails.
 
 ## Security Baseline
 
-The project must avoid:
+Never commit:
 
-- committed secrets
-- committed private keys
-- committed API keys
-- copyrighted audio assets without explicit redistribution rights
-- personal data collection without design review
-- analytics by default
+- secrets, private keys, API keys, or real service credentials
+- `.env` files with real values
+- `google-services.json` or store signing material
+- copyrighted audio, loops, stems, samples, presets, or reference media without explicit redistribution rights
 - unreviewed third-party binary assets
 
-Required practices:
+## License Surface
 
-- keep `.env` files out of git
-- use fake values in example env files
-- document licenses for audio assets
-- review dependencies before adding
-- ignore generated files unless they are required
-- update `app/frontend/src/data/licenseNotices.ts` when runtime dependencies or bundled assets change
+When adding or changing runtime dependencies or bundled assets, update:
 
-## CI Automation
+```text
+app/frontend/src/data/licenseNotices.ts
+```
 
-Initial GitHub Actions should run on pull requests and main branch pushes.
+For audio or media assets, record source URL, creator, license, attribution requirement, redistribution permission, and date checked.
 
-Baseline checks:
+If rights are unclear, do not commit the asset. Prefer generated synthesis.
 
-- install dependencies
-- lint
-- typecheck
-- test
-- build
+## CI Expectations
 
-Later checks:
+The repo should keep these checks passing:
 
-- dependency audit
-- license report
-- bundle size check
-- Playwright smoke test
-- audio asset license validation
-- in-app license screen coverage for runtime notices
+```bash
+cd app/frontend
+npx tsc --noEmit
+npx jest --runInBand --no-coverage --watchman=false
+```
 
-## Release Automation
+Use Expo/EAS skills when editing `.eas/workflows/**`, `eas.json`, store metadata, or deployment automation.
 
-Initial release goal:
+## Release Boundary
 
-- tag-based GitHub Release
-- generated changelog
-- uploaded Android build artifact when available
-
-Later release goal:
-
-- preview deploy
-- production deploy
-- Android release automation
-- Electron desktop build
-- signed and notarized Mac release after Apple Developer strategy is decided
-
-## Versioning
-
-Use semantic versioning after the MVP starts stabilizing:
-
-- `0.x`: prototypes and experiments
-- `1.0`: first stable public web release
-
-Do not automate App Store or Mac signing until distribution and privacy strategy are decided.
+Do not add analytics, Firebase, Play Store submission automation, or signing setup until the user explicitly starts release/privacy work.

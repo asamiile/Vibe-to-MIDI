@@ -8,7 +8,17 @@ export type VibeId =
   | 'hypnotic'
   | 'metallic'
   | 'warm'
-  | 'unstable';
+  | 'deep'
+  | 'rolling'
+  | 'cavernous'
+  | 'dry'
+  | 'unstable'
+  | 'groovy'
+  | 'nostalgic'
+  | 'retrowave'
+  | 'gritty'
+  | 'euphoric'
+  | 'cinematic';
 
 export type ScaleMode =
   | 'minor'
@@ -43,12 +53,38 @@ export interface ChordSpec {
 
 export type RhythmPattern = readonly boolean[];
 
-export type SoundRole = 'bass' | 'pad' | 'lead' | 'drum';
+export type SoundRole = 'bass' | 'pad' | 'lead' | 'drum' | 'arp' | 'pluck' | 'keys';
 
 export interface SoundLayer {
   role: SoundRole;
   descriptor: string;
   optional?: true;
+}
+
+export interface KickFilter {
+  cutoff: number;
+  q: number;
+}
+
+export interface BassFilter {
+  cutoff: number;
+  q: number;
+}
+
+export interface NoiseFilter {
+  cutoff: number;  // bandpass center frequency (Hz)
+  q: number;
+}
+
+export interface ChordStabFilter {
+  cutoff: number;
+  q: number;
+}
+
+export interface DubDelaySpec {
+  repeats: number;
+  stepOffset: number;
+  feedbackGain: number;
 }
 
 export interface MusicalSuggestion {
@@ -57,6 +93,14 @@ export interface MusicalSuggestion {
   chord: ChordSpec;
   bassNotes: readonly number[];
   rhythmPattern: RhythmPattern;
+  noisePattern?: RhythmPattern;   // hi-hat / noise hits (16 steps)
+  chordStabPattern?: RhythmPattern;
   soundLayers: readonly SoundLayer[];
   bpmRange: readonly [number, number];
+  kickFilter?: KickFilter;
+  bassFilter?: BassFilter;
+  noiseFilter?: NoiseFilter;
+  chordStabFilter?: ChordStabFilter;
+  dubDelay?: DubDelaySpec;
+  melodySuggested?: boolean;      // false = SYNTH toggle hidden for this vibe
 }

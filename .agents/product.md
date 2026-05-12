@@ -50,12 +50,14 @@ Primary users:
 
 Target music context:
 
-- techno
-- house
-- ambient
-- minimal
-- melodic techno
-- experimental electronic music
+Primary genre: **dub techno**
+
+- dub techno
+- minimal techno
+- ambient techno
+- deep techno
+
+See `.agents/music-direction.md` for dub techno sonic conventions, learning track types, and vibe-to-archetype mapping.
 
 ## Target Languages
 

@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import type { MusicalSuggestion } from '../../features/vibe-map/types';
-import { getMidBpm } from '../../features/vibe-map/engine';
-import { midiToNoteName } from '../../lib/notes';
+import { buildDawStepsView } from '../../features/vibe-map/daw-view';
 
 interface Props {
   suggestion: MusicalSuggestion;
@@ -20,6 +19,19 @@ function StepText({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ValueRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View className="mb-3">
+      <Text className="mb-1 text-[10px] uppercase tracking-[1px] text-slate-500">
+        {label}
+      </Text>
+      <Text className="text-[13px] font-semibold leading-[19px] text-slate-300">
+        {value}
+      </Text>
+    </View>
+  );
+}
+
 function MiniLabel({ children }: { children: string }) {
   return (
     <Text className="mb-2 text-[10px] uppercase tracking-[1px] text-slate-400">
@@ -29,29 +41,34 @@ function MiniLabel({ children }: { children: string }) {
 }
 
 export function DawStepsPanel({ suggestion }: Props) {
-  const bpm = getMidBpm(suggestion);
-  const bassNotes = suggestion.bassNotes.map(midiToNoteName);
-  const hitSteps = suggestion.rhythmPattern
-    .map((hit, index) => (hit ? index + 1 : null))
-    .filter((step): step is number => step !== null);
+  const view = buildDawStepsView(suggestion);
 
   return (
     <View className="mb-2">
       <View className="mb-3.5 rounded-md border border-slate-700 bg-gray-900 p-3">
-        <StepText>Tempo: {bpm} BPM</StepText>
-        <StepText>Bass notes: {bassNotes.join('  ')}</StepText>
-        <StepText>Hit steps: {hitSteps.join(', ')}</StepText>
-        {suggestion.soundLayers.map((layer) => (
-          <StepText key={layer.role}>
-            {layer.role.charAt(0).toUpperCase() + layer.role.slice(1)}: {layer.descriptor}
-          </StepText>
+        <StepText>Genre: Dub Techno</StepText>
+        <StepText>Tempo: {view.bpm} BPM{view.rawBpm !== view.bpm ? ` (preview clamp, source ${view.rawBpm})` : ''}</StepText>
+        <StepText>Grid: 1 bar, 16 steps, 1/16 notes</StepText>
+      </View>
+
+      <View className="mb-3.5 rounded-md border border-slate-800 bg-slate-950 p-3">
+        <MiniLabel>MIDI notes</MiniLabel>
+        {view.midiRows.map((row) => (
+          <ValueRow key={row.label} label={row.label} value={row.value} />
+        ))}
+      </View>
+
+      <View className="mb-3.5 rounded-md border border-slate-800 bg-slate-950 p-3">
+        <MiniLabel>Sound settings</MiniLabel>
+        {view.soundRows.map((row) => (
+          <ValueRow key={row.label} label={row.label} value={row.value} />
         ))}
       </View>
 
       <View className="rounded-md border border-slate-800 bg-slate-900 p-3">
-        <MiniLabel>16-step clip</MiniLabel>
+        <MiniLabel>Kick clip</MiniLabel>
         <View className="flex-row gap-1">
-          {suggestion.rhythmPattern.map((hit, index) => (
+          {view.kickPattern.map((hit, index) => (
             <View key={`daw-step-${index}`} className="flex-1 gap-1">
               <View
                 className="h-8 items-center justify-center rounded border"

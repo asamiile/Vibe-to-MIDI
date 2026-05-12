@@ -3,27 +3,28 @@ import { View, Text, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppStore } from '../../data/store';
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
+import { VIBE_LABELS } from '../../features/vibe-map/labels';
 import { WaveformVisualizer } from './WaveformVisualizer';
+import { ALL_AUDIO_LAYERS } from '../../features/audio-engine/constants';
+import type { AudioLayer } from '../../features/audio-engine/constants';
 
-const VIBE_LABELS: Record<string, string> = {
-  dark: 'Dark',
-  floating: 'Floating',
-  tense: 'Tense',
-  repetitive: 'Repetitive',
-  underground: 'Underground',
-  wide: 'Wide',
-  hypnotic: 'Hypnotic',
-  metallic: 'Metallic',
-  warm: 'Warm',
-  unstable: 'Unstable',
+const LAYER_LABELS: Record<AudioLayer, string> = {
+  kick: 'KICK',
+  bass: 'BASS',
+  noise: 'NOISE',
+  melody: 'STAB',
 };
 
 export function PlayerBar() {
   const { bottom } = useSafeAreaInsets();
-  const { activeVibeId, isPlaying, play, stop } = useAppStore();
+  const { activeVibeId, suggestion, isPlaying, play, stop, activeLayers, toggleLayer } = useAppStore();
   const audioAvailable = isAudioAvailable();
 
   const label = activeVibeId ? VIBE_LABELS[activeVibeId] ?? activeVibeId : null;
+  const visibleLayers = ALL_AUDIO_LAYERS.filter((layer) => {
+    if (layer === 'melody') return suggestion?.melodySuggested === true;
+    return true;
+  });
 
   return (
     <View
@@ -34,6 +35,48 @@ export function PlayerBar() {
         paddingBottom: bottom,
       }}
     >
+      {activeVibeId && (
+        <View
+          style={{
+            flexDirection: 'row',
+            paddingHorizontal: 20,
+            paddingTop: 10,
+            gap: 8,
+          }}
+        >
+          {visibleLayers.map((layer) => {
+            const active = activeLayers.has(layer);
+            return (
+              <Pressable
+                key={layer}
+                android_disableSound
+                onPress={() => toggleLayer(layer)}
+                style={({ pressed }) => ({
+                  paddingHorizontal: 12,
+                  paddingVertical: 4,
+                  borderRadius: 4,
+                  borderWidth: 1,
+                  borderColor: active ? '#38bdf8' : '#334155',
+                  backgroundColor: active ? '#0c2a3e' : '#0b111c',
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <Text
+                  style={{
+                    color: active ? '#38bdf8' : '#475569',
+                    fontSize: 10,
+                    fontWeight: '800',
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {LAYER_LABELS[layer]}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
+
       <View
         style={{
           height: 56,

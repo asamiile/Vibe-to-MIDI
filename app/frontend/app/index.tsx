@@ -5,6 +5,7 @@ import {
   Pressable,
   StatusBar,
   Modal,
+  ScrollView,
   useWindowDimensions,
   BackHandler,
 } from 'react-native';
@@ -14,22 +15,10 @@ import { useAppStore } from '../src/data/store';
 import { getAllVibeIds } from '../src/features/vibe-map/engine';
 import { isAudioAvailable } from '../src/features/audio-engine/adapter';
 import { SuggestionPanel } from '../src/components/ui/SuggestionPanel';
+import { VIBE_LABELS } from '../src/features/vibe-map/labels';
 import type { VibeId } from '../src/features/vibe-map/types';
 
 const VIBE_IDS = getAllVibeIds();
-
-const VIBE_LABELS: Record<VibeId, string> = {
-  dark: 'Dark',
-  floating: 'Floating',
-  tense: 'Tense',
-  repetitive: 'Repetitive',
-  underground: 'Underground',
-  wide: 'Wide',
-  hypnotic: 'Hypnotic',
-  metallic: 'Metallic',
-  warm: 'Warm',
-  unstable: 'Unstable',
-};
 
 type ViewMode = 'listen' | 'details' | 'learn';
 
@@ -128,10 +117,12 @@ function SettingsModal({
   visible,
   onClose,
   onLicenses,
+  onDebugAudio,
 }: {
   visible: boolean;
   onClose: () => void;
   onLicenses: () => void;
+  onDebugAudio: () => void;
 }) {
   return (
     <Modal
@@ -158,6 +149,14 @@ function SettingsModal({
           </Pressable>
         </View>
         <View className="flex-1 px-5 pt-2">
+          <Pressable
+            className="border-b border-slate-800 py-4"
+            android_disableSound
+            onPress={() => { onClose(); onDebugAudio(); }}
+            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+          >
+            <Text className="text-base font-semibold text-slate-300">Audio Debug</Text>
+          </Pressable>
           <Pressable
             className="border-b border-slate-800 py-4"
             android_disableSound
@@ -243,22 +242,28 @@ export default function HomeScreen() {
                   Audio requires Dev Build
                 </Text>
               )}
-              <View className="flex-row flex-wrap px-4">
-                {VIBE_IDS.map((item) => {
-                  const active = item === activeVibeId;
-                  return (
-                    <VibeButton
-                      key={item}
-                      label={VIBE_LABELS[item]}
-                      active={active}
-                      playing={active && isPlaying}
-                      audioAvailable={audioAvailable}
-                      size={vibeButtonSize}
-                      onPress={() => handleVibePress(item)}
-                    />
-                  );
-                })}
-              </View>
+              <ScrollView
+                className="flex-1"
+                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
+                showsVerticalScrollIndicator={false}
+              >
+                <View className="flex-row flex-wrap">
+                  {VIBE_IDS.map((item) => {
+                    const active = item === activeVibeId;
+                    return (
+                      <VibeButton
+                        key={item}
+                        label={VIBE_LABELS[item]}
+                        active={active}
+                        playing={active && isPlaying}
+                        audioAvailable={audioAvailable}
+                        size={vibeButtonSize}
+                        onPress={() => handleVibePress(item)}
+                      />
+                    );
+                  })}
+                </View>
+              </ScrollView>
             </View>
           ) : suggestion ? (
             <>
@@ -306,6 +311,7 @@ export default function HomeScreen() {
         visible={settingsVisible}
         onClose={() => setSettingsVisible(false)}
         onLicenses={() => router.push('/licenses')}
+        onDebugAudio={() => router.push('/debug-audio')}
       />
     </SafeAreaView>
   );

@@ -20,14 +20,14 @@ function loadAudioContext() {
 
 let _context: InstanceType<typeof import('react-native-audio-api').AudioContext> | null = null;
 
-export function getAudioContext() {
+export async function getAudioContext() {
   const Ctx = loadAudioContext();
   if (!Ctx) return null;
   if (!_context || _context.state === 'closed') {
     _context = new Ctx();
   }
   if (_context.state === 'suspended') {
-    _context.resume();
+    await _context.resume();
   }
   return _context;
 }
