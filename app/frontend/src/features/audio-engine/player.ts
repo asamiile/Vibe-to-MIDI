@@ -13,7 +13,7 @@ export interface PlayerHandle {
 
 const NO_OP_HANDLE: PlayerHandle = { stop: () => {} };
 
-type AudioCtx = NonNullable<ReturnType<typeof getAudioContext>>;
+type AudioCtx = NonNullable<Awaited<ReturnType<typeof getAudioContext>>>;
 type Oscillator = ReturnType<AudioCtx['createOscillator']>;
 type Gain = ReturnType<AudioCtx['createGain']>;
 
@@ -49,11 +49,11 @@ function scheduleNote(
   osc.stop(startTime + duration);
 }
 
-export function playPreview(
+export async function playPreview(
   suggestion: MusicalSuggestion,
   options: PlayOptions = {}
-): PlayerHandle {
-  const ctxOrNull = getAudioContext();
+): Promise<PlayerHandle> {
+  const ctxOrNull = await getAudioContext();
   // Audio unavailable on web / Expo Go — return no-op handle
   if (!ctxOrNull) return NO_OP_HANDLE;
   const ctx: AudioCtx = ctxOrNull;

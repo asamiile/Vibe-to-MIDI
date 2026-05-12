@@ -116,10 +116,12 @@ function SettingsModal({
   visible,
   onClose,
   onLicenses,
+  onDebugAudio,
 }: {
   visible: boolean;
   onClose: () => void;
   onLicenses: () => void;
+  onDebugAudio: () => void;
 }) {
   return (
     <Modal
@@ -146,6 +148,14 @@ function SettingsModal({
           </Pressable>
         </View>
         <View className="flex-1 px-5 pt-2">
+          <Pressable
+            className="border-b border-slate-800 py-4"
+            android_disableSound
+            onPress={() => { onClose(); onDebugAudio(); }}
+            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+          >
+            <Text className="text-base font-semibold text-slate-300">Audio Debug</Text>
+          </Pressable>
           <Pressable
             className="border-b border-slate-800 py-4"
             android_disableSound
@@ -294,6 +304,7 @@ export default function HomeScreen() {
         visible={settingsVisible}
         onClose={() => setSettingsVisible(false)}
         onLicenses={() => router.push('/licenses')}
+        onDebugAudio={() => router.push('/debug-audio')}
       />
     </SafeAreaView>
   );

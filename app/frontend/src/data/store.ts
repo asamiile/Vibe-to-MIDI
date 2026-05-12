@@ -34,8 +34,15 @@ export const useAppStore = create<AppState>((set, get) => ({
     const { suggestion } = get();
     if (!suggestion) return;
     _player?.stop();
-    _player = playPreview(suggestion);
+    _player = null;
     set({ isPlaying: true });
+    playPreview(suggestion).then((handle) => {
+      if (get().isPlaying) {
+        _player = handle;
+      } else {
+        handle.stop();
+      }
+    });
   },
 
   stop: () => {
