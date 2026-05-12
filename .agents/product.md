@@ -52,7 +52,7 @@ Target music context:
 
 Primary genre: **dub techno**
 
-- dub techno (Basic Channel, Chain Reaction, Deepchord style)
+- dub techno
 - minimal techno
 - ambient techno
 - deep techno

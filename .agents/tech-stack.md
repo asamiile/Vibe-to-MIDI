@@ -1,20 +1,14 @@
 # Tech Stack
 
-## Decided as of 2026-05-10
-
-All decisions are based on research in:
+Core decisions are based on research in:
 - `research/features/2026-05-10_rn-android-audio-latency/`
 - `research/features/2026-05-10_android-mvp-market/`
-
----
 
 ## App location
 
 ```
 app/frontend/   ← React Native / Expo project root
 ```
-
----
 
 ## Core framework
 
@@ -26,8 +20,6 @@ app/frontend/   ← React Native / Expo project root
 | Navigation | Expo Router | ~6 | File-based routing |
 | Build / distribution | EAS Build | CLI ≥7 | dev / preview / production profiles |
 
----
-
 ## Audio
 
 | Package | Version | Notes |
@@ -35,9 +27,7 @@ app/frontend/   ← React Native / Expo project root
 | `react-native-audio-api` | ^0.12.1 | Web Audio API compatible. Uses Oboe 1.9.3 on Android → <15ms output latency. Requires Expo Dev Build (not Expo Go). |
 | `react-native-worklets` | latest | Required peer dep for react-native-reanimated v4 babel plugin |
 
-The audio engine implements: `AudioContext` singleton, `OscillatorNode` (sawtooth/square), `GainNode` with linear ramp envelope, step-scheduled rhythm loop.
-
----
+The audio engine implements an `AudioContext` singleton and a step-scheduled dub techno loop with kick, bass, noise/hat, and chord stab layers. The preview clamps BPM to 80-120 even when source vibe BPM ranges are faster.
 
 ## Styling
 
@@ -48,23 +38,17 @@ The audio engine implements: `AudioContext` singleton, `OscillatorNode` (sawtoot
 
 Content paths in `tailwind.config.js`: `./app/**/*.{ts,tsx}` and `./src/**/*.{ts,tsx}`.
 
----
-
 ## State management
 
 | Package | Version | Notes |
 |---------|---------|-------|
-| `zustand` | ^5.0 | App-level store at `src/data/store.ts`. Holds `activeVibeId`, `suggestion`, `isPlaying`. |
-
----
+| `zustand` | ^5.0 | App-level store at `src/data/store.ts`. Holds active vibe, current suggestion, playback state, and active audio layers. |
 
 ## MIDI
 
 | Package | Version | Notes |
 |---------|---------|-------|
-| `@tonejs/midi` | ^2.0.28 | Scaffolded for Phase 3 MIDI export. Not yet wired to UI. |
-
----
+| `@tonejs/midi` | ^2.0.28 | Scaffolded for MIDI export. Current MIDI screen shows DAW-entry note, step, and sound-setting guidance. |
 
 ## Testing
 
@@ -80,21 +64,22 @@ Content paths in `tailwind.config.js`: `./app/**/*.{ts,tsx}` and `./src/**/*.{ts
 
 ```bash
 cd app/frontend
-npx jest --no-coverage          # dev run
-npx jest --ci --no-coverage     # CI run
+npx tsc --noEmit
+npx jest --runInBand --no-coverage --watchman=false
 ```
+
+Use `--watchman=false` locally if Watchman cannot write to its state directory.
 
 ### Test files
 
 ```
-__tests__/vibe-map.test.ts    # all 10 vibes → valid MusicalSuggestion
+__tests__/vibe-map.test.ts    # all 20 vibes → valid MusicalSuggestion
 __tests__/notes.test.ts       # MIDI ↔ note name, frequency
 __tests__/scales.test.ts      # scale generation by mode
+__tests__/learning.test.ts    # learning cue helpers
 ```
 
 Audio engine is not unit-tested (requires native Oboe). Covered by manual device test.
-
----
 
 ## Config files
 
@@ -107,8 +92,6 @@ Audio engine is not unit-tested (requires native Oboe). Covered by manual device
 | `global.css` | Tailwind directives |
 | `tsconfig.json` | strict, types: ["jest"], paths: {"@/*": ["./src/*"]} |
 | `eas.json` | development (dev build) / preview / production profiles |
-
----
 
 ## What is NOT used (and why)
 

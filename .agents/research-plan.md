@@ -12,9 +12,6 @@ Prepare concise notes for:
 - React Native audio architecture
 - Android audio latency and playback constraints
 - MIDI export libraries
-- shadcn-style component setup for React Native
-- GitHub Actions CI
-- release automation
 - local AI audio generation
 - compute requirements for local ML
 - Google Colab usage for model experiments
@@ -71,6 +68,5 @@ When needed, create:
 .agents/research/web-audio-stack.md
 .agents/research/midi-export.md
 .agents/research/local-ai-audio.md
-.agents/research/ci-release.md
 .agents/market-research-python.md
 ```

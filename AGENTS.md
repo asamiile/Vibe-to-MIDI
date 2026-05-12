@@ -21,23 +21,21 @@ The first product should convert vibe inputs into:
 
 Target context:
 
-- techno
-- house
-- ambient
-- minimal
-- melodic techno
-- experimental electronic music
+- dub techno
+- ambient / minimal electronic music
+- DAW-ready learning loops
 
 Target languages, in priority order:
 
 1. English
 2. Japanese
 
-Reference context includes Berghain, Boiler Room, and Cercle-style electronic music culture, but do not copy copyrighted works, artist styles, tracks, loops, or brand assets.
+Reference context includes underground club, live electronic performance, and scenic electronic music culture, but do not copy copyrighted works, artist styles, tracks, loops, or brand assets.
 
 ## Read By Task
 
 - Product direction: `.agents/product.md`
+- Music direction: `.agents/music-direction.md`
 - Implementation plan: `.agents/implementation-plan.md`
 - **Tech stack (libraries, versions, config)**: `.agents/tech-stack.md`
 - **Android dev setup and build commands**: `.agents/android-dev-guide.md`
@@ -47,7 +45,7 @@ Reference context includes Berghain, Boiler Room, and Cercle-style electronic mu
 - Audio licensing: `.agents/audio-licensing.md`
 - Research policy: `.agents/research-plan.md`
 - Local AI strategy: `.agents/local-ai-strategy.md`
-- Agent workflow: `.agents/agent-strategy.md`
+- Agent workflow, installed skills policy: `.agents/agent-strategy.md`
 
 ## Non-Negotiables
 
