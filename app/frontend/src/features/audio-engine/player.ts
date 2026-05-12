@@ -1,10 +1,23 @@
 import { getAudioContext } from './adapter';
-import { noteFreq } from '../../lib/notes';
+import { noteFreq, noteNameToMidi } from '../../lib/notes';
 import type { MusicalSuggestion } from '../vibe-map/types';
 import { getMidBpm } from '../vibe-map/engine';
 
+export type AudioLayer = 'kick' | 'bass' | 'noise' | 'melody';
+export const ALL_AUDIO_LAYERS: readonly AudioLayer[] = ['kick', 'bass', 'noise', 'melody'];
+
+export const AUDIO_PARAMS = {
+  bpmMin: 80,
+  bpmMax: 120,
+  kick:   { startFreq: 120, endFreq: 30, pitchDecayMs: 140, filterFreq: 110, filterQ: 2.0, decayMs: 450 },
+  bass:   { gainRatio: 1.0, octaveBlend: 0.28, filterFreq: 400, filterQ: 0.8 },
+  noise:  { filterFreq: 9000, filterQ: 0.8, decayMs: 60, gainRatio: 0.35 },
+  melody: { gainRatio: 0.42, attackMs: 6, decayMs: 180, sustainRatio: 0.35, filterFreq: 1400, filterQ: 1.0 },
+} as const;
+
 interface PlayOptions {
   gain?: number;
+  activeLayers?: ReadonlySet<AudioLayer>;
 }
 
 export interface PlayerHandle {
@@ -49,33 +62,263 @@ function scheduleNote(
   osc.stop(startTime + duration);
 }
 
+function scheduleBass(
+  ctx: AudioCtx,
+  freq: number,
+  startTime: number,
+  duration: number,
+  gainValue: number,
+  filterFreq: number,
+  filterQ: number,
+  scheduledNodes: ScheduledNode[]
+): void {
+  const osc = ctx.createOscillator();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+
+  osc.type = 'sawtooth';
+  osc.frequency.value = freq;
+
+  filter.type = 'lowpass';
+  filter.frequency.value = filterFreq;
+  filter.Q.value = filterQ;
+
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.01);
+  gain.gain.linearRampToValueAtTime(0, startTime + duration - 0.01);
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  scheduledNodes.push({ oscillator: osc, gain });
+
+  osc.start(startTime);
+  osc.stop(startTime + duration);
+}
+
+function scheduleKick(
+  ctx: AudioCtx,
+  startTime: number,
+  gainValue: number,
+  scheduledNodes: ScheduledNode[],
+  kickFilter?: { cutoff: number; q: number }
+): void {
+  const osc = ctx.createOscillator();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(120, startTime);
+  osc.frequency.linearRampToValueAtTime(30, startTime + 0.14);
+
+  filter.type = 'lowpass';
+  filter.frequency.value = kickFilter?.cutoff ?? AUDIO_PARAMS.kick.filterFreq;
+  filter.Q.value = kickFilter?.q ?? AUDIO_PARAMS.kick.filterQ;
+
+  gain.gain.setValueAtTime(gainValue, startTime);
+  gain.gain.linearRampToValueAtTime(0, startTime + 0.45);
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  scheduledNodes.push({ oscillator: osc, gain });
+
+  osc.start(startTime);
+  osc.stop(startTime + 0.5);
+}
+
+// Inharmonic high-frequency series for noise texture
+const NOISE_OSC_FREQS = [7800, 9100, 11300] as const;
+
+function scheduleNoise(
+  ctx: AudioCtx,
+  startTime: number,
+  duration: number,
+  gainValue: number,
+  noiseFilter: { cutoff: number; q: number },
+  cleanupFns: Array<(t: number) => void>
+): void {
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+
+  filter.type = 'bandpass';
+  filter.frequency.value = noiseFilter.cutoff;
+  filter.Q.value = noiseFilter.q;
+
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.001);
+  gain.gain.linearRampToValueAtTime(0, startTime + duration);
+
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+
+  const oscs = NOISE_OSC_FREQS.map((freq) => {
+    const osc = ctx.createOscillator();
+    osc.type = 'square';
+    osc.frequency.value = freq;
+    osc.connect(filter);
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.01);
+    return osc;
+  });
+
+  cleanupFns.push((t) => {
+    gain.gain.cancelScheduledValues(t);
+    gain.gain.setValueAtTime(0, t);
+    oscs.forEach((osc) => { try { osc.stop(t); } catch {} });
+  });
+}
+
+function scheduleSynth(
+  ctx: AudioCtx,
+  freq: number,
+  startTime: number,
+  duration: number,
+  gainValue: number,
+  filterFreq: number,
+  filterQ: number,
+  scheduledNodes: ScheduledNode[]
+): void {
+  const osc = ctx.createOscillator();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+
+  osc.type = 'sawtooth';
+  osc.frequency.value = freq;
+
+  filter.type = 'lowpass';
+  filter.frequency.value = filterFreq;
+  filter.Q.value = filterQ;
+
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.006);
+  gain.gain.linearRampToValueAtTime(gainValue * 0.35, startTime + 0.18);
+  gain.gain.linearRampToValueAtTime(0, startTime + duration - 0.02);
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  scheduledNodes.push({ oscillator: osc, gain });
+
+  osc.start(startTime);
+  osc.stop(startTime + duration);
+}
+
+const CHORD_INTERVALS = {
+  minor: [0, 3, 7],
+  major: [0, 4, 7],
+  diminished: [0, 3, 6],
+  minor7: [0, 3, 7, 10],
+  major7: [0, 4, 7, 11],
+  dominant7: [0, 4, 7, 10],
+  sus4: [0, 5, 7],
+  minor9: [0, 3, 7, 10, 14],
+} as const;
+
+interface MelodyStep {
+  midiNotes: readonly number[];
+  step: number;
+  durationSteps: number;
+}
+
+function buildMelodySteps(suggestion: MusicalSuggestion): MelodyStep[] {
+  const root = noteNameToMidi(suggestion.chord.root, 3);
+  const intervals = CHORD_INTERVALS[suggestion.chord.quality];
+  const midiNotes: readonly number[] = intervals.map((interval) => root + interval);
+  const pattern = suggestion.chordStabPattern ?? suggestion.rhythmPattern;
+  return pattern
+    .map((hit, step) => (hit ? { midiNotes, step, durationSteps: 1 } : null))
+    .filter((step): step is MelodyStep => step !== null);
+}
+
+function scheduleChordStab(
+  ctx: AudioCtx,
+  midiNotes: readonly number[],
+  startTime: number,
+  duration: number,
+  gainValue: number,
+  filterFreq: number,
+  filterQ: number,
+  scheduledNodes: ScheduledNode[]
+): void {
+  midiNotes.forEach((midi, index) => {
+    scheduleSynth(ctx, noteFreq(midi), startTime, duration, gainValue / midiNotes.length, filterFreq, filterQ, scheduledNodes);
+    if (index === 0) {
+      scheduleSynth(ctx, noteFreq(midi - 12), startTime, duration, gainValue * 0.25, filterFreq, filterQ, scheduledNodes);
+    }
+  });
+}
+
 export async function playPreview(
   suggestion: MusicalSuggestion,
   options: PlayOptions = {}
 ): Promise<PlayerHandle> {
   const ctxOrNull = await getAudioContext();
-  // Audio unavailable on web / Expo Go — return no-op handle
   if (!ctxOrNull) return NO_OP_HANDLE;
   const ctx: AudioCtx = ctxOrNull;
 
-  const bpm = getMidBpm(suggestion);
+  const rawBpm = getMidBpm(suggestion);
+  const bpm = Math.max(AUDIO_PARAMS.bpmMin, Math.min(AUDIO_PARAMS.bpmMax, rawBpm));
   const stepDuration = 60 / bpm / 4;
-  const { gain = 0.3 } = options;
+  const { gain = 0.3, activeLayers } = options;
+
+  const playKick   = !activeLayers || activeLayers.has('kick');
+  const playBass   = !activeLayers || activeLayers.has('bass');
+  const playNoise  = !activeLayers || activeLayers.has('noise');
+  const playMelody = (suggestion.melodySuggested ?? false) &&
+                     (!activeLayers || activeLayers.has('melody'));
+
+  const bassFilterFreq  = suggestion.bassFilter?.cutoff   ?? AUDIO_PARAMS.bass.filterFreq;
+  const bassFilterQ     = suggestion.bassFilter?.q        ?? AUDIO_PARAMS.bass.filterQ;
+  const noiseFilterSpec = suggestion.noiseFilter          ?? { cutoff: AUDIO_PARAMS.noise.filterFreq, q: AUDIO_PARAMS.noise.filterQ };
+  const stabFilterSpec  = suggestion.chordStabFilter      ?? { cutoff: AUDIO_PARAMS.melody.filterFreq, q: AUDIO_PARAMS.melody.filterQ };
+  const dubDelay        = suggestion.dubDelay             ?? { repeats: 2, stepOffset: 2, feedbackGain: 0.3 };
+  const noiseDuration   = AUDIO_PARAMS.noise.decayMs / 1000;
+  const melodySteps     = playMelody ? buildMelodySteps(suggestion) : [];
+
   const now = ctx.currentTime + 0.05;
   const scheduledNodes: ScheduledNode[] = [];
+  const cleanupFns: Array<(t: number) => void> = [];
 
-  suggestion.bassNotes.forEach((midi, i) => {
-    const start = now + i * stepDuration * 4;
-    scheduleNote(ctx, noteFreq(midi), start, stepDuration * 3.5, gain, 'sawtooth', scheduledNodes);
-    scheduleNote(ctx, noteFreq(midi + 12), start, stepDuration * 3.5, gain * 0.28, 'triangle', scheduledNodes);
-  });
-
-  suggestion.rhythmPattern.forEach((hit, step) => {
-    if (!hit) return;
-    const start = now + step * stepDuration;
-    scheduleNote(ctx, 80, start, stepDuration * 0.4, gain * 0.5, 'square', scheduledNodes);
-    scheduleNote(ctx, 1200, start, stepDuration * 0.12, gain * 0.16, 'square', scheduledNodes);
-  });
+  function schedulePattern(loopAt: number) {
+    if (playBass) {
+      suggestion.bassNotes.forEach((midi, i) => {
+        const start = loopAt + i * stepDuration * 4;
+        scheduleBass(ctx, noteFreq(midi), start, stepDuration * 3.5, gain, bassFilterFreq, bassFilterQ, scheduledNodes);
+        scheduleNote(ctx, noteFreq(midi + 12), start, stepDuration * 3.5, gain * 0.28, 'triangle', scheduledNodes);
+      });
+    }
+    if (playKick) {
+      suggestion.rhythmPattern.forEach((hit, step) => {
+        if (!hit) return;
+        scheduleKick(ctx, loopAt + step * stepDuration, gain * 1.8, scheduledNodes, suggestion.kickFilter);
+      });
+    }
+    if (playNoise && suggestion.noisePattern) {
+      suggestion.noisePattern.forEach((hit, step) => {
+        if (!hit) return;
+        scheduleNoise(ctx, loopAt + step * stepDuration, noiseDuration, gain * AUDIO_PARAMS.noise.gainRatio, noiseFilterSpec, cleanupFns);
+      });
+    }
+    if (playMelody) {
+      melodySteps.forEach(({ midiNotes, step, durationSteps }) => {
+        const start = loopAt + step * stepDuration;
+        scheduleChordStab(ctx, midiNotes, start, durationSteps * stepDuration, gain * AUDIO_PARAMS.melody.gainRatio, stabFilterSpec.cutoff, stabFilterSpec.q, scheduledNodes);
+        for (let repeat = 1; repeat <= dubDelay.repeats; repeat += 1) {
+          scheduleChordStab(
+            ctx,
+            midiNotes,
+            start + repeat * dubDelay.stepOffset * stepDuration,
+            durationSteps * stepDuration,
+            gain * AUDIO_PARAMS.melody.gainRatio * Math.pow(dubDelay.feedbackGain, repeat),
+            stabFilterSpec.cutoff,
+            stabFilterSpec.q,
+            scheduledNodes
+          );
+        }
+      });
+    }
+  }
 
   const loopDuration = stepDuration * 16;
   let loopStart = now;
@@ -84,17 +327,7 @@ export async function playPreview(
 
   function scheduleLoop() {
     if (stopped) return;
-    suggestion.bassNotes.forEach((midi, i) => {
-      const start = loopStart + i * stepDuration * 4;
-      scheduleNote(ctx, noteFreq(midi), start, stepDuration * 3.5, gain, 'sawtooth', scheduledNodes);
-      scheduleNote(ctx, noteFreq(midi + 12), start, stepDuration * 3.5, gain * 0.28, 'triangle', scheduledNodes);
-    });
-    suggestion.rhythmPattern.forEach((hit, step) => {
-      if (!hit) return;
-      const start = loopStart + step * stepDuration;
-      scheduleNote(ctx, 80, start, stepDuration * 0.4, gain * 0.5, 'square', scheduledNodes);
-      scheduleNote(ctx, 1200, start, stepDuration * 0.12, gain * 0.16, 'square', scheduledNodes);
-    });
+    schedulePattern(loopStart);
     loopStart += loopDuration;
     loopTimer = setTimeout(scheduleLoop, loopDuration * 1000 - 100);
   }
@@ -104,17 +337,15 @@ export async function playPreview(
     stop: () => {
       stopped = true;
       clearTimeout(loopTimer);
+      const t = ctx.currentTime;
       scheduledNodes.splice(0).forEach(({ oscillator, gain }) => {
-        gain.gain.cancelScheduledValues(ctx.currentTime);
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        try {
-          oscillator.stop(ctx.currentTime);
-        } catch {
-          // Already stopped or not yet startable on this native implementation.
-        }
+        gain.gain.cancelScheduledValues(t);
+        gain.gain.setValueAtTime(0, t);
+        try { oscillator.stop(t); } catch {}
         oscillator.disconnect?.();
         gain.disconnect?.();
       });
+      cleanupFns.splice(0).forEach((fn) => fn(t));
     },
   };
 }

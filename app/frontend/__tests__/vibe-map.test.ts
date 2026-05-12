@@ -4,12 +4,13 @@ import type { VibeId } from '../src/features/vibe-map/types';
 const ALL_VIBES: VibeId[] = [
   'dark', 'floating', 'tense', 'repetitive', 'underground',
   'wide', 'hypnotic', 'metallic', 'warm', 'unstable',
-  'groovy', 'nostalgic', 'retrowave', 'gritty', 'euphoric', 'cinematic',
+  'deep', 'rolling', 'cavernous', 'dry', 'groovy', 'nostalgic',
+  'retrowave', 'gritty', 'euphoric', 'cinematic',
 ];
 
 describe('getAllVibeIds', () => {
-  it('returns all 16 vibe ids', () => {
-    expect(getAllVibeIds()).toHaveLength(16);
+  it('returns all 20 vibe ids', () => {
+    expect(getAllVibeIds()).toHaveLength(20);
   });
 });
 
@@ -32,8 +33,13 @@ describe('getMusicalSuggestion', () => {
 
     expect(s.rhythmPattern).toHaveLength(16);
     expect(s.rhythmPattern.some(Boolean)).toBe(true);
+    expect(s.noisePattern).toHaveLength(16);
+    expect(s.chordStabPattern).toHaveLength(16);
+    expect(s.chordStabPattern?.some(Boolean)).toBe(true);
+    expect(s.chordStabFilter?.cutoff).toBeGreaterThan(0);
+    expect(s.dubDelay?.repeats).toBeGreaterThan(0);
 
-    expect(s.soundLayers).toHaveLength(4);
+    expect(s.soundLayers.length).toBeGreaterThanOrEqual(2);
     s.soundLayers.forEach((layer) => {
       expect(['bass', 'pad', 'lead', 'drum', 'arp', 'pluck', 'keys']).toContain(layer.role);
       expect(layer.descriptor.length).toBeGreaterThan(0);

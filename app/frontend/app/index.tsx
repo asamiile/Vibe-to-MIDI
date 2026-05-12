@@ -5,6 +5,7 @@ import {
   Pressable,
   StatusBar,
   Modal,
+  ScrollView,
   useWindowDimensions,
   BackHandler,
 } from 'react-native';
@@ -241,22 +242,28 @@ export default function HomeScreen() {
                   Audio requires Dev Build
                 </Text>
               )}
-              <View className="flex-row flex-wrap px-4">
-                {VIBE_IDS.map((item) => {
-                  const active = item === activeVibeId;
-                  return (
-                    <VibeButton
-                      key={item}
-                      label={VIBE_LABELS[item]}
-                      active={active}
-                      playing={active && isPlaying}
-                      audioAvailable={audioAvailable}
-                      size={vibeButtonSize}
-                      onPress={() => handleVibePress(item)}
-                    />
-                  );
-                })}
-              </View>
+              <ScrollView
+                className="flex-1"
+                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
+                showsVerticalScrollIndicator={false}
+              >
+                <View className="flex-row flex-wrap">
+                  {VIBE_IDS.map((item) => {
+                    const active = item === activeVibeId;
+                    return (
+                      <VibeButton
+                        key={item}
+                        label={VIBE_LABELS[item]}
+                        active={active}
+                        playing={active && isPlaying}
+                        audioAvailable={audioAvailable}
+                        size={vibeButtonSize}
+                        onPress={() => handleVibePress(item)}
+                      />
+                    );
+                  })}
+                </View>
+              </ScrollView>
             </View>
           ) : suggestion ? (
             <>
