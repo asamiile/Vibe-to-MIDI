@@ -124,40 +124,6 @@ function CogButton({ onPress }: { onPress: () => void }) {
   );
 }
 
-function PlayButton({
-  isPlaying,
-  audioAvailable,
-  disabled,
-  onPress,
-}: {
-  isPlaying: boolean;
-  audioAvailable: boolean;
-  disabled?: boolean;
-  onPress: () => void;
-}) {
-  const off = !audioAvailable || disabled;
-  return (
-    <Pressable
-      className="min-h-9 w-9 items-center justify-center rounded-full border-2"
-      android_disableSound
-      disabled={off}
-      onPress={onPress}
-      style={({ pressed }) => ({
-        borderColor: off ? '#1e293b' : isPlaying ? '#ef4444' : '#22c55e',
-        opacity: pressed ? 0.6 : 1,
-      })}
-    >
-      <Text style={{
-        color: off ? '#334155' : isPlaying ? '#ef4444' : '#22c55e',
-        fontSize: 16,
-        lineHeight: 20,
-      }}>
-        {isPlaying ? '■' : '▶'}
-      </Text>
-    </Pressable>
-  );
-}
-
 function SettingsModal({
   visible,
   onClose,
@@ -247,7 +213,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#060a10]">
+    <SafeAreaView edges={['top', 'left', 'right']} className="flex-1 bg-[#060a10]">
       <StatusBar barStyle="light-content" backgroundColor="#060a10" />
 
       <View className="flex-1">
@@ -301,11 +267,6 @@ export default function HomeScreen() {
                   <Text className="text-[28px] font-black text-slate-200">
                     {viewMode === 'details' ? 'MIDI?' : 'Learn?'}
                   </Text>
-                  <PlayButton
-                    isPlaying={isPlaying}
-                    audioAvailable={audioAvailable}
-                    onPress={() => isPlaying ? stop() : play()}
-                  />
                 </View>
                 <View className="flex-row gap-2">
                   <HeaderAction
