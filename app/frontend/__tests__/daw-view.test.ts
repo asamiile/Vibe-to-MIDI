@@ -21,6 +21,16 @@ describe('buildDawStepsView', () => {
 
     expect(view.midiRows.find((row) => row.label === 'Chord stab notes')?.value)
       .toContain('C minor9: C3 (48)  D#3 (51)  G3 (55)  A#3 (58)  D4 (62)');
+    expect(view.audition.chordLabel).toBe('C minor9');
+    expect(view.audition.chordNotes).toEqual([
+      { midi: 48, label: 'C3 (48)' },
+      { midi: 51, label: 'D#3 (51)' },
+      { midi: 55, label: 'G3 (55)' },
+      { midi: 58, label: 'A#3 (58)' },
+      { midi: 62, label: 'D4 (62)' },
+    ]);
+    expect(view.audition.bassNotes).toHaveLength(4);
+    expect(view.audition.scaleNotes.length).toBeGreaterThan(4);
     expect(view.soundRows.find((row) => row.label === 'Chord stab')?.value)
       .toContain('lowpass 780 Hz Q 1.5');
     expect(view.soundRows.find((row) => row.label === 'Dub echo')?.value)

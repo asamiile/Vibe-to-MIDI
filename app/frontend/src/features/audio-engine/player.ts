@@ -118,8 +118,8 @@ function scheduleKick(
   osc.stop(startTime + 0.5);
 }
 
-// Inharmonic high-frequency series for noise texture
-const NOISE_OSC_FREQS = [7800, 9100, 11300] as const;
+// Dark inharmonic partials for a filtered tape-noise / hat texture.
+const NOISE_OSC_FREQS = [4300, 5200, 6100, 7600] as const;
 
 function scheduleNoise(
   ctx: AudioCtx,
@@ -129,25 +129,32 @@ function scheduleNoise(
   noiseFilter: { cutoff: number; q: number },
   cleanupFns: Array<(t: number) => void>
 ): void {
-  const filter = ctx.createBiquadFilter();
+  const bandpass = ctx.createBiquadFilter();
+  const lowpass = ctx.createBiquadFilter();
   const gain = ctx.createGain();
+  const cutoff = Math.min(noiseFilter.cutoff, 8200);
 
-  filter.type = 'bandpass';
-  filter.frequency.value = noiseFilter.cutoff;
-  filter.Q.value = noiseFilter.q;
+  bandpass.type = 'bandpass';
+  bandpass.frequency.value = cutoff;
+  bandpass.Q.value = Math.max(0.7, noiseFilter.q);
+
+  lowpass.type = 'lowpass';
+  lowpass.frequency.value = Math.min(cutoff * 1.35, 9000);
+  lowpass.Q.value = 0.5;
 
   gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.001);
+  gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.006);
   gain.gain.linearRampToValueAtTime(0, startTime + duration);
 
-  filter.connect(gain);
+  bandpass.connect(lowpass);
+  lowpass.connect(gain);
   gain.connect(ctx.destination);
 
-  const oscs = NOISE_OSC_FREQS.map((freq) => {
+  const oscs = NOISE_OSC_FREQS.map((freq, index) => {
     const osc = ctx.createOscillator();
-    osc.type = 'square';
+    osc.type = index % 2 === 0 ? 'triangle' : 'sawtooth';
     osc.frequency.value = freq;
-    osc.connect(filter);
+    osc.connect(bandpass);
     osc.start(startTime);
     osc.stop(startTime + duration + 0.01);
     return osc;

@@ -10,12 +10,23 @@ export interface DawValueRow {
   value: string;
 }
 
+export interface DawNoteView {
+  midi: number;
+  label: string;
+}
+
 export interface DawStepsView {
   bpm: number;
   rawBpm: number;
   midiRows: DawValueRow[];
   soundRows: DawValueRow[];
   kickPattern: readonly boolean[];
+  audition: {
+    chordLabel: string;
+    chordNotes: readonly DawNoteView[];
+    scaleNotes: readonly DawNoteView[];
+    bassNotes: readonly DawNoteView[];
+  };
 }
 
 function hitSteps(pattern?: readonly boolean[]): string {
@@ -28,6 +39,13 @@ function hitSteps(pattern?: readonly boolean[]): string {
 
 function noteList(midiNotes: readonly number[]): string {
   return midiNotes.map((midi) => `${midiToNoteName(midi)} (${midi})`).join('  ');
+}
+
+function noteViews(midiNotes: readonly number[]): DawNoteView[] {
+  return midiNotes.map((midi) => ({
+    midi,
+    label: `${midiToNoteName(midi)} (${midi})`,
+  }));
 }
 
 export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
@@ -45,6 +63,12 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
     bpm,
     rawBpm,
     kickPattern: suggestion.rhythmPattern,
+    audition: {
+      chordLabel: `${suggestion.chord.root} ${suggestion.chord.quality.replace('_', ' ')}`,
+      chordNotes: noteViews(chordNotes),
+      scaleNotes: noteViews(scaleNotes),
+      bassNotes: noteViews(suggestion.bassNotes),
+    },
     midiRows: [
       {
         label: 'Scale',
@@ -71,7 +95,7 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
       },
       {
         label: 'Hat/noise',
-        value: `square-noise bandpass ${noiseFilter.cutoff} Hz Q ${noiseFilter.q}; decay ${AUDIO_PARAMS.noise.decayMs} ms; gain ${(AUDIO_PARAMS.noise.gainRatio * 100).toFixed(0)}%`,
+        value: `filtered tape-noise bandpass ${Math.min(noiseFilter.cutoff, 8200)} Hz Q ${Math.max(0.7, noiseFilter.q)}; lowpass ${Math.min(Math.min(noiseFilter.cutoff, 8200) * 1.35, 9000)} Hz; decay ${AUDIO_PARAMS.noise.decayMs} ms; gain ${(AUDIO_PARAMS.noise.gainRatio * 100).toFixed(0)}%`,
       },
       {
         label: 'Chord stab',
