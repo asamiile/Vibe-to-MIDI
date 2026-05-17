@@ -8,6 +8,7 @@ import {
   soundVariantOptions,
 } from './sound-palette';
 import {
+  DEFAULT_SOUND_MIX,
   getBassPlaybackVoices,
   getEffectiveDubDelay,
   getKickPlaybackProfile,
@@ -82,6 +83,7 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
   const stabFilter = suggestion.chordStabFilter ?? { cutoff: AUDIO_PARAMS.melody.filterFreq, q: AUDIO_PARAMS.melody.filterQ };
   const dubDelay = suggestion.dubDelay ?? { repeats: 2, stepOffset: 2, feedbackGain: 0.3 };
   const soundVariants = suggestion.soundVariants ?? DEFAULT_SOUND_VARIANTS;
+  const soundMix = suggestion.soundMix ?? DEFAULT_SOUND_MIX;
   const kickVariant = getSoundVariant('kick', soundVariants.kick);
   const bassVariant = getSoundVariant('bass', soundVariants.bass);
   const noiseVariant = getSoundVariant('noise', soundVariants.noise);
@@ -149,7 +151,7 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
         type: kickVariant.type,
         source: kickVariant.source,
         target: kickVariant.target,
-        fx: `${kickVariant.fxRole}; lowpass ${kickPlaybackCutoff} Hz Q ${kickFilter.q}`,
+        fx: `${kickVariant.fxRole}; track gain ${(soundMix.kick * 100).toFixed(0)}%; lowpass ${kickPlaybackCutoff} Hz Q ${kickFilter.q}`,
         alternatives: soundVariantOptions('kick', soundVariants.kick),
       },
       {
@@ -158,7 +160,7 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
         type: bassVariant.type,
         source: `${bassVariant.source}${soundVariants.bass === 'saw-sub' ? `; triangle octave ${(AUDIO_PARAMS.bass.octaveBlend * 100).toFixed(0)}%` : ''}`,
         target: bassVariant.target,
-        fx: `${bassVariant.fxRole}; lowpass ${bassFilter.cutoff} Hz Q ${bassFilter.q}`,
+        fx: `${bassVariant.fxRole}; track gain ${(soundMix.bass * 100).toFixed(0)}%; lowpass ${bassFilter.cutoff} Hz Q ${bassFilter.q}`,
         alternatives: soundVariantOptions('bass', soundVariants.bass),
       },
       {
@@ -167,7 +169,7 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
         type: noiseVariant.type,
         source: noiseVariant.source,
         target: noiseVariant.target,
-        fx: `${noiseVariant.fxRole}; bandpass ${noisePlaybackCutoff} Hz Q ${noisePlaybackQ.toFixed(2)} -> lowpass ${Math.min(noisePlaybackCutoff * 1.35, 9000)} Hz`,
+        fx: `${noiseVariant.fxRole}; track gain ${(soundMix.noise * 100).toFixed(0)}%; bandpass ${noisePlaybackCutoff} Hz Q ${noisePlaybackQ.toFixed(2)} -> lowpass ${Math.min(noisePlaybackCutoff * 1.35, 9000)} Hz`,
         alternatives: soundVariantOptions('noise', soundVariants.noise),
       },
       {
@@ -176,7 +178,7 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
         type: stabVariant.type,
         source: stabVariant.source,
         target: stabVariant.target,
-        fx: `${stabVariant.fxRole}; lowpass ${stabFilter.cutoff} Hz Q ${stabFilter.q} -> ${spaceVariant.name} (${spaceVariant.fxRole})`,
+        fx: `${stabVariant.fxRole}; track gain ${(soundMix.stab * 100).toFixed(0)}%; lowpass ${stabFilter.cutoff} Hz Q ${stabFilter.q} -> ${spaceVariant.name} (${spaceVariant.fxRole})`,
         alternatives: soundVariantOptions('stab', soundVariants.stab),
       },
       {
@@ -192,19 +194,19 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
     soundRows: [
       {
         label: 'Kick synth',
-        value: `${kickVariant.name}; sine pitch ${kickPlayback.startFreq} Hz -> ${kickPlayback.endFreq} Hz in ${(kickPlayback.pitchDecay * 1000).toFixed(0)} ms; decay ${(kickPlayback.decay * 1000).toFixed(0)} ms; gain ${(kickPlayback.gainRatio * 100).toFixed(0)}%; lowpass ${kickPlaybackCutoff} Hz Q ${kickFilter.q}`,
+        value: `${kickVariant.name}; sine pitch ${kickPlayback.startFreq} Hz -> ${kickPlayback.endFreq} Hz in ${(kickPlayback.pitchDecay * 1000).toFixed(0)} ms; decay ${(kickPlayback.decay * 1000).toFixed(0)} ms; voice gain ${(kickPlayback.gainRatio * 100).toFixed(0)}%; track gain ${(soundMix.kick * 100).toFixed(0)}%; lowpass ${kickPlaybackCutoff} Hz Q ${kickFilter.q}`,
       },
       {
         label: 'Bass synth',
-        value: `${bassVariant.name}; ${bassVoiceSettings}; Q ${bassFilter.q}; note length 3.5 steps`,
+        value: `${bassVariant.name}; ${bassVoiceSettings}; track gain ${(soundMix.bass * 100).toFixed(0)}%; Q ${bassFilter.q}; note length 3.5 steps`,
       },
       {
         label: 'Hat/noise',
-        value: `${noiseVariant.name}; ${noisePartials}; bandpass ${noisePlaybackCutoff} Hz Q ${noisePlaybackQ.toFixed(2)}; lowpass ${Math.min(noisePlaybackCutoff * 1.35, 9000)} Hz; decay ${(AUDIO_PARAMS.noise.decayMs * noisePlayback.durationRatio).toFixed(0)} ms; gain ${(AUDIO_PARAMS.noise.gainRatio * noisePlayback.gainRatio * 100).toFixed(0)}%`,
+        value: `${noiseVariant.name}; ${noisePartials}; bandpass ${noisePlaybackCutoff} Hz Q ${noisePlaybackQ.toFixed(2)}; lowpass ${Math.min(noisePlaybackCutoff * 1.35, 9000)} Hz; decay ${(AUDIO_PARAMS.noise.decayMs * noisePlayback.durationRatio).toFixed(0)} ms; voice gain ${(AUDIO_PARAMS.noise.gainRatio * noisePlayback.gainRatio * 100).toFixed(0)}%; track gain ${(soundMix.noise * 100).toFixed(0)}%`,
       },
       {
         label: 'Chord stab',
-        value: `${stabVariant.name}; ${stabVariant.source}; attack ${AUDIO_PARAMS.melody.attackMs} ms; decay ${AUDIO_PARAMS.melody.decayMs} ms; sustain ${(AUDIO_PARAMS.melody.sustainRatio * 100).toFixed(0)}%; lowpass ${stabFilter.cutoff} Hz Q ${stabFilter.q}`,
+        value: `${stabVariant.name}; ${stabVariant.source}; attack ${AUDIO_PARAMS.melody.attackMs} ms; decay ${AUDIO_PARAMS.melody.decayMs} ms; sustain ${(AUDIO_PARAMS.melody.sustainRatio * 100).toFixed(0)}%; track gain ${(soundMix.stab * 100).toFixed(0)}%; lowpass ${stabFilter.cutoff} Hz Q ${stabFilter.q}`,
       },
       {
         label: 'Dub echo',

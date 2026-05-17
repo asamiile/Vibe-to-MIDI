@@ -1,4 +1,4 @@
-import type { MusicalSuggestion, VibeId } from './types';
+import type { MusicalSuggestion, SoundMixLevels, VibeId } from './types';
 import type { SoundVariantSelection } from './sound-palette';
 
 // Each pattern is 16 steps (1 bar at 1/16th note resolution)
@@ -683,4 +683,29 @@ export const VIBE_SOUND_VARIANTS: Record<VibeId, SoundVariantSelection> = {
     stab: 'square-saw',
     space: 'dark-plate',
   },
+};
+
+export const VIBE_SOUND_MIX: Record<VibeId, SoundMixLevels> = {
+  dark:        { kick: 0.92, bass: 1.08, noise: 0.62, stab: 0.95 },
+  floating:   { kick: 0.78, bass: 0.86, noise: 0.45, stab: 1.12 },
+  cinematic:  { kick: 0.82, bass: 1.02, noise: 0.38, stab: 1.08 },
+  nostalgic:  { kick: 0.88, bass: 0.96, noise: 0.48, stab: 1.02 },
+  repetitive: { kick: 1.0,  bass: 1.0,  noise: 0.66, stab: 0.86 },
+  hypnotic:   { kick: 0.98, bass: 1.06, noise: 0.52, stab: 0.92 },
+  wide:       { kick: 0.82, bass: 0.9,  noise: 0.42, stab: 1.16 },
+  warm:       { kick: 0.9,  bass: 1.0,  noise: 0.5,  stab: 1.04 },
+  deep:       { kick: 1.02, bass: 1.12, noise: 0.44, stab: 0.9 },
+  rolling:    { kick: 1.06, bass: 1.02, noise: 0.64, stab: 0.84 },
+  groovy:     { kick: 0.96, bass: 1.04, noise: 0.68, stab: 0.92 },
+  cavernous:  { kick: 0.88, bass: 1.12, noise: 0.36, stab: 1.0 },
+  dry:        { kick: 1.08, bass: 0.98, noise: 0.58, stab: 0.78 },
+  underground:{ kick: 1.1,  bass: 1.1,  noise: 0.56, stab: 0.82 },
+  tense:      { kick: 1.02, bass: 0.98, noise: 0.62, stab: 0.9 },
+  metallic:   { kick: 0.98, bass: 0.92, noise: 0.7,  stab: 0.86 },
+  gritty:     { kick: 1.0,  bass: 1.04, noise: 0.62, stab: 0.82 },
+  euphoric:   { kick: 0.92, bass: 1.0,  noise: 0.72, stab: 1.1 },
+  unstable:   { kick: 0.94, bass: 0.96, noise: 0.66, stab: 1.0 },
+  retrowave:  { kick: 0.9,  bass: 1.02, noise: 0.6,  stab: 1.04 },
+  summer:     { kick: 0.92, bass: 0.94, noise: 0.7,  stab: 1.08 },
+  winter:     { kick: 0.88, bass: 1.08, noise: 0.34, stab: 0.98 },
 };

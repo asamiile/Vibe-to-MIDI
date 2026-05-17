@@ -5,6 +5,14 @@ import type {
   NoiseVariantId,
   SpaceVariantId,
 } from './sound-palette';
+import type { SoundMixLevels } from './types';
+
+export const DEFAULT_SOUND_MIX: SoundMixLevels = {
+  kick: 1,
+  bass: 1,
+  noise: 1,
+  stab: 1,
+};
 
 export interface KickPlaybackProfile {
   startFreq: number;

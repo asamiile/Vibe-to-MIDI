@@ -7,6 +7,7 @@ import { DEFAULT_SOUND_VARIANTS } from '../vibe-map/sound-palette';
 import type { KickVariantId, NoiseVariantId, StabVariantId } from '../vibe-map/sound-palette';
 import {
   getBassPlaybackVoices,
+  DEFAULT_SOUND_MIX,
   getEffectiveDubDelay,
   getKickPlaybackProfile,
   getNoisePlaybackProfile,
@@ -245,6 +246,7 @@ export async function playPreview(
   const stepDuration = 60 / bpm / 4;
   const { gain = 0.3, activeLayers } = options;
   const soundVariants = suggestion.soundVariants ?? DEFAULT_SOUND_VARIANTS;
+  const soundMix = suggestion.soundMix ?? DEFAULT_SOUND_MIX;
 
   const playKick   = !activeLayers || activeLayers.has('kick');
   const playBass   = !activeLayers || activeLayers.has('bass');
@@ -277,7 +279,7 @@ export async function playPreview(
             noteFreq(midi + voice.octaveOffset),
             start,
             stepDuration * 3.5,
-            gain * voice.gainRatio,
+            gain * soundMix.bass * voice.gainRatio,
             bassFilterFreq * voice.cutoffRatio,
             bassFilterQ,
             voice.type,
@@ -289,7 +291,7 @@ export async function playPreview(
     if (playKick) {
       suggestion.rhythmPattern.forEach((hit, step) => {
         if (!hit) return;
-        scheduleKick(ctx, loopAt + step * stepDuration, gain, scheduledNodes, soundVariants.kick, suggestion.kickFilter);
+        scheduleKick(ctx, loopAt + step * stepDuration, gain * soundMix.kick, scheduledNodes, soundVariants.kick, suggestion.kickFilter);
       });
     }
     if (playNoise && suggestion.noisePattern) {
@@ -300,7 +302,7 @@ export async function playPreview(
           ctx,
           loopAt + step * stepDuration,
           noiseDuration,
-          gain * AUDIO_PARAMS.noise.gainRatio * noiseProfile.gainRatio,
+          gain * soundMix.noise * AUDIO_PARAMS.noise.gainRatio * noiseProfile.gainRatio,
           noiseFilterSpec,
           soundVariants.noise,
           cleanupFns
@@ -310,14 +312,14 @@ export async function playPreview(
     if (playMelody) {
       melodySteps.forEach(({ midiNotes, step, durationSteps }) => {
         const start = loopAt + step * stepDuration;
-        scheduleChordStab(ctx, midiNotes, start, durationSteps * stepDuration, gain * AUDIO_PARAMS.melody.gainRatio, stabFilterSpec.cutoff, stabFilterSpec.q, soundVariants.stab, scheduledNodes);
+        scheduleChordStab(ctx, midiNotes, start, durationSteps * stepDuration, gain * soundMix.stab * AUDIO_PARAMS.melody.gainRatio, stabFilterSpec.cutoff, stabFilterSpec.q, soundVariants.stab, scheduledNodes);
         for (let repeat = 1; repeat <= dubDelay.repeats; repeat += 1) {
           scheduleChordStab(
             ctx,
             midiNotes,
             start + repeat * dubDelay.stepOffset * stepDuration,
             durationSteps * stepDuration,
-            gain * AUDIO_PARAMS.melody.gainRatio * Math.pow(dubDelay.feedbackGain, repeat),
+            gain * soundMix.stab * AUDIO_PARAMS.melody.gainRatio * Math.pow(dubDelay.feedbackGain, repeat),
             stabFilterSpec.cutoff,
             stabFilterSpec.q,
             soundVariants.stab,

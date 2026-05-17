@@ -49,6 +49,10 @@ describe('getMusicalSuggestion', () => {
     expect(s.soundVariants?.noise).toBeTruthy();
     expect(s.soundVariants?.stab).toBeTruthy();
     expect(s.soundVariants?.space).toBeTruthy();
+    expect(s.soundMix?.kick).toBeGreaterThan(0);
+    expect(s.soundMix?.bass).toBeGreaterThan(0);
+    expect(s.soundMix?.noise).toBeGreaterThan(0);
+    expect(s.soundMix?.stab).toBeGreaterThan(0);
 
     const [min, max] = s.bpmRange;
     expect(min).toBeGreaterThan(0);
