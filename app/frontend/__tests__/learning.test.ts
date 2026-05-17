@@ -1,4 +1,9 @@
-import { getBassMotion, getLearningCue, getRhythmFeel } from '../src/features/vibe-map/learning';
+import {
+  buildLearningFocusView,
+  getBassMotion,
+  getLearningCue,
+  getRhythmFeel,
+} from '../src/features/vibe-map/learning';
 import { getMusicalSuggestion } from '../src/features/vibe-map/engine';
 
 describe('getRhythmFeel', () => {
@@ -45,5 +50,30 @@ describe('getLearningCue', () => {
     expect(cue.tryChange.length).toBeGreaterThan(0);
     expect(cue.resultWord.length).toBeGreaterThan(0);
     expect(cue.whatChanged.length).toBeGreaterThan(0);
+  });
+});
+
+describe('buildLearningFocusView', () => {
+  it('builds a pulse compare view with a changed rhythm', () => {
+    const suggestion = getMusicalSuggestion('dark');
+    const view = buildLearningFocusView(suggestion, 'pulse');
+
+    expect(view.title).toBe('Pulse');
+    expect(view.original.rhythmPattern).toEqual(suggestion.rhythmPattern);
+    expect(view.changed.bassNotes).toEqual(suggestion.bassNotes);
+    expect(view.changed.rhythmPattern).not.toEqual(suggestion.rhythmPattern);
+    expect(view.tryLabel.length).toBeGreaterThan(0);
+    expect(view.resultWord.length).toBeGreaterThan(0);
+  });
+
+  it('builds a bass compare view with changed bass notes only', () => {
+    const suggestion = getMusicalSuggestion('dark');
+    const view = buildLearningFocusView(suggestion, 'bass');
+
+    expect(view.title).toBe('Bass');
+    expect(view.original.bassNotes).toEqual(suggestion.bassNotes);
+    expect(view.changed.rhythmPattern).toEqual(suggestion.rhythmPattern);
+    expect(view.changed.bassNotes).not.toEqual(suggestion.bassNotes);
+    expect(view.bassNoteLabels).toHaveLength(suggestion.bassNotes.length);
   });
 });

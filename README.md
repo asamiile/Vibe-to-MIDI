@@ -40,7 +40,8 @@ npm ci --legacy-peer-deps
 ### Run
 
 ```bash
-npx expo start    # then press 'a' to open on Android
+npx expo start
+# then press 'a' to open on Android
 ```
 
 > Audio requires a Dev Build — Expo Go will not play sound.

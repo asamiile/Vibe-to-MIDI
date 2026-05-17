@@ -4,6 +4,7 @@ import { getScaleNotes } from '../../lib/scales';
 
 export type BassMotion = 'static' | 'rising' | 'falling' | 'mixed';
 export type RhythmFeel = 'sparse' | 'steady' | 'busy';
+export type LearningFocus = 'pulse' | 'bass';
 
 export interface LearningCue {
   pulseMap: readonly string[];
@@ -18,6 +19,26 @@ export interface LearningCue {
   tryChange: string;
   resultWord: string;
   whatChanged: string;
+}
+
+export interface LearningFocusView {
+  focus: LearningFocus;
+  title: string;
+  goal: string;
+  originalLabel: string;
+  tryLabel: string;
+  resultWord: string;
+  reason: string;
+  original: {
+    rhythmPattern: readonly boolean[];
+    bassNotes: readonly number[];
+  };
+  changed: {
+    rhythmPattern: readonly boolean[];
+    bassNotes: readonly number[];
+  };
+  pulseMap: readonly string[];
+  bassNoteLabels: readonly string[];
 }
 
 const SCALE_REASONS: Record<ScaleMode, string> = {
@@ -79,6 +100,52 @@ export function getLearningCue(suggestion: MusicalSuggestion): LearningCue {
   };
 }
 
+export function buildLearningFocusView(
+  suggestion: MusicalSuggestion,
+  focus: LearningFocus
+): LearningFocusView {
+  const cue = getLearningCue(suggestion);
+  const changedRhythm = focus === 'pulse'
+    ? mutateRhythmPattern(suggestion.rhythmPattern, cue.rhythmFeel)
+    : suggestion.rhythmPattern;
+  const changedBass = focus === 'bass'
+    ? mutateBassNotes(suggestion.bassNotes, cue.bassMotion)
+    : suggestion.bassNotes;
+
+  return {
+    focus,
+    title: focus === 'pulse' ? 'Pulse' : 'Bass',
+    goal: focus === 'pulse'
+      ? 'Hear how space changes the groove.'
+      : 'Hear how one bass note changes the loop.',
+    originalLabel: focus === 'pulse'
+      ? `${cue.rhythmFeel} original`
+      : `${cue.bassMotion} original`,
+    tryLabel: focus === 'pulse'
+      ? getPulseTryLabel(cue.rhythmFeel)
+      : getBassTryLabel(suggestion.bassNotes, cue.bassMotion),
+    resultWord: focus === 'bass' && cue.bassMotion === 'static'
+      ? 'more moving'
+      : cue.resultWord,
+    reason: focus === 'pulse'
+      ? cue.whatChanged
+      : getBassFocusReason(cue, suggestion.bassNotes),
+    original: {
+      rhythmPattern: suggestion.rhythmPattern,
+      bassNotes: suggestion.bassNotes,
+    },
+    changed: {
+      rhythmPattern: changedRhythm,
+      bassNotes: changedBass,
+    },
+    pulseMap: (focus === 'pulse' ? changedRhythm : suggestion.rhythmPattern).map((hit, index) => {
+      if (!hit) return 'rest';
+      return index % 4 === 0 ? 'downbeat' : 'offbeat';
+    }),
+    bassNoteLabels: (focus === 'bass' ? changedBass : suggestion.bassNotes).map(midiToNoteName),
+  };
+}
+
 function getRhythmReason(feel: RhythmFeel): string {
   if (feel === 'sparse') return 'few hits leave space, so the loop feels deeper and slower.';
   if (feel === 'steady') return 'repeated hits make the body feel a clear grid.';
@@ -128,4 +195,64 @@ function getWhatChanged(rhythmFeel: RhythmFeel, bassMotion: BassMotion): string 
   if (rhythmFeel === 'sparse') return 'One extra hit reduces the empty space and makes the loop move faster.';
   if (rhythmFeel === 'busy') return 'Removing a hit gives the groove more air and makes the bass easier to hear.';
   return 'A smaller rhythm change makes the loop feel simpler without changing the notes.';
+}
+
+function mutateRhythmPattern(pattern: readonly boolean[], feel: RhythmFeel): boolean[] {
+  const next = [...pattern];
+  if (feel === 'sparse') {
+    next[12] = true;
+    return next;
+  }
+
+  const secondHalfHit = next.findIndex((hit, index) => index >= 8 && hit);
+  if (secondHalfHit >= 0) {
+    next[secondHalfHit] = false;
+    return next;
+  }
+
+  let lastHit = -1;
+  for (let index = next.length - 1; index >= 0; index -= 1) {
+    if (next[index]) {
+      lastHit = index;
+      break;
+    }
+  }
+  if (lastHit >= 0) next[lastHit] = false;
+  return next;
+}
+
+function mutateBassNotes(notes: readonly number[], motion: BassMotion): number[] {
+  const next = [...notes];
+  if (next.length === 0) return next;
+
+  if (motion === 'static') {
+    next[next.length - 1] = next[0] + 7;
+    return next;
+  }
+
+  let movingIndex = -1;
+  for (let index = next.length - 1; index >= 0; index -= 1) {
+    if (next[index] !== next[0]) {
+      movingIndex = index;
+      break;
+    }
+  }
+  next[movingIndex >= 0 ? movingIndex : next.length - 1] = next[0];
+  return next;
+}
+
+function getPulseTryLabel(feel: RhythmFeel): string {
+  if (feel === 'sparse') return 'Add step 13';
+  return 'Mute one late hit';
+}
+
+function getBassTryLabel(notes: readonly number[], motion: BassMotion): string {
+  const firstNote = midiToNoteName(notes[0]);
+  if (motion === 'static') return `Move last note to ${midiToNoteName(notes[0] + 7)}`;
+  return `Return last note to ${firstNote}`;
+}
+
+function getBassFocusReason(cue: LearningCue, notes: readonly number[]): string {
+  if (cue.bassMotion !== 'static') return cue.whatChanged;
+  return `The last note leaves ${midiToNoteName(notes[0])}, so the bass feels less locked.`;
 }
