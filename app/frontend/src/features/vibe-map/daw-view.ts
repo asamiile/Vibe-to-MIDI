@@ -15,10 +15,20 @@ export interface DawNoteView {
   label: string;
 }
 
+export interface DawTrackSetupRow {
+  label: string;
+  type: string;
+  source: string;
+  target: string;
+  fx: string;
+}
+
 export interface DawStepsView {
   bpm: number;
   rawBpm: number;
-  midiRows: DawValueRow[];
+  setupRows: DawValueRow[];
+  sequenceRows: DawValueRow[];
+  trackSetupRows: DawTrackSetupRow[];
   soundRows: DawValueRow[];
   kickPattern: readonly boolean[];
   audition: {
@@ -63,26 +73,69 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
     bpm,
     rawBpm,
     kickPattern: suggestion.rhythmPattern,
+    setupRows: [
+      {
+        label: 'Tempo',
+        value: `${bpm} BPM${rawBpm !== bpm ? ` (preview clamp, source ${rawBpm})` : ''}`,
+      },
+      { label: 'Grid', value: '1 bar, 16 steps, 1/16 notes' },
+    ],
     audition: {
       chordLabel: `${suggestion.chord.root} ${suggestion.chord.quality.replace('_', ' ')}`,
       chordNotes: noteViews(chordNotes),
       scaleNotes: noteViews(scaleNotes),
       bassNotes: noteViews(suggestion.bassNotes),
     },
-    midiRows: [
+    sequenceRows: [
       {
-        label: 'Scale',
-        value: `${suggestion.scale.root} ${suggestion.scale.mode.replace('_', ' ')}: ${noteList(scaleNotes)}`,
+        label: 'Bass notes',
+        value: noteList(suggestion.bassNotes),
       },
       {
-        label: 'Chord stab notes',
+        label: 'Bass placement',
+        value: 'steps 1, 5, 9, 13; length 3.5 steps each',
+      },
+      {
+        label: 'Chord notes',
         value: `${suggestion.chord.root} ${suggestion.chord.quality.replace('_', ' ')}: ${noteList(chordNotes)}`,
       },
-      { label: 'Bass bars 1-4', value: noteList(suggestion.bassNotes) },
-      { label: 'Bass timing', value: 'steps 1, 5, 9, 13; length 3.5 steps each' },
+      { label: 'Chord placement', value: `steps ${hitSteps(suggestion.chordStabPattern)}; length 1 step each` },
       { label: 'Kick steps', value: hitSteps(suggestion.rhythmPattern) },
-      { label: 'Hat/noise steps', value: hitSteps(suggestion.noisePattern) },
-      { label: 'Chord stab steps', value: hitSteps(suggestion.chordStabPattern) },
+      { label: 'Noise steps', value: hitSteps(suggestion.noisePattern) },
+      {
+        label: 'Scale reference',
+        value: `${suggestion.scale.root} ${suggestion.scale.mode.replace('_', ' ')}: ${noteList(scaleNotes)}`,
+      },
+    ],
+    trackSetupRows: [
+      {
+        label: 'Kick',
+        type: 'Mono synth',
+        source: 'sine oscillator with pitch drop',
+        target: 'synth track or drum synth slot',
+        fx: `lowpass ${kickFilter.cutoff} Hz Q ${kickFilter.q}`,
+      },
+      {
+        label: 'Bass',
+        type: 'Mono bass synth',
+        source: `sawtooth sub + quiet triangle octave ${(AUDIO_PARAMS.bass.octaveBlend * 100).toFixed(0)}%`,
+        target: 'bass synth track',
+        fx: `lowpass ${bassFilter.cutoff} Hz Q ${bassFilter.q}`,
+      },
+      {
+        label: 'Noise',
+        type: 'Noise or closed-hat synth',
+        source: 'filtered noise / short hat source',
+        target: 'drum rack slot or noise synth track',
+        fx: `bandpass ${Math.min(noiseFilter.cutoff, 8200)} Hz Q ${Math.max(0.7, noiseFilter.q)} -> lowpass ${Math.min(Math.min(noiseFilter.cutoff, 8200) * 1.35, 9000)} Hz`,
+      },
+      {
+        label: 'Chord stab',
+        type: 'Poly synth',
+        source: 'sawtooth chord',
+        target: 'poly synth track',
+        fx: `lowpass ${stabFilter.cutoff} Hz Q ${stabFilter.q} -> dub delay`,
+      },
     ],
     soundRows: [
       {
@@ -105,10 +158,6 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
         label: 'Dub echo',
         value: `${dubDelay.repeats} repeats; repeat every ${dubDelay.stepOffset} steps; feedback gain ${(dubDelay.feedbackGain * 100).toFixed(0)}%`,
       },
-      ...suggestion.soundLayers.map((layer) => ({
-        label: layer.role,
-        value: layer.descriptor,
-      })),
     ],
   };
 }
