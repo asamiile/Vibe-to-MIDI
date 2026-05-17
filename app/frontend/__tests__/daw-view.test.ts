@@ -33,12 +33,16 @@ describe('buildDawStepsView', () => {
       'Bass',
       'Noise',
       'Chord stab',
+      'Space',
     ]);
     expect(view.trackSetupRows.find((row) => row.label === 'Chord stab')).toMatchObject({
+      variant: 'Saw minor',
       type: 'Poly synth',
       source: 'sawtooth chord',
       target: 'poly synth track',
     });
+    expect(view.trackSetupRows.find((row) => row.label === 'Chord stab')?.alternatives)
+      .toContain('Wide detuned');
     expect(view.soundRows.map((row) => row.label)).toEqual([
       'Kick synth',
       'Bass synth',
