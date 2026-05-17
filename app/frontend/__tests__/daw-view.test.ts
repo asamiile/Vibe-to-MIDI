@@ -9,18 +9,43 @@ describe('buildDawStepsView', () => {
     expect(view.rawBpm).toBeGreaterThanOrEqual(view.bpm);
     expect(view.kickPattern).toHaveLength(16);
 
-    expect(view.midiRows.map((row) => row.label)).toEqual([
-      'Scale',
-      'Chord stab notes',
-      'Bass bars 1-4',
-      'Bass timing',
-      'Kick steps',
-      'Hat/noise steps',
-      'Chord stab steps',
+    expect(view.setupRows.map((row) => row.label)).toEqual([
+      'Tempo',
+      'Grid',
     ]);
 
-    expect(view.midiRows.find((row) => row.label === 'Chord stab notes')?.value)
+    expect(view.sequenceRows.map((row) => row.label)).toEqual([
+      'Bass notes',
+      'Bass placement',
+      'Chord notes',
+      'Chord placement',
+      'Kick steps',
+      'Noise steps',
+      'Scale reference',
+    ]);
+
+    expect(view.sequenceRows.find((row) => row.label === 'Chord notes')?.value)
       .toContain('C minor9: C3 (48)  D#3 (51)  G3 (55)  A#3 (58)  D4 (62)');
+    expect(view.sequenceRows.find((row) => row.label === 'Chord placement')?.value)
+      .toBe('steps 9; length 1 step each');
+    expect(view.trackSetupRows.map((row) => row.label)).toEqual([
+      'Kick',
+      'Bass',
+      'Noise',
+      'Chord stab',
+    ]);
+    expect(view.trackSetupRows.find((row) => row.label === 'Chord stab')).toMatchObject({
+      type: 'Poly synth',
+      source: 'sawtooth chord',
+      target: 'poly synth track',
+    });
+    expect(view.soundRows.map((row) => row.label)).toEqual([
+      'Kick synth',
+      'Bass synth',
+      'Hat/noise',
+      'Chord stab',
+      'Dub echo',
+    ]);
     expect(view.audition.chordLabel).toBe('C minor9');
     expect(view.audition.chordNotes).toEqual([
       { midi: 48, label: 'C3 (48)' },

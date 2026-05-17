@@ -56,6 +56,21 @@ Keep learning content layer-based and MIDI-actionable:
 4. Hat/noise: noise steps, bandpass center, Q, and decay.
 5. Full loop: all layers together.
 
+## MIDI Screen Policy
+
+The MIDI screen is for **what to place in a DAW piano roll or step sequencer**.
+
+Keep it focused on actionable entry data:
+
+- tempo and grid
+- layer names
+- note names and MIDI note numbers
+- step numbers
+- note lengths
+- optional synth parameters needed to recreate the heard sound
+
+Do not use the MIDI screen for genre labels, mood prose, or broad sound-layer descriptors. Dub Techno is the project-level genre context, so do not repeat `Genre: Dub Techno` in the MIDI screen. If sound design values are shown, keep them in a separate synth/settings section and make them parameter-like: cutoff, Q, envelope, gain, delay repeats, step offset, feedback.
+
 ## Audio Engine Conventions
 
 The source of truth for playable defaults is `app/frontend/src/features/audio-engine/player.ts` under `AUDIO_PARAMS`.
