@@ -1,4 +1,5 @@
 import type { MusicalSuggestion, VibeId } from './types';
+import type { SoundVariantSelection } from './sound-palette';
 
 // Each pattern is 16 steps (1 bar at 1/16th note resolution)
 // true = hit, false = rest
@@ -525,4 +526,161 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     melodySuggested: true,
   },
 
+};
+
+export const VIBE_SOUND_VARIANTS: Record<VibeId, SoundVariantSelection> = {
+  dark: {
+    kick: 'muffled-room',
+    bass: 'sine-sub',
+    noise: 'tape-hiss',
+    stab: 'square-saw',
+    space: 'dark-plate',
+  },
+  floating: {
+    kick: 'soft-909',
+    bass: 'triangle-round',
+    noise: 'vinyl-floor',
+    stab: 'wide-detuned',
+    space: 'spring-style',
+  },
+  cinematic: {
+    kick: 'muffled-room',
+    bass: 'sine-sub',
+    noise: 'vinyl-floor',
+    stab: 'sampled-chord-like',
+    space: 'dark-plate',
+  },
+  nostalgic: {
+    kick: 'soft-909',
+    bass: 'triangle-round',
+    noise: 'tape-hiss',
+    stab: 'sampled-chord-like',
+    space: 'spring-style',
+  },
+  repetitive: {
+    kick: 'deep-sine',
+    bass: 'saw-sub',
+    noise: 'closed-hat',
+    stab: 'saw-minor',
+    space: 'short-dub',
+  },
+  hypnotic: {
+    kick: 'deep-sine',
+    bass: 'filtered-pulse',
+    noise: 'tape-hiss',
+    stab: 'square-saw',
+    space: 'deep-feedback',
+  },
+  wide: {
+    kick: 'soft-909',
+    bass: 'triangle-round',
+    noise: 'vinyl-floor',
+    stab: 'wide-detuned',
+    space: 'deep-feedback',
+  },
+  warm: {
+    kick: 'soft-909',
+    bass: 'triangle-round',
+    noise: 'tape-hiss',
+    stab: 'saw-minor',
+    space: 'spring-style',
+  },
+  deep: {
+    kick: 'deep-sine',
+    bass: 'saw-sub',
+    noise: 'tape-hiss',
+    stab: 'saw-minor',
+    space: 'deep-feedback',
+  },
+  rolling: {
+    kick: 'saturated-thump',
+    bass: 'filtered-pulse',
+    noise: 'closed-hat',
+    stab: 'square-saw',
+    space: 'short-dub',
+  },
+  groovy: {
+    kick: 'soft-909',
+    bass: 'filtered-pulse',
+    noise: 'closed-hat',
+    stab: 'sampled-chord-like',
+    space: 'short-dub',
+  },
+  cavernous: {
+    kick: 'muffled-room',
+    bass: 'sine-sub',
+    noise: 'bandpass-tick',
+    stab: 'square-saw',
+    space: 'dark-plate',
+  },
+  dry: {
+    kick: 'saturated-thump',
+    bass: 'filtered-pulse',
+    noise: 'bandpass-tick',
+    stab: 'sampled-chord-like',
+    space: 'short-dub',
+  },
+  underground: {
+    kick: 'saturated-thump',
+    bass: 'filtered-pulse',
+    noise: 'bandpass-tick',
+    stab: 'square-saw',
+    space: 'deep-feedback',
+  },
+  tense: {
+    kick: 'saturated-thump',
+    bass: 'filtered-pulse',
+    noise: 'closed-hat',
+    stab: 'square-saw',
+    space: 'deep-feedback',
+  },
+  metallic: {
+    kick: 'saturated-thump',
+    bass: 'filtered-pulse',
+    noise: 'bandpass-tick',
+    stab: 'square-saw',
+    space: 'short-dub',
+  },
+  gritty: {
+    kick: 'muffled-room',
+    bass: 'filtered-pulse',
+    noise: 'bandpass-tick',
+    stab: 'sampled-chord-like',
+    space: 'dark-plate',
+  },
+  euphoric: {
+    kick: 'soft-909',
+    bass: 'saw-sub',
+    noise: 'closed-hat',
+    stab: 'wide-detuned',
+    space: 'short-dub',
+  },
+  unstable: {
+    kick: 'muffled-room',
+    bass: 'filtered-pulse',
+    noise: 'bandpass-tick',
+    stab: 'wide-detuned',
+    space: 'dark-plate',
+  },
+  retrowave: {
+    kick: 'soft-909',
+    bass: 'saw-sub',
+    noise: 'closed-hat',
+    stab: 'sampled-chord-like',
+    space: 'spring-style',
+  },
+  summer: {
+    kick: 'soft-909',
+    bass: 'triangle-round',
+    noise: 'closed-hat',
+    stab: 'wide-detuned',
+    space: 'spring-style',
+  },
+  winter: {
+    kick: 'muffled-room',
+    bass: 'sine-sub',
+    noise: 'bandpass-tick',
+    stab: 'square-saw',
+    space: 'dark-plate',
+  },
 };

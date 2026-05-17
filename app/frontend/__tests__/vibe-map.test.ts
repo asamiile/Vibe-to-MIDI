@@ -44,13 +44,11 @@ describe('getMusicalSuggestion', () => {
       expect(['bass', 'pad', 'lead', 'drum', 'arp', 'pluck', 'keys']).toContain(layer.role);
       expect(layer.descriptor.length).toBeGreaterThan(0);
     });
-    if (s.soundVariants) {
-      expect(s.soundVariants.kick).toBeTruthy();
-      expect(s.soundVariants.bass).toBeTruthy();
-      expect(s.soundVariants.noise).toBeTruthy();
-      expect(s.soundVariants.stab).toBeTruthy();
-      expect(s.soundVariants.space).toBeTruthy();
-    }
+    expect(s.soundVariants?.kick).toBeTruthy();
+    expect(s.soundVariants?.bass).toBeTruthy();
+    expect(s.soundVariants?.noise).toBeTruthy();
+    expect(s.soundVariants?.stab).toBeTruthy();
+    expect(s.soundVariants?.space).toBeTruthy();
 
     const [min, max] = s.bpmRange;
     expect(min).toBeGreaterThan(0);

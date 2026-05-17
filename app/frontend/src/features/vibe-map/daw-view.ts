@@ -7,6 +7,12 @@ import {
   getSoundVariant,
   soundVariantOptions,
 } from './sound-palette';
+import {
+  getBassPlaybackVoices,
+  getEffectiveDubDelay,
+  getKickPlaybackProfile,
+  getNoisePlaybackProfile,
+} from './sound-playback';
 import { getMidBpm } from './engine';
 import type { MusicalSuggestion } from './types';
 
@@ -81,6 +87,22 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
   const noiseVariant = getSoundVariant('noise', soundVariants.noise);
   const stabVariant = getSoundVariant('stab', soundVariants.stab);
   const spaceVariant = getSoundVariant('space', soundVariants.space);
+  const kickPlayback = getKickPlaybackProfile(soundVariants.kick);
+  const bassPlaybackVoices = getBassPlaybackVoices(soundVariants.bass);
+  const noisePlayback = getNoisePlaybackProfile(soundVariants.noise);
+  const playbackDubDelay = getEffectiveDubDelay(dubDelay, soundVariants.space);
+  const kickPlaybackCutoff = Math.round(kickFilter.cutoff * kickPlayback.cutoffRatio);
+  const noisePlaybackCutoff = Math.min(Math.round(noiseFilter.cutoff * noisePlayback.cutoffRatio), 8200);
+  const noisePlaybackQ = Math.max(0.7, noiseFilter.q * noisePlayback.qRatio);
+  const bassVoiceSettings = bassPlaybackVoices
+    .map((voice) => {
+      const octave = voice.octaveOffset === 0 ? 'root' : `+${voice.octaveOffset} semitones`;
+      return `${voice.type} ${octave} gain ${(voice.gainRatio * 100).toFixed(0)}% cutoff ${Math.round(bassFilter.cutoff * voice.cutoffRatio)} Hz`;
+    })
+    .join('; ');
+  const noisePartials = noisePlayback.freqs
+    .map((freq, index) => `${noisePlayback.type(index)} ${freq} Hz`)
+    .join(', ');
 
   return {
     bpm,
@@ -127,7 +149,7 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
         type: kickVariant.type,
         source: kickVariant.source,
         target: kickVariant.target,
-        fx: `${kickVariant.fxRole}; lowpass ${kickFilter.cutoff} Hz Q ${kickFilter.q}`,
+        fx: `${kickVariant.fxRole}; lowpass ${kickPlaybackCutoff} Hz Q ${kickFilter.q}`,
         alternatives: soundVariantOptions('kick', soundVariants.kick),
       },
       {
@@ -145,7 +167,7 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
         type: noiseVariant.type,
         source: noiseVariant.source,
         target: noiseVariant.target,
-        fx: `${noiseVariant.fxRole}; bandpass ${Math.min(noiseFilter.cutoff, 8200)} Hz Q ${Math.max(0.7, noiseFilter.q)} -> lowpass ${Math.min(Math.min(noiseFilter.cutoff, 8200) * 1.35, 9000)} Hz`,
+        fx: `${noiseVariant.fxRole}; bandpass ${noisePlaybackCutoff} Hz Q ${noisePlaybackQ.toFixed(2)} -> lowpass ${Math.min(noisePlaybackCutoff * 1.35, 9000)} Hz`,
         alternatives: soundVariantOptions('noise', soundVariants.noise),
       },
       {
@@ -163,30 +185,30 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
         type: spaceVariant.type,
         source: spaceVariant.source,
         target: spaceVariant.target,
-        fx: `${dubDelay.repeats} repeats; repeat every ${dubDelay.stepOffset} steps; feedback gain ${(dubDelay.feedbackGain * 100).toFixed(0)}%`,
+        fx: `${playbackDubDelay.repeats} repeats; repeat every ${playbackDubDelay.stepOffset} steps; feedback gain ${(playbackDubDelay.feedbackGain * 100).toFixed(0)}%`,
         alternatives: soundVariantOptions('space', soundVariants.space),
       },
     ],
     soundRows: [
       {
         label: 'Kick synth',
-        value: `sine pitch ${AUDIO_PARAMS.kick.startFreq} Hz -> ${AUDIO_PARAMS.kick.endFreq} Hz in ${AUDIO_PARAMS.kick.pitchDecayMs} ms; decay ${AUDIO_PARAMS.kick.decayMs} ms; lowpass ${kickFilter.cutoff} Hz Q ${kickFilter.q}`,
+        value: `${kickVariant.name}; sine pitch ${kickPlayback.startFreq} Hz -> ${kickPlayback.endFreq} Hz in ${(kickPlayback.pitchDecay * 1000).toFixed(0)} ms; decay ${(kickPlayback.decay * 1000).toFixed(0)} ms; gain ${(kickPlayback.gainRatio * 100).toFixed(0)}%; lowpass ${kickPlaybackCutoff} Hz Q ${kickFilter.q}`,
       },
       {
         label: 'Bass synth',
-        value: `sawtooth sub + triangle octave blend ${(AUDIO_PARAMS.bass.octaveBlend * 100).toFixed(0)}%; lowpass ${bassFilter.cutoff} Hz Q ${bassFilter.q}; note length 3.5 steps`,
+        value: `${bassVariant.name}; ${bassVoiceSettings}; Q ${bassFilter.q}; note length 3.5 steps`,
       },
       {
         label: 'Hat/noise',
-        value: `filtered tape-noise bandpass ${Math.min(noiseFilter.cutoff, 8200)} Hz Q ${Math.max(0.7, noiseFilter.q)}; lowpass ${Math.min(Math.min(noiseFilter.cutoff, 8200) * 1.35, 9000)} Hz; decay ${AUDIO_PARAMS.noise.decayMs} ms; gain ${(AUDIO_PARAMS.noise.gainRatio * 100).toFixed(0)}%`,
+        value: `${noiseVariant.name}; ${noisePartials}; bandpass ${noisePlaybackCutoff} Hz Q ${noisePlaybackQ.toFixed(2)}; lowpass ${Math.min(noisePlaybackCutoff * 1.35, 9000)} Hz; decay ${(AUDIO_PARAMS.noise.decayMs * noisePlayback.durationRatio).toFixed(0)} ms; gain ${(AUDIO_PARAMS.noise.gainRatio * noisePlayback.gainRatio * 100).toFixed(0)}%`,
       },
       {
         label: 'Chord stab',
-        value: `sawtooth chord; attack ${AUDIO_PARAMS.melody.attackMs} ms; decay ${AUDIO_PARAMS.melody.decayMs} ms; sustain ${(AUDIO_PARAMS.melody.sustainRatio * 100).toFixed(0)}%; lowpass ${stabFilter.cutoff} Hz Q ${stabFilter.q}`,
+        value: `${stabVariant.name}; ${stabVariant.source}; attack ${AUDIO_PARAMS.melody.attackMs} ms; decay ${AUDIO_PARAMS.melody.decayMs} ms; sustain ${(AUDIO_PARAMS.melody.sustainRatio * 100).toFixed(0)}%; lowpass ${stabFilter.cutoff} Hz Q ${stabFilter.q}`,
       },
       {
         label: 'Dub echo',
-        value: `${dubDelay.repeats} repeats; repeat every ${dubDelay.stepOffset} steps; feedback gain ${(dubDelay.feedbackGain * 100).toFixed(0)}%`,
+        value: `${spaceVariant.name}; ${playbackDubDelay.repeats} repeats; repeat every ${playbackDubDelay.stepOffset} steps; feedback gain ${(playbackDubDelay.feedbackGain * 100).toFixed(0)}%`,
       },
     ],
   };

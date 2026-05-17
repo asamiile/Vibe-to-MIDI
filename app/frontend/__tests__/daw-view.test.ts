@@ -63,6 +63,6 @@ describe('buildDawStepsView', () => {
     expect(view.soundRows.find((row) => row.label === 'Chord stab')?.value)
       .toContain('lowpass 780 Hz Q 1.5');
     expect(view.soundRows.find((row) => row.label === 'Dub echo')?.value)
-      .toBe('5 repeats; repeat every 3 steps; feedback gain 43%');
+      .toBe('Deep feedback; 5 repeats; repeat every 3 steps; feedback gain 43%');
   });
 });
