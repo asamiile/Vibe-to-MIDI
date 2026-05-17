@@ -35,10 +35,12 @@ function TrackSetupRow({ row }: { row: DawTrackSetupRow }) {
       <Text className="mb-2 text-[13px] font-black text-slate-200">
         {row.label}
       </Text>
+      <ValueRow label="Variant" value={row.variant} />
       <ValueRow label="Type" value={row.type} />
       <ValueRow label="Source" value={row.source} />
       <ValueRow label="DAW target" value={row.target} />
       <ValueRow label="FX" value={row.fx} />
+      <ValueRow label="Other usable sounds" value={row.alternatives} />
     </View>
   );
 }

@@ -5,12 +5,12 @@ const ALL_VIBES: VibeId[] = [
   'dark', 'floating', 'tense', 'repetitive', 'underground',
   'wide', 'hypnotic', 'metallic', 'warm', 'unstable',
   'deep', 'rolling', 'cavernous', 'dry', 'groovy', 'nostalgic',
-  'retrowave', 'gritty', 'euphoric', 'cinematic',
+  'retrowave', 'gritty', 'euphoric', 'cinematic', 'summer', 'winter',
 ];
 
 describe('getAllVibeIds', () => {
-  it('returns all 20 vibe ids', () => {
-    expect(getAllVibeIds()).toHaveLength(20);
+  it('returns all 22 vibe ids', () => {
+    expect(getAllVibeIds()).toHaveLength(22);
   });
 });
 
@@ -44,6 +44,15 @@ describe('getMusicalSuggestion', () => {
       expect(['bass', 'pad', 'lead', 'drum', 'arp', 'pluck', 'keys']).toContain(layer.role);
       expect(layer.descriptor.length).toBeGreaterThan(0);
     });
+    expect(s.soundVariants?.kick).toBeTruthy();
+    expect(s.soundVariants?.bass).toBeTruthy();
+    expect(s.soundVariants?.noise).toBeTruthy();
+    expect(s.soundVariants?.stab).toBeTruthy();
+    expect(s.soundVariants?.space).toBeTruthy();
+    expect(s.soundMix?.kick).toBeGreaterThan(0);
+    expect(s.soundMix?.bass).toBeGreaterThan(0);
+    expect(s.soundMix?.noise).toBeGreaterThan(0);
+    expect(s.soundMix?.stab).toBeGreaterThan(0);
 
     const [min, max] = s.bpmRange;
     expect(min).toBeGreaterThan(0);

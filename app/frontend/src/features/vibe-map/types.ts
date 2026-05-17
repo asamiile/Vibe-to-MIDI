@@ -1,3 +1,5 @@
+import type { SoundVariantSelection } from './sound-palette';
+
 export type VibeId =
   | 'dark'
   | 'floating'
@@ -18,7 +20,9 @@ export type VibeId =
   | 'retrowave'
   | 'gritty'
   | 'euphoric'
-  | 'cinematic';
+  | 'cinematic'
+  | 'summer'
+  | 'winter';
 
 export type ScaleMode =
   | 'minor'
@@ -87,6 +91,13 @@ export interface DubDelaySpec {
   feedbackGain: number;
 }
 
+export interface SoundMixLevels {
+  kick: number;
+  bass: number;
+  noise: number;
+  stab: number;
+}
+
 export interface MusicalSuggestion {
   vibeId: VibeId;
   scale: ScaleSpec;
@@ -96,6 +107,8 @@ export interface MusicalSuggestion {
   noisePattern?: RhythmPattern;   // hi-hat / noise hits (16 steps)
   chordStabPattern?: RhythmPattern;
   soundLayers: readonly SoundLayer[];
+  soundVariants?: SoundVariantSelection;
+  soundMix?: SoundMixLevels;
   bpmRange: readonly [number, number];
   kickFilter?: KickFilter;
   bassFilter?: BassFilter;
