@@ -2,7 +2,7 @@
    Direction: pure black · MIST accent · hairline rules.
    Accent: #c2e8ff (MIST). No green, no cyan, no sky-blue. */
 
-export const A = {
+export const MIST = {
   bg:          '#000000',
   surface1:    '#070708',
   surface2:    '#0d0d0f',

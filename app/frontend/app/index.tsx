@@ -16,7 +16,7 @@ import { isAudioAvailable } from '../src/features/audio-engine/adapter';
 import { SuggestionPanel } from '../src/components/ui/SuggestionPanel';
 import { VIBE_LABELS } from '../src/features/vibe-map/labels';
 import { VibeGlyph } from '../src/components/ui/VibeGlyph';
-import { A, FONT } from '../src/styles/theme';
+import { MIST, FONT } from '../src/styles/theme';
 import type { VibeId } from '../src/features/vibe-map/types';
 
 const VIBE_IDS = getAllVibeIds();
@@ -39,7 +39,7 @@ function VibeCell({
   onPress: () => void;
 }) {
   const [pressed, setPressed] = useState(false);
-  const glyphColor = active ? A.accent : A.text;
+  const glyphColor = active ? MIST.accent : MIST.text;
   return (
     <View
       style={{
@@ -74,7 +74,7 @@ function VibeCell({
               right: 5,
               bottom: 5,
               borderWidth: 1,
-              borderColor: A.accent,
+              borderColor: MIST.accent,
             }}
           />
         )}
@@ -84,7 +84,7 @@ function VibeCell({
             style={{
               fontFamily: FONT.mono,
               fontSize: 8,
-              color: active ? A.accent : A.textGhost,
+              color: active ? MIST.accent : MIST.textGhost,
               letterSpacing: 1.2,
               marginBottom: 2,
             }}
@@ -97,7 +97,7 @@ function VibeCell({
               fontFamily: FONT.sans,
               fontSize: 10,
               fontWeight: active ? '500' : '400',
-              color: active ? A.text : A.textMute,
+              color: active ? MIST.text : MIST.textMute,
               letterSpacing: 0.4,
               textAlign: 'center',
               width: '100%',
@@ -115,7 +115,7 @@ function VibeCell({
               width: 5,
               height: 5,
               borderRadius: 99,
-              backgroundColor: A.accent,
+              backgroundColor: MIST.accent,
             }}
           />
         )}
@@ -141,7 +141,7 @@ function AHeader({
         paddingVertical: 12,
         minHeight: 44,
         borderBottomWidth: 1,
-        borderBottomColor: A.hairline,
+        borderBottomColor: MIST.hairline,
       }}
     >
       {left}
@@ -168,7 +168,7 @@ function AScreenLabel({
           fontWeight: '500',
           letterSpacing: 2.2,
           textTransform: 'uppercase',
-          color: A.text,
+          color: MIST.text,
         }}
       >
         {section}
@@ -178,7 +178,7 @@ function AScreenLabel({
           style={{
             fontFamily: FONT.mono,
             fontSize: 9,
-            color: A.textFaint,
+            color: MIST.textFaint,
             letterSpacing: 1.8,
           }}
         >
@@ -214,13 +214,13 @@ function NavLink({
           fontWeight: '500',
           letterSpacing: 2.2,
           textTransform: 'uppercase',
-          color: active ? A.text : A.textFaint,
+          color: active ? MIST.text : MIST.textFaint,
         }}
       >
         {label}
       </Text>
       {active && (
-        <View style={{ height: 1, backgroundColor: A.text, marginTop: 2 }} />
+        <View style={{ height: 1, backgroundColor: MIST.text, marginTop: 2 }} />
       )}
     </Pressable>
   );
@@ -244,19 +244,19 @@ function SettingsModal({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={{ flex: 1, backgroundColor: A.bg }}>
-        <StatusBar barStyle="light-content" backgroundColor={A.bg} />
+      <SafeAreaView style={{ flex: 1, backgroundColor: MIST.bg }}>
+        <StatusBar barStyle="light-content" backgroundColor={MIST.bg} />
 
         <View
           style={{
             padding: 24,
             paddingBottom: 24,
             borderBottomWidth: 1,
-            borderBottomColor: A.hairline,
+            borderBottomColor: MIST.hairline,
           }}
         >
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
-            <Text style={{ fontFamily: FONT.mono, fontSize: 9, fontWeight: '500', letterSpacing: 2.2, color: A.textMute, textTransform: 'uppercase' }}>
+            <Text style={{ fontFamily: FONT.mono, fontSize: 9, fontWeight: '500', letterSpacing: 2.2, color: MIST.textMute, textTransform: 'uppercase' }}>
               MENU
             </Text>
             <Pressable
@@ -264,13 +264,13 @@ function SettingsModal({
               onPress={onClose}
               style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
             >
-              <Text style={{ fontFamily: FONT.mono, fontSize: 10, fontWeight: '500', letterSpacing: 2.2, color: A.textFaint, textTransform: 'uppercase' }}>
+              <Text style={{ fontFamily: FONT.mono, fontSize: 10, fontWeight: '500', letterSpacing: 2.2, color: MIST.textFaint, textTransform: 'uppercase' }}>
                 ← CLOSE
               </Text>
             </Pressable>
           </View>
-          <Text style={{ fontFamily: FONT.sans, fontSize: 40, fontWeight: '300', color: A.text, letterSpacing: -1.2, lineHeight: 40 }}>
-            Vibe<Text style={{ color: A.accent }}>→</Text>MIDI
+          <Text style={{ fontFamily: FONT.sans, fontSize: 40, fontWeight: '300', color: MIST.text, letterSpacing: -1.2, lineHeight: 40 }}>
+            Vibe<Text style={{ color: MIST.accent }}>→</Text>MIDI
           </Text>
         </View>
 
@@ -290,14 +290,14 @@ function SettingsModal({
                 paddingVertical: 20,
                 paddingHorizontal: 24,
                 borderBottomWidth: 1,
-                borderBottomColor: A.hairline,
+                borderBottomColor: MIST.hairline,
                 opacity: pressed ? 0.6 : 1,
               })}
             >
-              <Text style={{ fontFamily: FONT.sans, fontSize: 15, color: A.text, fontWeight: '400' }}>
+              <Text style={{ fontFamily: FONT.sans, fontSize: 15, color: MIST.text, fontWeight: '400' }}>
                 {item.label}
               </Text>
-              <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: A.textFaint, letterSpacing: 1 }}>
+              <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textFaint, letterSpacing: 1 }}>
                 →
               </Text>
             </Pressable>
@@ -342,8 +342,8 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: A.bg }}>
-      <StatusBar barStyle="light-content" backgroundColor={A.bg} />
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: MIST.bg }}>
+      <StatusBar barStyle="light-content" backgroundColor={MIST.bg} />
 
       <View style={{ flex: 1 }}>
         {viewMode === 'listen' ? (
@@ -381,7 +381,7 @@ export default function HomeScreen() {
                 style={{
                   fontFamily: FONT.mono,
                   fontSize: 9,
-                  color: A.textFaint,
+                  color: MIST.textFaint,
                   letterSpacing: 1,
                   paddingHorizontal: 24,
                   paddingTop: 8,
@@ -429,7 +429,7 @@ export default function HomeScreen() {
                       justifyContent: 'center',
                     }}
                   >
-                    <Text style={{ fontFamily: FONT.mono, fontSize: 14, color: A.textGhost }}>—</Text>
+                    <Text style={{ fontFamily: FONT.mono, fontSize: 14, color: MIST.textGhost }}>—</Text>
                   </View>
                 ))}
               </View>
@@ -472,17 +472,17 @@ export default function HomeScreen() {
                   paddingHorizontal: 24,
                   paddingVertical: 14,
                   borderBottomWidth: 1,
-                  borderBottomColor: A.hairline,
+                  borderBottomColor: MIST.hairline,
                 }}
               >
-                <VibeGlyph id={activeVibeId} size={32} color={A.accent} />
+                <VibeGlyph id={activeVibeId} size={32} color={MIST.accent} />
                 <View style={{ flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 12, minWidth: 0 }}>
                   <Text
                     style={{
                       fontFamily: FONT.sans,
                       fontSize: 20,
                       fontWeight: '300',
-                      color: A.text,
+                      color: MIST.text,
                       letterSpacing: -0.4,
                       lineHeight: 20,
                     }}
@@ -494,7 +494,7 @@ export default function HomeScreen() {
                     style={{
                       fontFamily: FONT.mono,
                       fontSize: 10,
-                      color: A.textFaint,
+                      color: MIST.textFaint,
                       letterSpacing: 1.8,
                       flexShrink: 1,
                     }}
@@ -517,7 +517,7 @@ export default function HomeScreen() {
               style={{
                 fontFamily: FONT.mono,
                 fontSize: 10,
-                color: A.textFaint,
+                color: MIST.textFaint,
                 letterSpacing: 1,
               }}
             >

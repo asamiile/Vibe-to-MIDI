@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Animated } from 'react-native';
-import { A } from '../../styles/theme';
+import { MIST } from '../../styles/theme';
 
 const BAR_COUNT = 6;
 const BAR_WIDTH = 3;
@@ -64,7 +64,7 @@ export function WaveformVisualizer({ isPlaying }: { isPlaying: boolean }) {
               width: BAR_WIDTH,
               height,
               marginLeft: i === 0 ? 0 : BAR_GAP,
-              backgroundColor: isPlaying ? A.accent : A.textGhost,
+              backgroundColor: isPlaying ? MIST.accent : MIST.textGhost,
               borderRadius: 1,
             }}
           />

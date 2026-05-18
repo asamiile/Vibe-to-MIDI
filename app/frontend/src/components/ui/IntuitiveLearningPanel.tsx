@@ -8,7 +8,7 @@ import { playPreview } from '../../features/audio-engine/player';
 import type { PlayerHandle } from '../../features/audio-engine/player';
 import { useAppStore } from '../../data/store';
 import { midiToNoteName } from '../../lib/notes';
-import { A, FONT } from '../../styles/theme';
+import { MIST, FONT } from '../../styles/theme';
 
 interface Props {
   suggestion: MusicalSuggestion;
@@ -28,7 +28,7 @@ function AMiniLabel({ children }: { children: string }) {
         fontWeight: '500',
         letterSpacing: 2.2,
         textTransform: 'uppercase',
-        color: A.textMute,
+        color: MIST.textMute,
       }}
     >
       {children}
@@ -58,13 +58,13 @@ function TabLink({
           fontWeight: '500',
           letterSpacing: 2.2,
           textTransform: 'uppercase',
-          color: active ? A.accent : A.textFaint,
+          color: active ? MIST.accent : MIST.textFaint,
         }}
       >
         {label}
       </Text>
       {active && (
-        <View style={{ height: 1, backgroundColor: A.accent, marginTop: 2 }} />
+        <View style={{ height: 1, backgroundColor: MIST.accent, marginTop: 2 }} />
       )}
     </Pressable>
   );
@@ -80,7 +80,7 @@ function RhythmStrip({ pattern }: { pattern: readonly boolean[] }) {
             flex: 1,
             height: 22,
             borderLeftWidth: 1,
-            borderLeftColor: hit ? A.text : A.hairline,
+            borderLeftColor: hit ? MIST.text : MIST.hairline,
           }}
         />
       ))}
@@ -113,7 +113,7 @@ function BassStrip({ notes }: { notes: readonly number[] }) {
                 width: '100%',
                 paddingVertical: 5,
                 borderWidth: 1,
-                borderColor: A.accent,
+                borderColor: MIST.accent,
                 alignItems: 'center',
               }}
             >
@@ -121,7 +121,7 @@ function BassStrip({ notes }: { notes: readonly number[] }) {
                 style={{
                   fontFamily: FONT.mono,
                   fontSize: 10,
-                  color: A.text,
+                  color: MIST.text,
                   fontWeight: '500',
                 }}
               >
@@ -184,7 +184,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
           paddingHorizontal: 24,
           paddingVertical: 10,
           borderBottomWidth: 1,
-          borderBottomColor: A.hairline,
+          borderBottomColor: MIST.hairline,
         }}
       >
         {FOCUS_OPTIONS.map((item) => (
@@ -210,7 +210,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
               fontFamily: FONT.sans,
               fontSize: 28,
               fontWeight: '300',
-              color: A.text,
+              color: MIST.text,
               lineHeight: 32,
               letterSpacing: -0.6,
             }}
@@ -224,7 +224,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
           style={{
             flexDirection: 'row',
             borderWidth: 1,
-            borderColor: A.hairline,
+            borderColor: MIST.hairline,
             marginBottom: 24,
           }}
         >
@@ -242,9 +242,9 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
                 style={({ pressed }) => ({
                   flex: 1,
                   padding: 18,
-                  backgroundColor: active ? A.accentDim : 'transparent',
+                  backgroundColor: active ? MIST.accentDim : 'transparent',
                   borderLeftWidth: i === 0 ? 0 : 1,
-                  borderLeftColor: A.hairline,
+                  borderLeftColor: MIST.hairline,
                   opacity: pressed ? 0.7 : 1,
                   minHeight: 110,
                   gap: 14,
@@ -256,7 +256,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
                     style={{
                       fontFamily: FONT.mono,
                       fontSize: 10,
-                      color: active ? A.accent : A.textGhost,
+                      color: active ? MIST.accent : MIST.textGhost,
                     }}
                   >
                     {active ? '▶ playing' : '▶ play'}
@@ -270,7 +270,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
                         flex: 1,
                         height: 22,
                         borderLeftWidth: 1,
-                        borderLeftColor: h ? (active ? A.accent : A.text) : A.hairline,
+                        borderLeftColor: h ? (active ? MIST.accent : MIST.text) : MIST.hairline,
                       }}
                     />
                   ))}
@@ -287,7 +287,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
             paddingVertical: 8,
             paddingHorizontal: 12,
             borderWidth: 1,
-            borderColor: A.accent,
+            borderColor: MIST.accent,
             marginBottom: 24,
           }}
         >
@@ -295,7 +295,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
             style={{
               fontFamily: FONT.mono,
               fontSize: 10,
-              color: A.accent,
+              color: MIST.accent,
               letterSpacing: 1.8,
               textTransform: 'uppercase',
             }}
@@ -321,7 +321,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
               marginTop: 14,
               fontFamily: FONT.sans,
               fontSize: 13,
-              color: A.textMute,
+              color: MIST.textMute,
               lineHeight: 20,
             }}
           >
@@ -334,7 +334,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
             style={{
               fontFamily: FONT.mono,
               fontSize: 10,
-              color: A.textFaint,
+              color: MIST.textFaint,
               letterSpacing: 1,
               marginTop: 8,
             }}

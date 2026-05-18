@@ -6,7 +6,7 @@ import type { DawNoteView, DawTrackSetupRow } from '../../features/vibe-map/daw-
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
 import { playAuditionChord, playAuditionNote } from '../../features/audio-engine/audition';
 import { useAppStore } from '../../data/store';
-import { A, FONT } from '../../styles/theme';
+import { MIST, FONT } from '../../styles/theme';
 
 interface Props {
   suggestion: MusicalSuggestion;
@@ -25,7 +25,7 @@ function AMiniLabel({ children }: { children: string }) {
         fontWeight: '500',
         letterSpacing: 2.2,
         textTransform: 'uppercase',
-        color: A.textMute,
+        color: MIST.textMute,
       }}
     >
       {children}
@@ -34,7 +34,7 @@ function AMiniLabel({ children }: { children: string }) {
 }
 
 function AHairline() {
-  return <View style={{ height: 1, backgroundColor: A.hairlineX, marginBottom: 4 }} />;
+  return <View style={{ height: 1, backgroundColor: MIST.hairlineX, marginBottom: 4 }} />;
 }
 
 function ARow({
@@ -54,7 +54,7 @@ function ARow({
         justifyContent: 'space-between',
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: A.hairline,
+        borderBottomColor: MIST.hairline,
       }}
     >
       <AMiniLabel>{label}</AMiniLabel>
@@ -62,7 +62,7 @@ function ARow({
         style={{
           fontFamily: mono ? FONT.mono : FONT.sans,
           fontSize: 13,
-          color: A.text,
+          color: MIST.text,
           fontWeight: '400',
           letterSpacing: mono ? 0.4 : 0,
           flexShrink: 1,
@@ -110,13 +110,13 @@ function TabLink({
           fontWeight: '500',
           letterSpacing: 2.2,
           textTransform: 'uppercase',
-          color: active ? A.accent : A.textFaint,
+          color: active ? MIST.accent : MIST.textFaint,
         }}
       >
         {label}
       </Text>
       {active && (
-        <View style={{ height: 1, backgroundColor: A.accent, marginTop: 2 }} />
+        <View style={{ height: 1, backgroundColor: MIST.accent, marginTop: 2 }} />
       )}
     </Pressable>
   );
@@ -143,20 +143,20 @@ function AuditionPill({
         paddingVertical: 8,
         paddingHorizontal: 12,
         borderWidth: 1,
-        borderColor: disabled ? A.hairline : A.hairlineX,
+        borderColor: disabled ? MIST.hairline : MIST.hairlineX,
         marginRight: 8,
         marginBottom: 8,
         opacity: pressed ? 0.6 : 1,
       })}
     >
-      <Text style={{ fontFamily: FONT.mono, fontSize: 9, color: disabled ? A.textGhost : A.accent }}>
+      <Text style={{ fontFamily: FONT.mono, fontSize: 9, color: disabled ? MIST.textGhost : MIST.accent }}>
         ▶
       </Text>
       <Text
         style={{
           fontFamily: FONT.mono,
           fontSize: 11,
-          color: disabled ? A.textGhost : A.text,
+          color: disabled ? MIST.textGhost : MIST.text,
           letterSpacing: 0.5,
         }}
       >
@@ -225,7 +225,7 @@ export function DawStepsPanel({ suggestion }: Props) {
           paddingHorizontal: 24,
           paddingVertical: 10,
           borderBottomWidth: 1,
-          borderBottomColor: A.hairline,
+          borderBottomColor: MIST.hairline,
         }}
       >
         {MIDI_TABS.map((tab) => (
@@ -271,12 +271,12 @@ export function DawStepsPanel({ suggestion }: Props) {
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderWidth: 1,
-                        borderColor: hit ? A.accent : A.hairline,
-                        backgroundColor: hit ? A.accentDim : 'transparent',
+                        borderColor: hit ? MIST.accent : MIST.hairline,
+                        backgroundColor: hit ? MIST.accentDim : 'transparent',
                       }}
                     >
                       {hit && (
-                        <View style={{ width: 4, height: 4, backgroundColor: A.accent }} />
+                        <View style={{ width: 4, height: 4, backgroundColor: MIST.accent }} />
                       )}
                     </View>
                   ))}
@@ -288,7 +288,7 @@ export function DawStepsPanel({ suggestion }: Props) {
                         style={{
                           fontFamily: FONT.mono,
                           fontSize: 8,
-                          color: i % 4 === 0 ? A.textMute : A.textGhost,
+                          color: i % 4 === 0 ? MIST.textMute : MIST.textGhost,
                           letterSpacing: 1,
                         }}
                       >
@@ -352,7 +352,7 @@ export function DawStepsPanel({ suggestion }: Props) {
                 style={{
                   fontFamily: FONT.mono,
                   fontSize: 10,
-                  color: A.textFaint,
+                  color: MIST.textFaint,
                   letterSpacing: 1,
                   marginTop: 8,
                 }}

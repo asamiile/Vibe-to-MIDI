@@ -7,7 +7,7 @@ import { VIBE_LABELS } from '../../features/vibe-map/labels';
 import { WaveformVisualizer } from './WaveformVisualizer';
 import { ALL_AUDIO_LAYERS } from '../../features/audio-engine/constants';
 import type { AudioLayer } from '../../features/audio-engine/constants';
-import { A, FONT } from '../../styles/theme';
+import { MIST, FONT } from '../../styles/theme';
 
 const LAYER_LABELS: Record<AudioLayer, string> = {
   kick: 'KICK',
@@ -32,8 +32,8 @@ export function PlayerBar() {
     <View
       style={{
         borderTopWidth: 1,
-        borderTopColor: A.hairline,
-        backgroundColor: A.bg,
+        borderTopColor: MIST.hairline,
+        backgroundColor: MIST.bg,
         paddingBottom: bottom,
       }}
     >
@@ -61,7 +61,7 @@ export function PlayerBar() {
                     fontSize: 9,
                     fontWeight: '500',
                     letterSpacing: 2.2,
-                    color: active ? A.accent : A.textFaint,
+                    color: active ? MIST.accent : MIST.textFaint,
                   }}
                 >
                   {LAYER_LABELS[layer]}
@@ -91,7 +91,7 @@ export function PlayerBar() {
           <Text
             style={{
               fontSize: 14,
-              color: idle ? A.textGhost : isPlaying ? A.accent : A.text,
+              color: idle ? MIST.textGhost : isPlaying ? MIST.accent : MIST.text,
             }}
           >
             {isPlaying ? '■' : '▶'}
@@ -107,7 +107,7 @@ export function PlayerBar() {
             fontSize: 12,
             fontWeight: '400',
             letterSpacing: 0.4,
-            color: label ? A.text : A.textGhost,
+            color: label ? MIST.text : MIST.textGhost,
             textTransform: 'uppercase',
           }}
           numberOfLines={1}
