@@ -6,54 +6,89 @@ import type { DawNoteView, DawTrackSetupRow } from '../../features/vibe-map/daw-
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
 import { playAuditionChord, playAuditionNote } from '../../features/audio-engine/audition';
 import { useAppStore } from '../../data/store';
+import { A, FONT } from '../../styles/theme';
 
 interface Props {
   suggestion: MusicalSuggestion;
 }
 
 type MidiTab = 'sequence' | 'audition' | 'synth';
-
-const STEP_LABELS = ['1', 'e', '&', 'a'];
 const MIDI_TABS: readonly MidiTab[] = ['sequence', 'audition', 'synth'];
+const STEP_LABELS = ['1', 'e', '&', 'a'];
 
-function ValueRow({ label, value }: { label: string; value: string }) {
+function AMiniLabel({ children }: { children: string }) {
   return (
-    <View className="mb-3">
-      <Text className="mb-1 text-[10px] uppercase tracking-[1px] text-slate-500">
-        {label}
-      </Text>
-      <Text className="text-[13px] font-semibold leading-[19px] text-slate-300">
+    <Text
+      style={{
+        fontFamily: FONT.mono,
+        fontSize: 9,
+        fontWeight: '500',
+        letterSpacing: 2.2,
+        textTransform: 'uppercase',
+        color: A.textMute,
+      }}
+    >
+      {children}
+    </Text>
+  );
+}
+
+function AHairline() {
+  return <View style={{ height: 1, backgroundColor: A.hairlineX, marginBottom: 4 }} />;
+}
+
+function ARow({
+  label,
+  value,
+  mono = true,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: A.hairline,
+      }}
+    >
+      <AMiniLabel>{label}</AMiniLabel>
+      <Text
+        style={{
+          fontFamily: mono ? FONT.mono : FONT.sans,
+          fontSize: 13,
+          color: A.text,
+          fontWeight: '400',
+          letterSpacing: mono ? 0.4 : 0,
+          flexShrink: 1,
+          marginLeft: 8,
+          textAlign: 'right',
+        }}
+      >
         {value}
       </Text>
     </View>
   );
 }
 
-function TrackSetupRow({ row }: { row: DawTrackSetupRow }) {
+function ASection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <View className="mb-3 rounded-md border border-slate-800 bg-slate-900 p-3">
-      <Text className="mb-2 text-[13px] font-black text-slate-200">
-        {row.label}
-      </Text>
-      <ValueRow label="Variant" value={row.variant} />
-      <ValueRow label="Type" value={row.type} />
-      <ValueRow label="Source" value={row.source} />
-      <ValueRow label="DAW target" value={row.target} />
-      <ValueRow label="FX" value={row.fx} />
-      <ValueRow label="Other usable sounds" value={row.alternatives} />
+    <View style={{ marginBottom: 28 }}>
+      <View style={{ marginBottom: 4 }}>
+        <AMiniLabel>{label}</AMiniLabel>
+      </View>
+      <AHairline />
+      {children}
     </View>
   );
 }
 
-function MiniLabel({ children }: { children: string }) {
-  return (
-    <Text className="mb-2 text-[10px] uppercase tracking-[1px] text-slate-400">
-      {children}
-    </Text>
-  );
-}
-
-function TabButton({
+function TabLink({
   label,
   active,
   onPress,
@@ -64,27 +99,30 @@ function TabButton({
 }) {
   return (
     <Pressable
-      accessibilityRole="button"
       android_disableSound
       onPress={onPress}
-      className="min-h-10 flex-1 items-center justify-center rounded-md border px-3"
-      style={({ pressed }) => ({
-        backgroundColor: active ? '#164e63' : '#0f172a',
-        borderColor: active ? '#22d3ee' : '#334155',
-        opacity: pressed ? 0.75 : 1,
-      })}
+      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 2 })}
     >
       <Text
-        className="text-xs font-black"
-        style={{ color: active ? '#ecfeff' : '#94a3b8' }}
+        style={{
+          fontFamily: FONT.mono,
+          fontSize: 10,
+          fontWeight: '500',
+          letterSpacing: 2.2,
+          textTransform: 'uppercase',
+          color: active ? A.accent : A.textFaint,
+        }}
       >
         {label}
       </Text>
+      {active && (
+        <View style={{ height: 1, backgroundColor: A.accent, marginTop: 2 }} />
+      )}
     </Pressable>
   );
 }
 
-function AuditionButton({
+function AuditionPill({
   label,
   disabled,
   onPress,
@@ -95,27 +133,32 @@ function AuditionButton({
 }) {
   return (
     <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`Play ${label}`}
       android_disableSound
       disabled={disabled}
       onPress={onPress}
-      className="mr-2 mb-2 flex-row items-center rounded border px-2.5 py-1.5"
       style={({ pressed }) => ({
-        borderColor: disabled ? '#1e293b' : '#334155',
-        backgroundColor: disabled ? '#0f172a' : pressed ? '#164e63' : '#111827',
-        opacity: pressed ? 0.75 : 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderWidth: 1,
+        borderColor: disabled ? A.hairline : A.hairlineX,
+        marginRight: 8,
+        marginBottom: 8,
+        opacity: pressed ? 0.6 : 1,
       })}
     >
-      <Text
-        className="mr-1 text-[11px] font-bold"
-        style={{ color: disabled ? '#334155' : '#22d3ee' }}
-      >
+      <Text style={{ fontFamily: FONT.mono, fontSize: 9, color: disabled ? A.textGhost : A.accent }}>
         ▶
       </Text>
       <Text
-        className="text-[12px] font-semibold leading-[16px]"
-        style={{ color: disabled ? '#475569' : '#cbd5e1' }}
+        style={{
+          fontFamily: FONT.mono,
+          fontSize: 11,
+          color: disabled ? A.textGhost : A.text,
+          letterSpacing: 0.5,
+        }}
       >
         {label}
       </Text>
@@ -135,13 +178,10 @@ function AuditionNoteGroup({
   onPlayNote: (midi: number) => void;
 }) {
   return (
-    <View className="mb-3">
-      <Text className="mb-2 text-[10px] uppercase tracking-[1px] text-slate-500">
-        {label}
-      </Text>
-      <View className="flex-row flex-wrap">
+    <ASection label={label}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingTop: 14 }}>
         {notes.map((note, index) => (
-          <AuditionButton
+          <AuditionPill
             key={`${label}-${index}-${note.midi}`}
             label={note.label}
             disabled={disabled}
@@ -149,7 +189,20 @@ function AuditionNoteGroup({
           />
         ))}
       </View>
-    </View>
+    </ASection>
+  );
+}
+
+function TrackSetupCard({ row }: { row: DawTrackSetupRow }) {
+  return (
+    <ASection label={row.label}>
+      <ARow label="Variant"     value={row.variant}      mono={false} />
+      <ARow label="Type"        value={row.type}         mono={false} />
+      <ARow label="Source"      value={row.source}       mono={false} />
+      <ARow label="DAW target"  value={row.target}       mono={false} />
+      <ARow label="FX"          value={row.fx}           mono={false} />
+      <ARow label="Alternatives" value={row.alternatives} mono={false} />
+    </ASection>
   );
 }
 
@@ -163,131 +216,166 @@ export function DawStepsPanel({ suggestion }: Props) {
   }, [isPlaying, stop]);
 
   return (
-    <View className="mb-2">
-      <View className="mb-3 flex-row gap-2">
+    <View>
+      {/* Tab row */}
+      <View
+        style={{
+          flexDirection: 'row',
+          gap: 24,
+          paddingHorizontal: 24,
+          paddingVertical: 10,
+          borderBottomWidth: 1,
+          borderBottomColor: A.hairline,
+        }}
+      >
         {MIDI_TABS.map((tab) => (
-          <TabButton
+          <TabLink
             key={tab}
-            label={tab === 'sequence' ? 'Sequence' : tab === 'audition' ? 'Audition' : 'Synth'}
+            label={tab}
             active={activeTab === tab}
             onPress={() => setActiveTab(tab)}
           />
         ))}
       </View>
 
-      {activeTab === 'sequence' && (
-        <>
-          <View className="mb-3.5 rounded-md border border-slate-700 bg-gray-900 p-3">
-            <MiniLabel>Setup</MiniLabel>
-            {view.setupRows.map((row) => (
-              <ValueRow key={row.label} label={row.label} value={row.value} />
-            ))}
-          </View>
-
-          <View className="mb-3.5 rounded-md border border-slate-800 bg-slate-950 p-3">
-            <MiniLabel>Sequence</MiniLabel>
-            {view.sequenceRows.map((row) => (
-              <ValueRow key={row.label} label={row.label} value={row.value} />
-            ))}
-          </View>
-
-          <View className="rounded-md border border-slate-800 bg-slate-900 p-3">
-            <MiniLabel>Kick step grid</MiniLabel>
-            <View className="flex-row gap-1">
-              {view.kickPattern.map((hit, index) => (
-                <View key={`daw-step-${index}`} className="flex-1 gap-1">
-                  <View
-                    className="h-8 items-center justify-center rounded border"
-                    style={{
-                      borderColor: hit ? '#22d3ee' : '#1e293b',
-                      backgroundColor: hit ? '#0e7490' : '#111827',
-                    }}
-                  >
-                    <Text className="text-[10px] font-bold" style={{ color: hit ? '#ecfeff' : '#475569' }}>
-                      {hit ? 'hit' : ''}
-                    </Text>
-                  </View>
-                  <Text className="text-center text-[9px]" style={{ color: index % 4 === 0 ? '#cbd5e1' : '#475569' }}>
-                    {STEP_LABELS[index % 4]}
-                  </Text>
-                </View>
+      <View style={{ padding: 24, paddingBottom: 32 }}>
+        {activeTab === 'sequence' && (
+          <>
+            <ASection label="Setup">
+              {view.setupRows.map((row) => (
+                <ARow key={row.label} label={row.label} value={row.value} />
               ))}
-            </View>
-          </View>
-        </>
-      )}
+            </ASection>
 
-      {activeTab === 'audition' && (
-        <View className="mb-3.5 rounded-md border border-slate-800 bg-slate-950 p-3">
-          <MiniLabel>Audition MIDI</MiniLabel>
-          <View className="mb-3">
-            <Text className="mb-2 text-[10px] uppercase tracking-[1px] text-slate-500">
-              Chord
-            </Text>
-            <AuditionButton
-              label={view.audition.chordLabel}
+            <ASection label="Sequence">
+              {view.sequenceRows.map((row) => (
+                <ARow key={row.label} label={row.label} value={row.value} />
+              ))}
+            </ASection>
+
+            <ASection label="Kick · step grid">
+              <View style={{ paddingTop: 14 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    gap: 4,
+                    flexWrap: 'nowrap',
+                  }}
+                >
+                  {view.kickPattern.map((hit, index) => (
+                    <View
+                      key={`step-${index}`}
+                      style={{
+                        flex: 1,
+                        aspectRatio: 1,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderWidth: 1,
+                        borderColor: hit ? A.accent : A.hairline,
+                        backgroundColor: hit ? A.accentDim : 'transparent',
+                      }}
+                    >
+                      {hit && (
+                        <View style={{ width: 4, height: 4, backgroundColor: A.accent }} />
+                      )}
+                    </View>
+                  ))}
+                </View>
+                <View style={{ flexDirection: 'row', gap: 4, marginTop: 6 }}>
+                  {Array.from({ length: 16 }).map((_, i) => (
+                    <View key={i} style={{ flex: 1, alignItems: 'center' }}>
+                      <Text
+                        style={{
+                          fontFamily: FONT.mono,
+                          fontSize: 8,
+                          color: i % 4 === 0 ? A.textMute : A.textGhost,
+                          letterSpacing: 1,
+                        }}
+                      >
+                        {i % 4 === 0 ? `${i / 4 + 1}` : STEP_LABELS[i % 4]}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </ASection>
+          </>
+        )}
+
+        {activeTab === 'audition' && (
+          <>
+            <ASection label="Chord">
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingTop: 14 }}>
+                <AuditionPill
+                  label={view.audition.chordLabel}
+                  disabled={!audioAvailable}
+                  onPress={() => {
+                    stopPreviewBeforeAudition();
+                    void playAuditionChord(
+                      view.audition.chordNotes.map((note) => note.midi),
+                      suggestion
+                    );
+                  }}
+                />
+              </View>
+            </ASection>
+
+            <AuditionNoteGroup
+              label="Chord notes"
+              notes={view.audition.chordNotes}
               disabled={!audioAvailable}
-              onPress={() => {
+              onPlayNote={(midi) => {
                 stopPreviewBeforeAudition();
-                void playAuditionChord(
-                  view.audition.chordNotes.map((note) => note.midi),
-                  suggestion
-                );
+                void playAuditionNote(midi, suggestion, { tone: 'stab' });
               }}
             />
-          </View>
-          <AuditionNoteGroup
-            label="Chord notes"
-            notes={view.audition.chordNotes}
-            disabled={!audioAvailable}
-            onPlayNote={(midi) => {
-              stopPreviewBeforeAudition();
-              void playAuditionNote(midi, suggestion, { tone: 'stab' });
-            }}
-          />
-          <AuditionNoteGroup
-            label="Bass notes"
-            notes={view.audition.bassNotes}
-            disabled={!audioAvailable}
-            onPlayNote={(midi) => {
-              stopPreviewBeforeAudition();
-              void playAuditionNote(midi, suggestion, { tone: 'bass' });
-            }}
-          />
-          <AuditionNoteGroup
-            label="Scale notes"
-            notes={view.audition.scaleNotes}
-            disabled={!audioAvailable}
-            onPlayNote={(midi) => {
-              stopPreviewBeforeAudition();
-              void playAuditionNote(midi, suggestion, { tone: 'stab', duration: 0.32, gain: 0.14 });
-            }}
-          />
-          {!audioAvailable && (
-            <Text className="text-[12px] font-semibold leading-[18px] text-slate-500">
-              Audio audition requires the native audio runtime.
-            </Text>
-          )}
-        </View>
-      )}
+            <AuditionNoteGroup
+              label="Bass notes"
+              notes={view.audition.bassNotes}
+              disabled={!audioAvailable}
+              onPlayNote={(midi) => {
+                stopPreviewBeforeAudition();
+                void playAuditionNote(midi, suggestion, { tone: 'bass' });
+              }}
+            />
+            <AuditionNoteGroup
+              label="Scale notes"
+              notes={view.audition.scaleNotes}
+              disabled={!audioAvailable}
+              onPlayNote={(midi) => {
+                stopPreviewBeforeAudition();
+                void playAuditionNote(midi, suggestion, { tone: 'stab', duration: 0.32, gain: 0.14 });
+              }}
+            />
+            {!audioAvailable && (
+              <Text
+                style={{
+                  fontFamily: FONT.mono,
+                  fontSize: 10,
+                  color: A.textFaint,
+                  letterSpacing: 1,
+                  marginTop: 8,
+                }}
+              >
+                AUDIO REQUIRES DEV BUILD
+              </Text>
+            )}
+          </>
+        )}
 
-      {activeTab === 'synth' && (
-        <>
-          <View className="mb-3.5 rounded-md border border-slate-800 bg-slate-950 p-3">
-            <MiniLabel>Track setup</MiniLabel>
+        {activeTab === 'synth' && (
+          <>
             {view.trackSetupRows.map((row) => (
-              <TrackSetupRow key={row.label} row={row} />
+              <TrackSetupCard key={row.label} row={row} />
             ))}
-          </View>
-
-          <View className="mb-3.5 rounded-md border border-slate-800 bg-slate-950 p-3">
-            <MiniLabel>Synth settings</MiniLabel>
-            {view.soundRows.map((row) => (
-              <ValueRow key={row.label} label={row.label} value={row.value} />
-            ))}
-          </View>
-        </>
-      )}
+            <ASection label="Synth settings">
+              {view.soundRows.map((row) => (
+                <ARow key={row.label} label={row.label} value={row.value} />
+              ))}
+            </ASection>
+          </>
+        )}
+      </View>
     </View>
   );
 }
