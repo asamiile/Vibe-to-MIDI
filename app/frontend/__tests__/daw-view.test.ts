@@ -52,11 +52,11 @@ describe('buildDawStepsView', () => {
     ]);
     expect(view.audition.chordLabel).toBe('C minor9');
     expect(view.audition.chordNotes).toEqual([
-      { midi: 48, label: 'C3 (48)' },
-      { midi: 51, label: 'D#3 (51)' },
-      { midi: 55, label: 'G3 (55)' },
-      { midi: 58, label: 'A#3 (58)' },
-      { midi: 62, label: 'D4 (62)' },
+      { midi: 48, label: 'C3' },
+      { midi: 51, label: 'D#3' },
+      { midi: 55, label: 'G3' },
+      { midi: 58, label: 'A#3' },
+      { midi: 62, label: 'D4' },
     ]);
     expect(view.audition.bassNotes).toHaveLength(4);
     expect(view.audition.scaleNotes.length).toBeGreaterThan(4);
