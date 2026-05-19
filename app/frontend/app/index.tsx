@@ -283,7 +283,9 @@ function SettingsModal({
               key={item.label}
               android_disableSound
               onPress={item.onPress}
-              style={({ pressed }) => ({
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            >
+              <View style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -291,15 +293,14 @@ function SettingsModal({
                 paddingHorizontal: 24,
                 borderBottomWidth: 1,
                 borderBottomColor: MIST.hairline,
-                opacity: pressed ? 0.6 : 1,
-              })}
-            >
-              <Text style={{ fontFamily: FONT.sans, fontSize: 15, color: MIST.text, fontWeight: '400' }}>
-                {item.label}
-              </Text>
-              <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textFaint, letterSpacing: 1 }}>
-                →
-              </Text>
+              }}>
+                <Text style={{ fontFamily: FONT.sans, fontSize: 15, color: MIST.text, fontWeight: '400' }}>
+                  {item.label}
+                </Text>
+                <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textFaint, letterSpacing: 1 }}>
+                  →
+                </Text>
+              </View>
             </Pressable>
           ))}
         </ScrollView>
