@@ -105,7 +105,18 @@ function TabLink({ label, active, onPress }: { label: string; active: boolean; o
   );
 }
 
-function AuditionPill({ label, disabled, onPress }: { label: string; disabled: boolean; onPress: () => void }) {
+function AuditionPill({
+  label,
+  disabled,
+  playing,
+  onPress,
+}: {
+  label: string;
+  disabled: boolean;
+  playing: boolean;
+  onPress: () => void;
+}) {
+  const fg = disabled ? MIST.textGhost : playing ? MIST.accent : MIST.text;
   return (
     <Pressable
       android_disableSound
@@ -115,15 +126,13 @@ function AuditionPill({ label, disabled, onPress }: { label: string; disabled: b
         paddingVertical: 10,
         paddingHorizontal: 14,
         borderWidth: 1,
-        borderColor: disabled ? MIST.hairline : MIST.hairlineX,
+        borderColor: disabled ? MIST.hairline : playing ? MIST.accent : MIST.hairlineX,
         opacity: pressed ? 0.6 : 1,
       })}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Text style={{ fontFamily: FONT.mono, fontSize: 9, color: disabled ? MIST.textGhost : MIST.accent }}>
-          ▶
-        </Text>
-        <Text style={{ fontFamily: FONT.mono, fontSize: 11, color: disabled ? MIST.textGhost : MIST.text, letterSpacing: 0.5 }}>
+        <Text style={{ fontFamily: FONT.mono, fontSize: 9, color: fg }}>▶</Text>
+        <Text style={{ fontFamily: FONT.mono, fontSize: 11, color: fg, letterSpacing: 0.5 }}>
           {label}
         </Text>
       </View>
@@ -135,11 +144,13 @@ function AuditionNoteGroup({
   label,
   notes,
   disabled,
+  playingKey,
   onPlayNote,
 }: {
   label: string;
   notes: readonly DawNoteView[];
   disabled: boolean;
+  playingKey: string | null;
   onPlayNote: (midi: number) => void;
 }) {
   return (
@@ -150,6 +161,7 @@ function AuditionNoteGroup({
             key={`${label}-${index}-${note.midi}`}
             label={note.label}
             disabled={disabled}
+            playing={playingKey === String(note.midi)}
             onPress={() => onPlayNote(note.midi)}
           />
         ))}
@@ -160,12 +172,22 @@ function AuditionNoteGroup({
 
 export function DawStepsPanel({ suggestion }: Props) {
   const [activeTab, setActiveTab] = React.useState<MidiTab>('pattern');
+  const [playingKey, setPlayingKey] = React.useState<string | null>(null);
+  const playTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const view = buildDawStepsView(suggestion);
   const audioAvailable = isAudioAvailable();
   const { isPlaying, stop } = useAppStore();
   const stopPreviewBeforeAudition = React.useCallback(() => {
     if (isPlaying) stop();
   }, [isPlaying, stop]);
+
+  function auditPlay(key: string, fn: () => void) {
+    if (playTimer.current) clearTimeout(playTimer.current);
+    stopPreviewBeforeAudition();
+    setPlayingKey(key);
+    fn();
+    playTimer.current = setTimeout(() => setPlayingKey(null), 900);
+  }
 
   return (
     <View>
@@ -263,13 +285,13 @@ export function DawStepsPanel({ suggestion }: Props) {
                 <AuditionPill
                   label={view.audition.chordLabel}
                   disabled={!audioAvailable}
-                  onPress={() => {
-                    stopPreviewBeforeAudition();
+                  playing={playingKey === 'chord'}
+                  onPress={() => auditPlay('chord', () => {
                     void playAuditionChord(
                       view.audition.chordNotes.map((note) => note.midi),
                       suggestion
                     );
-                  }}
+                  })}
                 />
               </View>
             </ASection>
@@ -277,19 +299,22 @@ export function DawStepsPanel({ suggestion }: Props) {
               label="Chord notes"
               notes={view.audition.chordNotes}
               disabled={!audioAvailable}
-              onPlayNote={(midi) => { stopPreviewBeforeAudition(); void playAuditionNote(midi, suggestion, { tone: 'stab' }); }}
+              playingKey={playingKey}
+              onPlayNote={(midi) => auditPlay(String(midi), () => { void playAuditionNote(midi, suggestion, { tone: 'stab' }); })}
             />
             <AuditionNoteGroup
               label="Bass notes"
               notes={view.audition.bassNotes}
               disabled={!audioAvailable}
-              onPlayNote={(midi) => { stopPreviewBeforeAudition(); void playAuditionNote(midi, suggestion, { tone: 'bass' }); }}
+              playingKey={playingKey}
+              onPlayNote={(midi) => auditPlay(String(midi), () => { void playAuditionNote(midi, suggestion, { tone: 'bass' }); })}
             />
             <AuditionNoteGroup
               label="Scale notes"
               notes={view.audition.scaleNotes}
               disabled={!audioAvailable}
-              onPlayNote={(midi) => { stopPreviewBeforeAudition(); void playAuditionNote(midi, suggestion, { tone: 'stab', duration: 0.32, gain: 0.14 }); }}
+              playingKey={playingKey}
+              onPlayNote={(midi) => auditPlay(String(midi), () => { void playAuditionNote(midi, suggestion, { tone: 'stab', duration: 0.32, gain: 0.14 }); })}
             />
             {!audioAvailable && (
               <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textFaint, letterSpacing: 1, marginTop: 8 }}>

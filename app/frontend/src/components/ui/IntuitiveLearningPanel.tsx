@@ -19,7 +19,7 @@ type CompareTarget = 'original' | 'changed';
 const STEP_LABELS = ['1', 'e', '&', 'a'];
 const FOCUS_OPTIONS: readonly LearningFocus[] = ['pulse', 'bass'];
 
-function AMiniLabel({ children }: { children: string }) {
+function AMiniLabel({ children, color }: { children: string; color?: string }) {
   return (
     <Text
       style={{
@@ -28,7 +28,7 @@ function AMiniLabel({ children }: { children: string }) {
         fontWeight: '500',
         letterSpacing: 2.2,
         textTransform: 'uppercase',
-        color: MIST.textMute,
+        color: color ?? MIST.textMute,
       }}
     >
       {children}
@@ -219,65 +219,60 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
           </Text>
         </View>
 
-        {/* A / B compare — side by side panels */}
-        <View
-          style={{
-            flexDirection: 'row',
-            borderWidth: 1,
-            borderColor: MIST.hairline,
-            marginBottom: 24,
-          }}
-        >
-          {([
-            { k: 'original' as CompareTarget, label: 'A · Original' },
-            { k: 'changed'  as CompareTarget, label: 'B · Try change' },
-          ]).map((opt, i) => {
-            const active = activeCompare === opt.k;
-            return (
-              <Pressable
-                key={opt.k}
-                android_disableSound
-                disabled={!audioAvailable}
-                onPress={() => { void playCompare(opt.k); }}
-                style={({ pressed }) => ({
-                  flex: 1,
-                  padding: 18,
-                  backgroundColor: active ? MIST.accentDim : 'transparent',
-                  borderLeftWidth: i === 0 ? 0 : 1,
-                  borderLeftColor: MIST.hairline,
-                  opacity: pressed ? 0.7 : 1,
-                  minHeight: 110,
-                  gap: 14,
-                })}
-              >
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <AMiniLabel>{opt.label}</AMiniLabel>
-                  <Text
-                    style={{
-                      fontFamily: FONT.mono,
-                      fontSize: 10,
-                      color: active ? MIST.accent : MIST.textGhost,
-                    }}
-                  >
-                    {active ? '▶ playing' : '▶ play'}
-                  </Text>
-                </View>
-                <View style={{ flexDirection: 'row', gap: 2 }}>
-                  {(opt.k === 'changed' ? view.changed.rhythmPattern : view.original.rhythmPattern).map((h, j) => (
+        {/* A / B compare — labels with gap, strips without gap */}
+        <View style={{ marginBottom: 24 }}>
+          {/* Tap buttons */}
+          <View style={{ flexDirection: 'row', gap: 24, marginBottom: 10 }}>
+            {([
+              { k: 'original' as CompareTarget, label: 'A · Original' },
+              { k: 'changed'  as CompareTarget, label: 'B · Try change' },
+            ]).map((opt) => {
+              const active = activeCompare === opt.k;
+              return (
+                <Pressable
+                  key={opt.k}
+                  android_disableSound
+                  disabled={!audioAvailable}
+                  onPress={() => { void playCompare(opt.k); }}
+                  style={({ pressed }) => ({
+                    flex: 1,
+                    paddingVertical: 14,
+                    paddingHorizontal: 16,
+                    borderWidth: 1,
+                    borderColor: active ? MIST.accent : MIST.hairline,
+                    backgroundColor: active ? MIST.accentDim : 'transparent',
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                >
+                  <AMiniLabel color={active ? MIST.accent : MIST.text}>{opt.label}</AMiniLabel>
+                </Pressable>
+              );
+            })}
+          </View>
+          {/* Rhythm strips — no gap, continuous */}
+          <View style={{ flexDirection: 'row' }}>
+            {([
+              { k: 'original' as CompareTarget, pattern: view.original.rhythmPattern },
+              { k: 'changed'  as CompareTarget, pattern: view.changed.rhythmPattern },
+            ]).map((opt) => {
+              const active = activeCompare === opt.k;
+              return (
+                <View key={opt.k} style={{ flex: 1, flexDirection: 'row', gap: 2 }}>
+                  {opt.pattern.map((h, j) => (
                     <View
                       key={j}
                       style={{
                         flex: 1,
-                        height: 22,
+                        height: 20,
                         borderLeftWidth: 1,
                         borderLeftColor: h ? (active ? MIST.accent : MIST.text) : MIST.hairline,
                       }}
                     />
                   ))}
                 </View>
-              </Pressable>
-            );
-          })}
+              );
+            })}
+          </View>
         </View>
 
         {/* Result chip */}
