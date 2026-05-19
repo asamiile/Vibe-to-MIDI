@@ -3,6 +3,7 @@ import { View, Text, Pressable, ScrollView, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { getAudioContext, isAudioAvailable } from '../src/features/audio-engine/adapter';
+import { MIST, FONT } from '../src/styles/theme';
 
 type AudioCtx = NonNullable<Awaited<ReturnType<typeof getAudioContext>>>;
 type StopFn = () => void;
@@ -40,7 +41,7 @@ function bassPreset(): SoundPreset['play'] {
     const filter = ctx.createBiquadFilter();
     const g = ctx.createGain();
     osc.type = 'sawtooth';
-    osc.frequency.value = 55; // A1
+    osc.frequency.value = 55;
     filter.type = 'lowpass';
     filter.frequency.value = 300;
     filter.Q.value = 2;
@@ -61,7 +62,7 @@ function bassPreset(): SoundPreset['play'] {
 
 function padPreset(): SoundPreset['play'] {
   return (ctx) => {
-    const freqs = [220, 220.5, 330]; // A3 detuned pair + E4
+    const freqs = [220, 220.5, 330];
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 1200;
@@ -112,13 +113,13 @@ function kickPreset(): SoundPreset['play'] {
 }
 
 const PRESETS: SoundPreset[] = [
-  { id: 'sine',     label: 'Sine',      description: 'sine / 440Hz\n純音・フルート系',        play: oscPreset('sine', 440) },
-  { id: 'square',   label: 'Square',    description: 'square / 440Hz\n矩形波・クラリネット系', play: oscPreset('square', 440, 0.2) },
-  { id: 'sawtooth', label: 'Sawtooth',  description: 'sawtooth / 440Hz\nノコギリ波・シンセリード', play: oscPreset('sawtooth', 440, 0.2) },
-  { id: 'triangle', label: 'Triangle',  description: 'triangle / 440Hz\n三角波・柔らかめ',     play: oscPreset('triangle', 440) },
-  { id: 'bass',     label: 'Synth Bass', description: 'sawtooth / 55Hz\n+ lowpass filter Q=2', play: bassPreset() },
-  { id: 'pad',      label: 'Pad',        description: 'sawtooth x3 detuned\n+ lowpass, slow attack', play: padPreset() },
-  { id: 'kick',     label: 'Kick',       description: 'sine / 200→40Hz\nピッチダウンエンベロープ', play: kickPreset() },
+  { id: 'sine',     label: 'Sine',       description: 'sine / 440Hz',        play: oscPreset('sine', 440) },
+  { id: 'square',   label: 'Square',     description: 'square / 440Hz',      play: oscPreset('square', 440, 0.2) },
+  { id: 'sawtooth', label: 'Sawtooth',   description: 'sawtooth / 440Hz',    play: oscPreset('sawtooth', 440, 0.2) },
+  { id: 'triangle', label: 'Triangle',   description: 'triangle / 440Hz',    play: oscPreset('triangle', 440) },
+  { id: 'bass',     label: 'Synth Bass', description: 'sawtooth 55Hz + lowpass Q=2', play: bassPreset() },
+  { id: 'pad',      label: 'Pad',        description: 'sawtooth x3 detuned + lowpass', play: padPreset() },
+  { id: 'kick',     label: 'Kick',       description: 'sine 200→40Hz pitch envelope', play: kickPreset() },
 ];
 
 function PresetButton({ preset }: { preset: SoundPreset }) {
@@ -144,22 +145,35 @@ function PresetButton({ preset }: { preset: SoundPreset }) {
       style={({ pressed }) => ({
         flex: 1,
         minWidth: '45%',
-        backgroundColor: pressed ? '#0e4a6e' : '#0b111c',
         borderWidth: 1,
-        borderColor: '#1e4a6e',
-        borderRadius: 8,
+        borderColor: pressed ? MIST.accent : MIST.hairlineX,
+        backgroundColor: pressed ? MIST.accentDim : 'transparent',
         padding: 14,
         margin: 4,
         opacity: pressed ? 0.85 : 1,
       })}
     >
-      <Text style={{ color: '#38bdf8', fontSize: 13, fontWeight: '800', marginBottom: 4 }}>
-        {preset.label}
-      </Text>
-      <Text style={{ color: '#475569', fontSize: 11, lineHeight: 16 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+        <Text style={{ fontFamily: FONT.mono, fontSize: 9, color: MIST.accent }}>▶</Text>
+        <Text style={{ fontFamily: FONT.mono, fontSize: 11, color: MIST.text, fontWeight: '500', letterSpacing: 0.5 }}>
+          {preset.label}
+        </Text>
+      </View>
+      <Text style={{ fontFamily: FONT.sans, fontSize: 11, color: MIST.textFaint, lineHeight: 16 }}>
         {preset.description}
       </Text>
     </Pressable>
+  );
+}
+
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <View style={{ marginBottom: 8, marginTop: 24 }}>
+      <Text style={{ fontFamily: FONT.mono, fontSize: 9, fontWeight: '500', letterSpacing: 2.2, textTransform: 'uppercase', color: MIST.textMute }}>
+        {children}
+      </Text>
+      <View style={{ height: 1, backgroundColor: MIST.hairlineX, marginTop: 4 }} />
+    </View>
   );
 }
 
@@ -168,77 +182,65 @@ export default function DebugAudioScreen() {
   const audioAvailable = isAudioAvailable();
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#060a10' }}>
-      <StatusBar barStyle="light-content" backgroundColor="#060a10" />
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 12 }}>
-        <Text style={{ color: '#e2e8f0', fontSize: 22, fontWeight: '900' }}>Audio Debug</Text>
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: MIST.bg }}>
+      <StatusBar barStyle="light-content" backgroundColor={MIST.bg} />
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: MIST.hairline }}>
+        <Text style={{ fontFamily: FONT.mono, fontSize: 10, fontWeight: '500', letterSpacing: 2.2, textTransform: 'uppercase', color: MIST.text }}>
+          Audio Debug
+        </Text>
         <Pressable
           android_disableSound
           onPress={() => router.back()}
-          style={({ pressed }) => ({
-            paddingHorizontal: 12,
-            paddingVertical: 6,
-            borderRadius: 6,
-            borderWidth: 1,
-            borderColor: '#334155',
-            backgroundColor: '#0f172a',
-            opacity: pressed ? 0.7 : 1,
-          })}
+          style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
         >
-          <Text style={{ color: '#64748b', fontSize: 12 }}>✕ Close</Text>
+          <Text style={{ fontFamily: FONT.mono, fontSize: 10, fontWeight: '500', letterSpacing: 2.2, textTransform: 'uppercase', color: MIST.textFaint }}>
+            ← BACK
+          </Text>
         </Pressable>
       </View>
 
       {!audioAvailable ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
-          <Text style={{ color: '#ef4444', fontSize: 14, fontWeight: '700', textAlign: 'center' }}>
-            Audio not available
-          </Text>
-          <Text style={{ color: '#475569', fontSize: 12, textAlign: 'center', marginTop: 8 }}>
-            Dev Build が必要です
+          <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textFaint, letterSpacing: 1, textAlign: 'center' }}>
+            AUDIO REQUIRES DEV BUILD
           </Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ padding: 12, paddingBottom: 24 }}>
-          <Text style={{ color: '#475569', fontSize: 11, marginBottom: 16, paddingHorizontal: 4 }}>
-            タップで再生（1.5秒後に自動停止）
+        <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 48 }} showsVerticalScrollIndicator={false}>
+          <Text style={{ fontFamily: FONT.mono, fontSize: 9, color: MIST.textFaint, letterSpacing: 1, marginBottom: 20 }}>
+            TAP TO PLAY · AUTO STOP 1.5s
           </Text>
 
-          <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, paddingHorizontal: 4 }}>
-            Oscillator Waveforms
-          </Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          <SectionLabel>Oscillator Waveforms</SectionLabel>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
             {PRESETS.slice(0, 4).map((p) => (
               <PresetButton key={p.id} preset={p} />
             ))}
           </View>
 
-          <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginTop: 20, marginBottom: 8, paddingHorizontal: 4 }}>
-            Synth Presets
-          </Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          <SectionLabel>Synth Presets</SectionLabel>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
             {PRESETS.slice(4).map((p) => (
               <PresetButton key={p.id} preset={p} />
             ))}
           </View>
 
-          <View style={{ marginTop: 28, paddingHorizontal: 4 }}>
-            <Text style={{ color: '#64748b', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>
-              Audio Node Reference
-            </Text>
+          <SectionLabel>Audio Node Reference</SectionLabel>
+          <View style={{ marginTop: 8 }}>
             {([
-              ['OscillatorNode', 'sine / square / sawtooth / triangle / custom'],
-              ['BiquadFilterNode', 'lowpass / highpass / bandpass / notch / allpass / ...'],
-              ['GainNode', 'ボリューム・エンベロープ制御'],
-              ['WaveShaperNode', 'ディストーション・波形整形'],
-              ['DelayNode', 'ディレイ'],
-              ['ConvolverNode', 'リバーブ（IRファイル必要）'],
-              ['StereoPannerNode', 'パン'],
-              ['AnalyserNode', '周波数解析（可視化用）'],
+              ['OscillatorNode',    'sine / square / sawtooth / triangle'],
+              ['BiquadFilterNode',  'lowpass / highpass / bandpass / notch'],
+              ['GainNode',          'volume · envelope'],
+              ['WaveShaperNode',    'distortion · waveshaping'],
+              ['DelayNode',         'delay'],
+              ['ConvolverNode',     'reverb (IR file required)'],
+              ['StereoPannerNode',  'pan'],
+              ['AnalyserNode',      'frequency analysis'],
             ] as const).map(([node, desc]) => (
-              <View key={node} style={{ flexDirection: 'row', marginBottom: 8, gap: 8 }}>
-                <Text style={{ color: '#38bdf8', fontSize: 11, fontWeight: '700', width: 140 }}>{node}</Text>
-                <Text style={{ color: '#475569', fontSize: 11, flex: 1 }}>{desc}</Text>
+              <View key={node} style={{ flexDirection: 'row', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: MIST.hairline, gap: 12 }}>
+                <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.accent, width: 140 }}>{node}</Text>
+                <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textFaint, flex: 1 }}>{desc}</Text>
               </View>
             ))}
           </View>

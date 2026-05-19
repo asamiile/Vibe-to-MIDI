@@ -8,6 +8,7 @@ import { playPreview } from '../../features/audio-engine/player';
 import type { PlayerHandle } from '../../features/audio-engine/player';
 import { useAppStore } from '../../data/store';
 import { midiToNoteName } from '../../lib/notes';
+import { MIST, FONT } from '../../styles/theme';
 
 interface Props {
   suggestion: MusicalSuggestion;
@@ -18,15 +19,24 @@ type CompareTarget = 'original' | 'changed';
 const STEP_LABELS = ['1', 'e', '&', 'a'];
 const FOCUS_OPTIONS: readonly LearningFocus[] = ['pulse', 'bass'];
 
-function SectionTitle({ children }: { children: string }) {
+function AMiniLabel({ children, color }: { children: string; color?: string }) {
   return (
-    <Text className="mb-2 text-[10px] uppercase tracking-[1px] text-slate-400">
+    <Text
+      style={{
+        fontFamily: FONT.mono,
+        fontSize: 9,
+        fontWeight: '500',
+        letterSpacing: 2.2,
+        textTransform: 'uppercase',
+        color: color ?? MIST.textMute,
+      }}
+    >
       {children}
     </Text>
   );
 }
 
-function FocusButton({
+function TabLink({
   label,
   active,
   onPress,
@@ -37,79 +47,43 @@ function FocusButton({
 }) {
   return (
     <Pressable
-      accessibilityRole="button"
       android_disableSound
       onPress={onPress}
-      className="min-h-10 flex-1 items-center justify-center rounded-md border px-3"
-      style={({ pressed }) => ({
-        backgroundColor: active ? '#164e63' : '#0f172a',
-        borderColor: active ? '#22d3ee' : '#334155',
-        opacity: pressed ? 0.75 : 1,
-      })}
+      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 2 })}
     >
-      <Text className="text-xs font-black" style={{ color: active ? '#ecfeff' : '#94a3b8' }}>
+      <Text
+        style={{
+          fontFamily: FONT.mono,
+          fontSize: 10,
+          fontWeight: '500',
+          letterSpacing: 2.2,
+          textTransform: 'uppercase',
+          color: active ? MIST.accent : MIST.textFaint,
+        }}
+      >
         {label}
       </Text>
-    </Pressable>
-  );
-}
-
-function PlayButton({
-  label,
-  active,
-  disabled,
-  onPress,
-}: {
-  label: string;
-  active: boolean;
-  disabled: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      android_disableSound
-      disabled={disabled}
-      onPress={onPress}
-      className="min-h-12 flex-1 items-center justify-center rounded-md border px-3"
-      style={({ pressed }) => ({
-        backgroundColor: disabled ? '#111827' : active ? '#14532d' : '#0b111c',
-        borderColor: disabled ? '#1e293b' : active ? '#22c55e' : '#334155',
-        opacity: pressed ? 0.75 : 1,
-      })}
-    >
-      <Text className="text-[13px] font-black" style={{ color: disabled ? '#334155' : active ? '#dcfce7' : '#cbd5e1' }}>
-        ▶ {label}
-      </Text>
+      {active && (
+        <View style={{ height: 1, backgroundColor: MIST.accent, marginTop: 2 }} />
+      )}
     </Pressable>
   );
 }
 
 function RhythmStrip({ pattern }: { pattern: readonly boolean[] }) {
   return (
-    <View className="flex-row gap-1">
-      {pattern.map((hit, index) => {
-        const isDownbeat = index % 4 === 0;
-        return (
-          <View
-            key={`pulse-${index}-${hit ? 'hit' : 'rest'}`}
-            style={{
-              flex: 1,
-              minHeight: 42,
-              borderRadius: 4,
-              borderWidth: 1,
-              borderColor: hit ? '#38bdf8' : '#1e293b',
-              backgroundColor: hit ? (isDownbeat ? '#0e7490' : '#164e63') : '#0f172a',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={{ color: hit ? '#e0f2fe' : '#334155', fontSize: 9, fontWeight: '700' }}>
-              {STEP_LABELS[index % 4]}
-            </Text>
-          </View>
-        );
-      })}
+    <View style={{ flexDirection: 'row', gap: 2 }}>
+      {pattern.map((hit, index) => (
+        <View
+          key={`pulse-${index}-${hit ? 'hit' : 'rest'}`}
+          style={{
+            flex: 1,
+            height: 22,
+            borderLeftWidth: 1,
+            borderLeftColor: hit ? MIST.text : MIST.hairline,
+          }}
+        />
+      ))}
     </View>
   );
 }
@@ -121,7 +95,7 @@ function BassStrip({ notes }: { notes: readonly number[] }) {
   const range = Math.max(1, highest - lowest);
 
   return (
-    <View className="h-[86px] flex-row items-end gap-2">
+    <View style={{ height: 86, flexDirection: 'row', alignItems: 'flex-end', gap: 6 }}>
       {labels.map((note, index) => {
         const offset = ((notes[index] - lowest) / range) * 34;
         return (
@@ -138,14 +112,19 @@ function BassStrip({ notes }: { notes: readonly number[] }) {
               style={{
                 width: '100%',
                 paddingVertical: 5,
-                borderRadius: 4,
-                alignItems: 'center',
-                backgroundColor: '#172554',
                 borderWidth: 1,
-                borderColor: '#3b82f6',
+                borderColor: MIST.accent,
+                alignItems: 'center',
               }}
             >
-              <Text style={{ color: '#dbeafe', fontSize: 12, fontWeight: '700' }}>
+              <Text
+                style={{
+                  fontFamily: FONT.mono,
+                  fontSize: 10,
+                  color: MIST.text,
+                  fontWeight: '500',
+                }}
+              >
                 {note}
               </Text>
             </View>
@@ -196,10 +175,20 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
   const visualSource = activeCompare === 'changed' ? view.changed : view.original;
 
   return (
-    <View className="mb-[18px]">
-      <View className="mb-3 flex-row gap-2">
+    <View style={{ paddingBottom: 24 }}>
+      {/* Focus tabs */}
+      <View
+        style={{
+          flexDirection: 'row',
+          gap: 24,
+          paddingHorizontal: 24,
+          paddingVertical: 10,
+          borderBottomWidth: 1,
+          borderBottomColor: MIST.hairline,
+        }}
+      >
         {FOCUS_OPTIONS.map((item) => (
-          <FocusButton
+          <TabLink
             key={item}
             label={item === 'pulse' ? 'Pulse' : 'Bass'}
             active={focus === item}
@@ -211,49 +200,144 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
         ))}
       </View>
 
-      <View className="mb-[18px] rounded-lg border border-slate-700 bg-gray-900 p-3.5">
-        <SectionTitle>{view.title}</SectionTitle>
-        <Text className="mb-3 text-[16px] font-black leading-[22px] text-slate-100">
-          {view.goal}
-        </Text>
-        <View className="mb-3 flex-row gap-2">
-          <PlayButton
-            label="Original"
-            active={activeCompare === 'original'}
-            disabled={!audioAvailable}
-            onPress={() => { void playCompare('original'); }}
-          />
-          <PlayButton
-            label="Try change"
-            active={activeCompare === 'changed'}
-            disabled={!audioAvailable}
-            onPress={() => { void playCompare('changed'); }}
-          />
-        </View>
-        <View className="self-start rounded bg-cyan-900 px-2.5 py-1.5">
-          <Text className="text-xs font-extrabold text-cyan-100">
-            Result: {view.resultWord}
+      <View style={{ padding: 24 }}>
+        {/* Goal */}
+        <View style={{ marginBottom: 32 }}>
+          <AMiniLabel>{focus === 'pulse' ? 'the heartbeat' : 'the gravity'}</AMiniLabel>
+          <Text
+            style={{
+              marginTop: 12,
+              fontFamily: FONT.sans,
+              fontSize: 28,
+              fontWeight: '300',
+              color: MIST.text,
+              lineHeight: 32,
+              letterSpacing: -0.6,
+            }}
+          >
+            {view.goal}
           </Text>
         </View>
-      </View>
 
-      <View className="mb-[18px]">
-        <SectionTitle>{activeCompare === 'changed' ? view.tryLabel : view.originalLabel}</SectionTitle>
-        {focus === 'pulse' ? (
-          <RhythmStrip pattern={visualSource.rhythmPattern} />
-        ) : (
-          <BassStrip notes={visualSource.bassNotes} />
+        {/* A / B compare — labels with gap, strips without gap */}
+        <View style={{ marginBottom: 24 }}>
+          {/* Tap buttons */}
+          <View style={{ flexDirection: 'row', gap: 24, marginBottom: 10 }}>
+            {([
+              { k: 'original' as CompareTarget, label: 'A · Original' },
+              { k: 'changed'  as CompareTarget, label: 'B · Try change' },
+            ]).map((opt) => {
+              const active = activeCompare === opt.k;
+              return (
+                <Pressable
+                  key={opt.k}
+                  android_disableSound
+                  disabled={!audioAvailable}
+                  onPress={() => { void playCompare(opt.k); }}
+                  style={({ pressed }) => ({
+                    flex: 1,
+                    paddingVertical: 14,
+                    paddingHorizontal: 16,
+                    borderWidth: 1,
+                    borderColor: active ? MIST.accent : MIST.hairline,
+                    backgroundColor: active ? MIST.accentDim : 'transparent',
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                >
+                  <AMiniLabel color={active ? MIST.accent : MIST.text}>{opt.label}</AMiniLabel>
+                </Pressable>
+              );
+            })}
+          </View>
+          {/* Rhythm strips — no gap, continuous */}
+          <View style={{ flexDirection: 'row' }}>
+            {([
+              { k: 'original' as CompareTarget, pattern: view.original.rhythmPattern },
+              { k: 'changed'  as CompareTarget, pattern: view.changed.rhythmPattern },
+            ]).map((opt) => {
+              const active = activeCompare === opt.k;
+              return (
+                <View key={opt.k} style={{ flex: 1, flexDirection: 'row', gap: 2 }}>
+                  {opt.pattern.map((h, j) => (
+                    <View
+                      key={j}
+                      style={{
+                        flex: 1,
+                        height: 20,
+                        borderLeftWidth: 1,
+                        borderLeftColor: h ? (active ? MIST.accent : MIST.text) : MIST.hairline,
+                      }}
+                    />
+                  ))}
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Result chip */}
+        <View
+          style={{
+            alignSelf: 'flex-start',
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            borderWidth: 1,
+            borderColor: MIST.accent,
+            marginBottom: 24,
+          }}
+        >
+          <Text
+            style={{
+              fontFamily: FONT.mono,
+              fontSize: 10,
+              color: MIST.accent,
+              letterSpacing: 1.8,
+              textTransform: 'uppercase',
+            }}
+          >
+            Result · {view.resultWord}
+          </Text>
+        </View>
+
+        {/* Visual detail strip */}
+        <View style={{ marginBottom: 18 }}>
+          <View style={{ marginBottom: 8 }}>
+            <AMiniLabel>
+              {activeCompare === 'changed' ? view.tryLabel : view.originalLabel}
+            </AMiniLabel>
+          </View>
+          {focus === 'pulse' ? (
+            <RhythmStrip pattern={visualSource.rhythmPattern} />
+          ) : (
+            <BassStrip notes={visualSource.bassNotes} />
+          )}
+          <Text
+            style={{
+              marginTop: 14,
+              fontFamily: FONT.sans,
+              fontSize: 13,
+              color: MIST.textMute,
+              lineHeight: 20,
+            }}
+          >
+            {view.reason}
+          </Text>
+        </View>
+
+        {!audioAvailable && (
+          <Text
+            style={{
+              fontFamily: FONT.mono,
+              fontSize: 10,
+              color: MIST.textFaint,
+              letterSpacing: 1,
+              marginTop: 8,
+            }}
+          >
+            AUDIO REQUIRES DEV BUILD
+          </Text>
         )}
-        <Text className="mt-2 text-xs leading-[17px] text-slate-400">
-          {view.reason}
-        </Text>
       </View>
-
-      {!audioAvailable && (
-        <Text className="text-[12px] font-semibold leading-[18px] text-slate-500">
-          Audio compare requires the native audio runtime.
-        </Text>
-      )}
     </View>
   );
 }

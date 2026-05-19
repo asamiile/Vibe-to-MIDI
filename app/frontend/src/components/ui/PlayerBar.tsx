@@ -7,6 +7,7 @@ import { VIBE_LABELS } from '../../features/vibe-map/labels';
 import { WaveformVisualizer } from './WaveformVisualizer';
 import { ALL_AUDIO_LAYERS } from '../../features/audio-engine/constants';
 import type { AudioLayer } from '../../features/audio-engine/constants';
+import { MIST, FONT } from '../../styles/theme';
 
 const LAYER_LABELS: Record<AudioLayer, string> = {
   kick: 'KICK',
@@ -21,6 +22,7 @@ export function PlayerBar() {
   const audioAvailable = isAudioAvailable();
 
   const label = activeVibeId ? VIBE_LABELS[activeVibeId] ?? activeVibeId : null;
+  const idle = !activeVibeId;
   const visibleLayers = ALL_AUDIO_LAYERS.filter((layer) => {
     if (layer === 'melody') return suggestion?.melodySuggested === true;
     return true;
@@ -30,8 +32,8 @@ export function PlayerBar() {
     <View
       style={{
         borderTopWidth: 1,
-        borderTopColor: '#1e293b',
-        backgroundColor: '#060a10',
+        borderTopColor: MIST.hairline,
+        backgroundColor: MIST.bg,
         paddingBottom: bottom,
       }}
     >
@@ -39,9 +41,9 @@ export function PlayerBar() {
         <View
           style={{
             flexDirection: 'row',
-            paddingHorizontal: 20,
-            paddingTop: 10,
-            gap: 8,
+            paddingHorizontal: 24,
+            paddingTop: 14,
+            gap: 18,
           }}
         >
           {visibleLayers.map((layer) => {
@@ -51,22 +53,15 @@ export function PlayerBar() {
                 key={layer}
                 android_disableSound
                 onPress={() => toggleLayer(layer)}
-                style={({ pressed }) => ({
-                  paddingHorizontal: 12,
-                  paddingVertical: 4,
-                  borderRadius: 4,
-                  borderWidth: 1,
-                  borderColor: active ? '#38bdf8' : '#334155',
-                  backgroundColor: active ? '#0c2a3e' : '#0b111c',
-                  opacity: pressed ? 0.7 : 1,
-                })}
+                style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 4 })}
               >
                 <Text
                   style={{
-                    color: active ? '#38bdf8' : '#475569',
-                    fontSize: 10,
-                    fontWeight: '800',
-                    letterSpacing: 0.5,
+                    fontFamily: FONT.mono,
+                    fontSize: 9,
+                    fontWeight: '500',
+                    letterSpacing: 2.2,
+                    color: active ? MIST.accent : MIST.textFaint,
                   }}
                 >
                   {LAYER_LABELS[layer]}
@@ -79,62 +74,46 @@ export function PlayerBar() {
 
       <View
         style={{
-          height: 56,
+          height: 64,
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 20,
-          gap: 12,
+          paddingHorizontal: 24,
+          gap: 16,
         }}
       >
-        <WaveformVisualizer isPlaying={isPlaying} />
-
-        <Text
-          style={{
-            flex: 1,
-            color: label ? '#94a3b8' : '#334155',
-            fontSize: 13,
-            fontWeight: '600',
-          }}
-          numberOfLines={1}
-        >
-          {label ?? '---'}
-        </Text>
-
+        {/* play/stop — text button with glow when playing */}
         <Pressable
           android_disableSound
-          disabled={!audioAvailable || !activeVibeId}
+          disabled={!audioAvailable || idle}
           onPress={() => (isPlaying ? stop() : play())}
-          style={({ pressed }) => ({
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            borderWidth: 2,
-            borderColor:
-              !audioAvailable || !activeVibeId
-                ? '#1e293b'
-                : isPlaying
-                ? '#ef4444'
-                : '#22c55e',
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: pressed ? 0.6 : 1,
-          })}
+          style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
         >
           <Text
             style={{
-              color:
-                !audioAvailable || !activeVibeId
-                  ? '#334155'
-                  : isPlaying
-                  ? '#ef4444'
-                  : '#22c55e',
-              fontSize: 16,
-              lineHeight: 20,
+              fontSize: 14,
+              color: idle ? MIST.textGhost : isPlaying ? MIST.accent : MIST.text,
             }}
           >
             {isPlaying ? '■' : '▶'}
           </Text>
         </Pressable>
+
+        <WaveformVisualizer isPlaying={isPlaying} />
+
+        <Text
+          style={{
+            flex: 1,
+            fontFamily: FONT.sans,
+            fontSize: 12,
+            fontWeight: '400',
+            letterSpacing: 0.4,
+            color: label ? MIST.text : MIST.textGhost,
+            textTransform: 'uppercase',
+          }}
+          numberOfLines={1}
+        >
+          {label ?? '— select vibe —'}
+        </Text>
       </View>
     </View>
   );

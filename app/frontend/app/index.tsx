@@ -6,7 +6,6 @@ import {
   StatusBar,
   Modal,
   ScrollView,
-  useWindowDimensions,
   BackHandler,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -16,99 +15,213 @@ import { getAllVibeIds } from '../src/features/vibe-map/engine';
 import { isAudioAvailable } from '../src/features/audio-engine/adapter';
 import { SuggestionPanel } from '../src/components/ui/SuggestionPanel';
 import { VIBE_LABELS } from '../src/features/vibe-map/labels';
+import { VibeGlyph } from '../src/components/ui/VibeGlyph';
+import { MIST, FONT } from '../src/styles/theme';
 import type { VibeId } from '../src/features/vibe-map/types';
 
 const VIBE_IDS = getAllVibeIds();
 
 type ViewMode = 'listen' | 'details' | 'learn';
 
-function VibeButton({
-  label,
+function VibeCell({
+  id,
+  index,
   active,
   playing,
   audioAvailable,
-  size,
   onPress,
 }: {
-  label: string;
+  id: VibeId;
+  index: number;
   active: boolean;
   playing: boolean;
   audioAvailable: boolean;
-  size: number;
   onPress: () => void;
 }) {
+  const [pressed, setPressed] = useState(false);
+  const glyphColor = active ? MIST.accent : MIST.text;
   return (
-    <View className="m-1" style={{ width: size, height: size }}>
+    <View
+      style={{
+        width: '33.33%',
+        aspectRatio: 1,
+        borderRightWidth: 1,
+        borderBottomWidth: 1,
+        borderRightColor: 'rgba(255,255,255,0.08)',
+        borderBottomColor: 'rgba(255,255,255,0.08)',
+        overflow: 'hidden',
+      }}
+    >
       <Pressable
-        className="h-full w-full items-center justify-center rounded-md border p-2"
         android_disableSound
         disabled={!audioAvailable}
         onPress={onPress}
-        hitSlop={4}
-        style={({ pressed }) => ({
-          backgroundColor: active ? (playing ? '#14532d' : '#0f172a') : '#0b111c',
-          borderWidth: active ? 2 : 1,
-          borderColor: active ? '#38bdf8' : '#334155',
-          opacity: pressed ? 0.75 : 1,
-        })}
+        onPressIn={() => setPressed(true)}
+        onPressOut={() => setPressed(false)}
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: pressed ? 0.7 : 1,
+        }}
       >
-        <Text
-          numberOfLines={2}
-          adjustsFontSizeToFit
-          minimumFontScale={0.72}
-          className="text-center text-sm font-black"
-          style={{ color: active ? '#e2e8f0' : '#64748b' }}
-        >
-          {label}
-        </Text>
+        {active && (
+          <View
+            style={{
+              position: 'absolute',
+              top: 5,
+              left: 5,
+              right: 5,
+              bottom: 5,
+              borderWidth: 1,
+              borderColor: MIST.accent,
+            }}
+          />
+        )}
+        <VibeGlyph id={id} size={28} color={glyphColor} />
+        <View style={{ alignItems: 'center', width: '100%', paddingHorizontal: 4, marginTop: 6 }}>
+          <Text
+            style={{
+              fontFamily: FONT.mono,
+              fontSize: 8,
+              color: active ? MIST.accent : MIST.textGhost,
+              letterSpacing: 1.2,
+              marginBottom: 2,
+            }}
+          >
+            {String(index).padStart(3, '0')}
+          </Text>
+          <Text
+            numberOfLines={1}
+            style={{
+              fontFamily: FONT.sans,
+              fontSize: 10,
+              fontWeight: active ? '500' : '400',
+              color: active ? MIST.text : MIST.textMute,
+              letterSpacing: 0.4,
+              textAlign: 'center',
+              width: '100%',
+            }}
+          >
+            {VIBE_LABELS[id].toUpperCase()}
+          </Text>
+        </View>
+        {playing && (
+          <View
+            style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              width: 5,
+              height: 5,
+              borderRadius: 99,
+              backgroundColor: MIST.accent,
+            }}
+          />
+        )}
       </Pressable>
     </View>
   );
 }
 
-function HeaderAction({
+function AHeader({
+  left,
+  right,
+}: {
+  left: React.ReactNode;
+  right: React.ReactNode;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        minHeight: 44,
+        borderBottomWidth: 1,
+        borderBottomColor: MIST.hairline,
+      }}
+    >
+      {left}
+      {right}
+    </View>
+  );
+}
+
+function AScreenLabel({
+  section,
+  index,
+  total,
+}: {
+  section: string;
+  index?: number;
+  total?: number;
+}) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 14 }}>
+      <Text
+        style={{
+          fontFamily: FONT.mono,
+          fontSize: 10,
+          fontWeight: '500',
+          letterSpacing: 2.2,
+          textTransform: 'uppercase',
+          color: MIST.text,
+        }}
+      >
+        {section}
+      </Text>
+      {index !== undefined && total !== undefined && (
+        <Text
+          style={{
+            fontFamily: FONT.mono,
+            fontSize: 9,
+            color: MIST.textFaint,
+            letterSpacing: 1.8,
+          }}
+        >
+          {String(index).padStart(3, '0')} · {String(total).padStart(3, '0')}
+        </Text>
+      )}
+    </View>
+  );
+}
+
+function NavLink({
   label,
-  disabled,
   active,
+  disabled,
   onPress,
 }: {
   label: string;
-  disabled: boolean;
   active?: boolean;
+  disabled?: boolean;
   onPress: () => void;
 }) {
   return (
     <Pressable
-      className="min-h-9 items-center justify-center rounded-md border px-3"
       android_disableSound
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => ({
-        backgroundColor: disabled ? '#111827' : active ? '#164e63' : '#0f172a',
-        borderColor: disabled ? '#1e293b' : active ? '#22d3ee' : '#334155',
-        opacity: pressed ? 0.75 : 1,
-      })}
+      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
     >
-      <Text className="text-xs font-black" style={{ color: disabled ? '#334155' : active ? '#ecfeff' : '#cbd5e1' }}>
+      <Text
+        style={{
+          fontFamily: FONT.mono,
+          fontSize: 10,
+          fontWeight: '500',
+          letterSpacing: 2.2,
+          textTransform: 'uppercase',
+          color: active ? MIST.text : MIST.textFaint,
+        }}
+      >
         {label}
       </Text>
-    </Pressable>
-  );
-}
-
-function CogButton({ onPress }: { onPress: () => void }) {
-  return (
-    <Pressable
-      className="min-h-9 w-9 items-center justify-center rounded-md border"
-      android_disableSound
-      onPress={onPress}
-      style={({ pressed }) => ({
-        backgroundColor: '#0f172a',
-        borderColor: '#334155',
-        opacity: pressed ? 0.75 : 1,
-      })}
-    >
-      <Text style={{ color: '#64748b', fontSize: 16 }}>⚙</Text>
+      {active && (
+        <View style={{ height: 1, backgroundColor: MIST.text, marginTop: 2 }} />
+      )}
     </Pressable>
   );
 }
@@ -131,54 +244,79 @@ function SettingsModal({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <SafeAreaView className="flex-1 bg-[#060a10]">
-        <StatusBar barStyle="light-content" backgroundColor="#060a10" />
-        <View className="flex-row items-center justify-between px-5 pb-3.5 pt-3">
-          <Text className="text-[28px] font-black text-slate-200">Menu</Text>
-          <Pressable
-            className="min-h-9 w-9 items-center justify-center rounded-md border"
-            android_disableSound
-            onPress={onClose}
-            style={({ pressed }) => ({
-              backgroundColor: '#0f172a',
-              borderColor: '#334155',
-              opacity: pressed ? 0.75 : 1,
-            })}
-          >
-            <Text style={{ color: '#64748b', fontSize: 16 }}>✕</Text>
-          </Pressable>
+      <SafeAreaView style={{ flex: 1, backgroundColor: MIST.bg }}>
+        <StatusBar barStyle="light-content" backgroundColor={MIST.bg} />
+
+        <View
+          style={{
+            padding: 24,
+            paddingBottom: 24,
+            borderBottomWidth: 1,
+            borderBottomColor: MIST.hairline,
+          }}
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
+            <Text style={{ fontFamily: FONT.mono, fontSize: 9, fontWeight: '500', letterSpacing: 2.2, color: MIST.textMute, textTransform: 'uppercase' }}>
+              MENU
+            </Text>
+            <Pressable
+              android_disableSound
+              onPress={onClose}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+            >
+              <Text style={{ fontFamily: FONT.mono, fontSize: 10, fontWeight: '500', letterSpacing: 2.2, color: MIST.textFaint, textTransform: 'uppercase' }}>
+                ← CLOSE
+              </Text>
+            </Pressable>
+          </View>
+          <Text style={{ fontFamily: FONT.sans, fontSize: 40, fontWeight: '300', color: MIST.text, letterSpacing: -1.2, lineHeight: 40 }}>
+            Vibe<Text style={{ color: MIST.accent }}>→</Text>MIDI
+          </Text>
         </View>
-        <View className="flex-1 px-5 pt-2">
-          <Pressable
-            className="border-b border-slate-800 py-4"
-            android_disableSound
-            onPress={() => { onClose(); onDebugAudio(); }}
-            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-          >
-            <Text className="text-base font-semibold text-slate-300">Audio Debug</Text>
-          </Pressable>
-          <Pressable
-            className="border-b border-slate-800 py-4"
-            android_disableSound
-            onPress={() => { onClose(); onLicenses(); }}
-            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-          >
-            <Text className="text-base font-semibold text-slate-300">Licenses</Text>
-          </Pressable>
-        </View>
+
+        <ScrollView style={{ flex: 1 }}>
+          {[
+            { label: 'Audio Debug', onPress: () => { onClose(); onDebugAudio(); } },
+            { label: 'Licenses',    onPress: () => { onClose(); onLicenses(); } },
+          ].map((item) => (
+            <Pressable
+              key={item.label}
+              android_disableSound
+              onPress={item.onPress}
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            >
+              <View style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingVertical: 20,
+                paddingHorizontal: 24,
+                borderBottomWidth: 1,
+                borderBottomColor: MIST.hairline,
+              }}>
+                <Text style={{ fontFamily: FONT.sans, fontSize: 15, color: MIST.text, fontWeight: '400' }}>
+                  {item.label}
+                </Text>
+                <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textFaint, letterSpacing: 1 }}>
+                  →
+                </Text>
+              </View>
+            </Pressable>
+          ))}
+        </ScrollView>
       </SafeAreaView>
     </Modal>
   );
 }
 
 export default function HomeScreen() {
-  const { width } = useWindowDimensions();
   const router = useRouter();
   const { activeVibeId, suggestion, isPlaying, selectVibe, play, stop } = useAppStore();
   const audioAvailable = isAudioAvailable();
   const [viewMode, setViewMode] = useState<ViewMode>('listen');
   const [settingsVisible, setSettingsVisible] = useState(false);
-  const vibeButtonSize = Math.floor((width - 40 - 24) / 3);
+
+  const activeIndex = activeVibeId ? VIBE_IDS.indexOf(activeVibeId) + 1 : 0;
 
   useEffect(() => {
     if (viewMode === 'listen') return;
@@ -199,112 +337,195 @@ export default function HomeScreen() {
     }
   }
 
-  function openMode(id: VibeId, mode: ViewMode) {
-    if (activeVibeId !== id) {
-      selectVibe(id);
-    }
+  function openMode(mode: ViewMode) {
+    if (!activeVibeId) return;
     setViewMode(mode);
   }
 
-  function openActiveMode(mode: ViewMode) {
-    if (!activeVibeId) return;
-    openMode(activeVibeId, mode);
-  }
-
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} className="flex-1 bg-[#060a10]">
-      <StatusBar barStyle="light-content" backgroundColor="#060a10" />
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: MIST.bg }}>
+      <StatusBar barStyle="light-content" backgroundColor={MIST.bg} />
 
-      <View className="flex-1">
-        <View className="flex-1">
-          {viewMode === 'listen' ? (
-            <View className="flex-1 pt-3">
-              <View className="flex-row items-center justify-between gap-3 px-5 pb-3.5">
-                <Text className="flex-1 text-[28px] font-black text-slate-200">
-                  Mood?
-                </Text>
-                <View className="flex-row gap-2">
-                  <HeaderAction
+      <View style={{ flex: 1 }}>
+        {viewMode === 'listen' ? (
+          <View style={{ flex: 1 }}>
+            <AHeader
+              left={
+                <AScreenLabel
+                  section="MOOD"
+                  index={activeIndex}
+                  total={VIBE_IDS.length}
+                />
+              }
+              right={
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                  <NavLink
                     label="MIDI"
                     disabled={!activeVibeId}
-                    onPress={() => openActiveMode('details')}
+                    onPress={() => openMode('details')}
                   />
-                  <HeaderAction
-                    label="Learn"
+                  <NavLink
+                    label="LEARN"
                     disabled={!activeVibeId}
-                    onPress={() => openActiveMode('learn')}
+                    onPress={() => openMode('learn')}
                   />
-                  <CogButton onPress={() => setSettingsVisible(true)} />
+                  <NavLink
+                    label="≡"
+                    onPress={() => setSettingsVisible(true)}
+                  />
                 </View>
-              </View>
-              {!audioAvailable && (
-                <Text className="mb-2.5 px-5 text-[10px] text-slate-600">
-                  Audio requires Dev Build
-                </Text>
-              )}
-              <ScrollView
-                className="flex-1"
-                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
-                showsVerticalScrollIndicator={false}
+              }
+            />
+
+            {!audioAvailable && (
+              <Text
+                style={{
+                  fontFamily: FONT.mono,
+                  fontSize: 9,
+                  color: MIST.textFaint,
+                  letterSpacing: 1,
+                  paddingHorizontal: 24,
+                  paddingTop: 8,
+                }}
               >
-                <View className="flex-row flex-wrap">
-                  {VIBE_IDS.map((item) => {
-                    const active = item === activeVibeId;
-                    return (
-                      <VibeButton
-                        key={item}
-                        label={VIBE_LABELS[item]}
-                        active={active}
-                        playing={active && isPlaying}
-                        audioAvailable={audioAvailable}
-                        size={vibeButtonSize}
-                        onPress={() => handleVibePress(item)}
-                      />
-                    );
-                  })}
+                AUDIO REQUIRES DEV BUILD
+              </Text>
+            )}
+
+            <ScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={{ paddingBottom: 16 }}
+              showsVerticalScrollIndicator={false}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  borderLeftWidth: 1,
+                  borderLeftColor: 'rgba(255,255,255,0.08)',
+                }}
+              >
+                {VIBE_IDS.map((id, i) => (
+                  <VibeCell
+                    key={id}
+                    id={id}
+                    index={i + 1}
+                    active={id === activeVibeId}
+                    playing={id === activeVibeId && isPlaying}
+                    audioAvailable={audioAvailable}
+                    onPress={() => handleVibePress(id)}
+                  />
+                ))}
+                {Array.from({ length: (3 - (VIBE_IDS.length % 3)) % 3 }).map((_, i) => (
+                  <View
+                    key={`pad-${i}`}
+                    style={{
+                      width: '33.33%',
+                      aspectRatio: 1,
+                      borderRightWidth: 1,
+                      borderBottomWidth: 1,
+                      borderRightColor: 'rgba(255,255,255,0.08)',
+                      borderBottomColor: 'rgba(255,255,255,0.08)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Text style={{ fontFamily: FONT.mono, fontSize: 14, color: MIST.textGhost }}>—</Text>
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        ) : suggestion ? (
+          <View style={{ flex: 1 }}>
+            <AHeader
+              left={
+                <AScreenLabel
+                  section={viewMode === 'details' ? 'MIDI' : 'LEARN'}
+                  index={activeIndex}
+                  total={VIBE_IDS.length}
+                />
+              }
+              right={
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                  <NavLink
+                    label="MIDI"
+                    active={viewMode === 'details'}
+                    onPress={() => openMode('details')}
+                  />
+                  <NavLink
+                    label="LEARN"
+                    active={viewMode === 'learn'}
+                    onPress={() => openMode('learn')}
+                  />
+                  <NavLink label="≡" onPress={() => setSettingsVisible(true)} />
                 </View>
-              </ScrollView>
-            </View>
-          ) : suggestion ? (
-            <>
-              <View className="flex-row items-center justify-between gap-3 px-5 pb-3.5 pt-3">
-                <View className="flex-1 flex-row items-center gap-3">
-                  <Text className="text-[28px] font-black text-slate-200">
-                    {viewMode === 'details' ? 'MIDI?' : 'Learn?'}
+              }
+            />
+
+            {/* Compact vibe row */}
+            {activeVibeId && (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 14,
+                  paddingHorizontal: 24,
+                  paddingVertical: 14,
+                  borderBottomWidth: 1,
+                  borderBottomColor: MIST.hairline,
+                }}
+              >
+                <VibeGlyph id={activeVibeId} size={32} color={MIST.accent} />
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 12, minWidth: 0 }}>
+                  <Text
+                    style={{
+                      fontFamily: FONT.sans,
+                      fontSize: 20,
+                      fontWeight: '300',
+                      color: MIST.text,
+                      letterSpacing: -0.4,
+                      lineHeight: 20,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {VIBE_LABELS[activeVibeId]}
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: FONT.mono,
+                      fontSize: 10,
+                      color: MIST.textFaint,
+                      letterSpacing: 1.8,
+                      flexShrink: 1,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {suggestion.scale.root} {suggestion.scale.mode.toUpperCase().replace('_', ' ')} · {suggestion.bpmRange[0]}–{suggestion.bpmRange[1]} BPM
                   </Text>
                 </View>
-                <View className="flex-row gap-2">
-                  <HeaderAction
-                    label="MIDI"
-                    disabled={false}
-                    active={viewMode === 'details'}
-                    onPress={() => openActiveMode('details')}
-                  />
-                  <HeaderAction
-                    label="Learn"
-                    disabled={false}
-                    active={viewMode === 'learn'}
-                    onPress={() => openActiveMode('learn')}
-                  />
-                  <CogButton onPress={() => setSettingsVisible(true)} />
-                </View>
               </View>
+            )}
 
-              <View className="flex-1">
-                <SuggestionPanel
-                  suggestion={suggestion}
-                  mode={viewMode === 'learn' ? 'explore' : 'use'}
-                />
-              </View>
-            </>
-          ) : (
-            <View className="flex-1 items-center justify-center">
-              <Text className="text-[13px] text-slate-700">
-                Select a vibe to see suggestions
-              </Text>
-            </View>
-          )}
-        </View>
+            <SuggestionPanel
+              suggestion={suggestion}
+              mode={viewMode === 'learn' ? 'explore' : 'use'}
+            />
+          </View>
+        ) : (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Text
+              style={{
+                fontFamily: FONT.mono,
+                fontSize: 10,
+                color: MIST.textFaint,
+                letterSpacing: 1,
+              }}
+            >
+              SELECT A VIBE
+            </Text>
+          </View>
+        )}
       </View>
 
       <SettingsModal
