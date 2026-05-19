@@ -49,8 +49,8 @@ function VibeCell({
         aspectRatio: 1,
         borderRightWidth: 1,
         borderBottomWidth: 1,
-        borderRightColor: 'rgba(255,255,255,0.08)',
-        borderBottomColor: 'rgba(255,255,255,0.08)',
+        borderRightColor: MIST.hairline,
+        borderBottomColor: MIST.hairline,
         overflow: 'hidden',
       }}
     >
@@ -410,7 +410,7 @@ export default function HomeScreen() {
                   flexDirection: 'row',
                   flexWrap: 'wrap',
                   borderLeftWidth: 1,
-                  borderLeftColor: 'rgba(255,255,255,0.08)',
+                  borderLeftColor: MIST.hairline,
                 }}
               >
                 {VIBE_IDS.map((id, i) => (
@@ -432,8 +432,8 @@ export default function HomeScreen() {
                       aspectRatio: 1,
                       borderRightWidth: 1,
                       borderBottomWidth: 1,
-                      borderRightColor: 'rgba(255,255,255,0.08)',
-                      borderBottomColor: 'rgba(255,255,255,0.08)',
+                      borderRightColor: MIST.hairline,
+                      borderBottomColor: MIST.hairline,
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
