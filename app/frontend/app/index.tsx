@@ -7,9 +7,11 @@ import {
   Modal,
   ScrollView,
   BackHandler,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 import { useAppStore } from '../src/data/store';
 import { getAllVibeIds } from '../src/features/vibe-map/engine';
 import { isAudioAvailable } from '../src/features/audio-engine/adapter';
@@ -276,8 +278,9 @@ function SettingsModal({
 
         <ScrollView style={{ flex: 1 }}>
           {[
-            { label: 'Audio Debug', onPress: () => { onClose(); onDebugAudio(); } },
-            { label: 'Licenses',    onPress: () => { onClose(); onLicenses(); } },
+            ...(__DEV__ ? [{ label: 'Audio Debug', onPress: () => { onClose(); onDebugAudio(); } }] : []),
+            { label: 'Licenses',       onPress: () => { onClose(); onLicenses(); } },
+            { label: 'Privacy Policy', onPress: () => { void Linking.openURL('https://asamiile.github.io/Vibe-to-MIDI/privacy-policy.html'); } },
           ].map((item) => (
             <Pressable
               key={item.label}
@@ -303,6 +306,11 @@ function SettingsModal({
               </View>
             </Pressable>
           ))}
+          <View style={{ paddingVertical: 20, paddingHorizontal: 24 }}>
+            <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textGhost, letterSpacing: 1.5 }}>
+              VERSION {Constants.expoConfig?.version ?? '—'}
+            </Text>
+          </View>
         </ScrollView>
       </SafeAreaView>
     </Modal>
