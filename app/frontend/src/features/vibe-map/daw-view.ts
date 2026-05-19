@@ -45,6 +45,7 @@ export interface DawStepsView {
   trackSetupRows: DawTrackSetupRow[];
   soundRows: DawValueRow[];
   kickPattern: readonly boolean[];
+  patternSteps: { bass: string; chord: string; noise: string };
   audition: {
     chordLabel: string;
     chordNotes: readonly DawNoteView[];
@@ -68,7 +69,7 @@ function noteList(midiNotes: readonly number[]): string {
 function noteViews(midiNotes: readonly number[]): DawNoteView[] {
   return midiNotes.map((midi) => ({
     midi,
-    label: `${midiToNoteName(midi)} (${midi})`,
+    label: midiToNoteName(midi),
   }));
 }
 
@@ -110,6 +111,11 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
     bpm,
     rawBpm,
     kickPattern: suggestion.rhythmPattern,
+    patternSteps: {
+      bass: '1, 5, 9, 13',
+      chord: hitSteps(suggestion.chordStabPattern),
+      noise: hitSteps(suggestion.noisePattern),
+    },
     setupRows: [
       {
         label: 'Tempo',
