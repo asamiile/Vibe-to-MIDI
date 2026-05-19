@@ -27,7 +27,12 @@ export async function getAudioContext() {
     _context = new Ctx();
   }
   if (_context.state === 'suspended') {
-    await _context.resume();
+    try {
+      await _context.resume();
+    } catch {
+      _context = null;
+      return null;
+    }
   }
   return _context;
 }

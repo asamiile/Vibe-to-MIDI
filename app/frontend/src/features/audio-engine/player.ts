@@ -266,10 +266,14 @@ export async function playPreview(
   const melodySteps     = playMelody ? buildMelodySteps(suggestion) : [];
 
   const now = ctx.currentTime + 0.05;
-  const scheduledNodes: ScheduledNode[] = [];
-  const cleanupFns: Array<(t: number) => void> = [];
+  const activeNodes: ScheduledNode[] = [];
+  const activeCleanupFns: Array<(t: number) => void> = [];
 
-  function schedulePattern(loopAt: number) {
+  function schedulePattern(
+    loopAt: number,
+    nodeAcc: ScheduledNode[],
+    cleanupAcc: Array<(t: number) => void>
+  ) {
     if (playBass) {
       suggestion.bassNotes.forEach((midi, i) => {
         const start = loopAt + i * stepDuration * 4;
@@ -283,7 +287,7 @@ export async function playPreview(
             bassFilterFreq * voice.cutoffRatio,
             bassFilterQ,
             voice.type,
-            scheduledNodes
+            nodeAcc
           );
         });
       });
@@ -291,7 +295,7 @@ export async function playPreview(
     if (playKick) {
       suggestion.rhythmPattern.forEach((hit, step) => {
         if (!hit) return;
-        scheduleKick(ctx, loopAt + step * stepDuration, gain * soundMix.kick, scheduledNodes, soundVariants.kick, suggestion.kickFilter);
+        scheduleKick(ctx, loopAt + step * stepDuration, gain * soundMix.kick, nodeAcc, soundVariants.kick, suggestion.kickFilter);
       });
     }
     if (playNoise && suggestion.noisePattern) {
@@ -305,14 +309,14 @@ export async function playPreview(
           gain * soundMix.noise * AUDIO_PARAMS.noise.gainRatio * noiseProfile.gainRatio,
           noiseFilterSpec,
           soundVariants.noise,
-          cleanupFns
+          cleanupAcc
         );
       });
     }
     if (playMelody) {
       melodySteps.forEach(({ midiNotes, step, durationSteps }) => {
         const start = loopAt + step * stepDuration;
-        scheduleChordStab(ctx, midiNotes, start, durationSteps * stepDuration, gain * soundMix.stab * AUDIO_PARAMS.melody.gainRatio, stabFilterSpec.cutoff, stabFilterSpec.q, soundVariants.stab, scheduledNodes);
+        scheduleChordStab(ctx, midiNotes, start, durationSteps * stepDuration, gain * soundMix.stab * AUDIO_PARAMS.melody.gainRatio, stabFilterSpec.cutoff, stabFilterSpec.q, soundVariants.stab, nodeAcc);
         for (let repeat = 1; repeat <= dubDelay.repeats; repeat += 1) {
           scheduleChordStab(
             ctx,
@@ -323,7 +327,7 @@ export async function playPreview(
             stabFilterSpec.cutoff,
             stabFilterSpec.q,
             soundVariants.stab,
-            scheduledNodes
+            nodeAcc
           );
         }
       });
@@ -334,10 +338,33 @@ export async function playPreview(
   let loopStart = now;
   let stopped = false;
   let loopTimer: ReturnType<typeof setTimeout>;
+  const cleanupTimers: ReturnType<typeof setTimeout>[] = [];
 
   function scheduleLoop() {
     if (stopped) return;
-    schedulePattern(loopStart);
+    const loopNodes: ScheduledNode[] = [];
+    const loopCleanups: Array<(t: number) => void> = [];
+    schedulePattern(loopStart, loopNodes, loopCleanups);
+    activeNodes.push(...loopNodes);
+    activeCleanupFns.push(...loopCleanups);
+
+    // Disconnect nodes from this loop after they have finished playing
+    const cleanupTimer = setTimeout(() => {
+      loopNodes.forEach(({ oscillator, gain: g }) => {
+        oscillator.disconnect?.();
+        g.disconnect?.();
+      });
+      loopNodes.forEach((n) => {
+        const i = activeNodes.indexOf(n);
+        if (i >= 0) activeNodes.splice(i, 1);
+      });
+      loopCleanups.forEach((fn) => {
+        const i = activeCleanupFns.indexOf(fn);
+        if (i >= 0) activeCleanupFns.splice(i, 1);
+      });
+    }, (loopDuration + 0.5) * 1000);
+    cleanupTimers.push(cleanupTimer);
+
     loopStart += loopDuration;
     loopTimer = setTimeout(scheduleLoop, loopDuration * 1000 - 100);
   }
@@ -347,15 +374,16 @@ export async function playPreview(
     stop: () => {
       stopped = true;
       clearTimeout(loopTimer);
+      cleanupTimers.forEach(clearTimeout);
       const t = ctx.currentTime;
-      scheduledNodes.splice(0).forEach(({ oscillator, gain }) => {
-        gain.gain.cancelScheduledValues(t);
-        gain.gain.setValueAtTime(0, t);
+      activeNodes.splice(0).forEach(({ oscillator, gain: g }) => {
+        g.gain.cancelScheduledValues(t);
+        g.gain.setValueAtTime(0, t);
         try { oscillator.stop(t); } catch {}
         oscillator.disconnect?.();
-        gain.disconnect?.();
+        g.disconnect?.();
       });
-      cleanupFns.splice(0).forEach((fn) => fn(t));
+      activeCleanupFns.splice(0).forEach((fn) => fn(t));
     },
   };
 }
