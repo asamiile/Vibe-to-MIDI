@@ -317,7 +317,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     chord: { root: 'D', quality: 'minor7' },
     bassNotes: [38, 38, 39, 38],
     rhythmPattern: [true, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false],
-    noisePattern: HAT_SPARE,
+    noisePattern: [true, false, false, true, false, true, false, false, true, false, false, true, false, false, false, false],
     chordStabPattern: STAB_DUB,
     soundLayers: [
       { role: 'bass', descriptor: 'industrial sub, gritty saturation' },
@@ -327,7 +327,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     bpmRange: [132, 138],
     kickFilter: { cutoff: 95,   q: 2.6 },
     bassFilter: { cutoff: 250,  q: 1.5 },
-    noiseFilter: { cutoff: 6500, q: 1.5 },  // 暗くインダストリアルなハット
+    noiseFilter: { cutoff: 6500, q: 2.2 },  // 不規則な機械的ノイズバースト
     chordStabFilter: { cutoff: 900, q: 1.8 },
     dubDelay: { repeats: 3, stepOffset: 3, feedbackGain: 0.42 },
     melodySuggested: true,
@@ -383,7 +383,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     chord: { root: 'A', quality: 'minor' },
     bassNotes: [33, 33, 33, 34],
     rhythmPattern: [true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false],
-    noisePattern: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+    noisePattern: HAT_ALL8,
     chordStabPattern: STAB_SPARSE,
     soundLayers: [
       { role: 'bass', descriptor: 'distorted sub, heavy clipping' },
@@ -393,7 +393,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     bpmRange: [132, 138],
     kickFilter: { cutoff: 80,   q: 3.0 },
     bassFilter: { cutoff: 200,  q: 2.2 },
-    noiseFilter: { cutoff: 6000, q: 2.0 },  // 粗く共鳴するダーティハット
+    noiseFilter: { cutoff: 3500, q: 3.5 },  // 高Q共鳴で金属的なきしみノイズ
     chordStabFilter: { cutoff: 800, q: 2.0 },
     dubDelay: { repeats: 3, stepOffset: 3, feedbackGain: 0.46 },
     melodySuggested: true,
@@ -523,6 +523,30 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     noiseFilter: { cutoff: 4700, q: 1.6 },
     chordStabFilter: { cutoff: 760, q: 1.9 },
     dubDelay: { repeats: 5, stepOffset: 3, feedbackGain: 0.46 },
+    melodySuggested: true,
+  },
+
+  // ── Noise / Corroded ────────────────────────────────────────────────────
+
+  corroded: {
+    vibeId: 'corroded',
+    scale: { root: 'C#', mode: 'phrygian' },
+    chord: { root: 'C#', quality: 'minor7' },
+    bassNotes: [37, 37, 38, 37],
+    rhythmPattern: [true, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false],
+    noisePattern: [true, false, false, false, true, false, false, true, false, false, true, false, true, false, false, true],
+    chordStabPattern: STAB_SPARSE,
+    soundLayers: [
+      { role: 'bass', descriptor: 'corroded sub, heavy saturation filter' },
+      { role: 'pad',  descriptor: 'dark minor7 stab, feedback overload tail' },
+      { role: 'drum', descriptor: 'muffled kick, displaced beat' },
+    ],
+    bpmRange: [130, 138],
+    kickFilter: { cutoff: 60, q: 3.5 },
+    bassFilter: { cutoff: 180, q: 2.8 },
+    noiseFilter: { cutoff: 3000, q: 3.2 },  // 高Q狭帯域ノイズ — 金属的な腐食音
+    chordStabFilter: { cutoff: 650, q: 2.4 },
+    dubDelay: { repeats: 5, stepOffset: 3, feedbackGain: 0.55 },
     melodySuggested: true,
   },
 
@@ -683,6 +707,13 @@ export const VIBE_SOUND_VARIANTS: Record<VibeId, SoundVariantSelection> = {
     stab: 'square-saw',
     space: 'dark-plate',
   },
+  corroded: {
+    kick: 'muffled-room',
+    bass: 'filtered-pulse',
+    noise: 'bandpass-tick',
+    stab: 'square-saw',
+    space: 'deep-feedback',
+  },
 };
 
 export const VIBE_SOUND_MIX: Record<VibeId, SoundMixLevels> = {
@@ -702,10 +733,11 @@ export const VIBE_SOUND_MIX: Record<VibeId, SoundMixLevels> = {
   underground:{ kick: 1.1,  bass: 1.1,  noise: 0.56, stab: 0.82 },
   tense:      { kick: 1.02, bass: 0.98, noise: 0.62, stab: 0.9 },
   metallic:   { kick: 0.98, bass: 0.92, noise: 0.7,  stab: 0.86 },
-  gritty:     { kick: 1.0,  bass: 1.04, noise: 0.62, stab: 0.82 },
+  gritty:     { kick: 1.0,  bass: 1.04, noise: 0.78, stab: 0.82 },
   euphoric:   { kick: 0.92, bass: 1.0,  noise: 0.72, stab: 1.1 },
   unstable:   { kick: 0.94, bass: 0.96, noise: 0.66, stab: 1.0 },
   retrowave:  { kick: 0.9,  bass: 1.02, noise: 0.6,  stab: 1.04 },
   summer:     { kick: 0.92, bass: 0.94, noise: 0.7,  stab: 1.08 },
   winter:     { kick: 0.88, bass: 1.08, noise: 0.34, stab: 0.98 },
+  corroded:   { kick: 0.86, bass: 1.1,  noise: 0.82, stab: 0.72 },
 };

@@ -22,7 +22,8 @@ export type VibeId =
   | 'euphoric'
   | 'cinematic'
   | 'summer'
-  | 'winter';
+  | 'winter'
+  | 'corroded';
 
 export type ScaleMode =
   | 'minor'

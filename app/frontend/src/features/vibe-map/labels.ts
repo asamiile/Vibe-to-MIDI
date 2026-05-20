@@ -23,4 +23,5 @@ export const VIBE_LABELS: Record<VibeId, string> = {
   cinematic: 'Cinematic',
   summer: 'Summer',
   winter: 'Winter',
+  corroded: 'Corroded',
 };
