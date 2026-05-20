@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   AUDIO_NOTICE,
   BUNDLED_ASSET_LICENSE_NOTICES,
-  LICENSE_RELEASE_CHECKLIST,
   RUNTIME_LICENSE_NOTICES,
 } from '../src/data/licenseNotices';
 import { backToReturnTarget, useSettingsReturnOnStackBack } from '../src/lib/navigation';
@@ -63,20 +62,23 @@ export default function LicensesScreen() {
               <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textMute, marginTop: 4 }}>
                 {notice.license}
               </Text>
-              <Text style={{ fontFamily: FONT.mono, fontSize: 9, color: MIST.textFaint, marginTop: 2 }}>
-                {notice.repository}
-              </Text>
+              {notice.copyright ? (
+                <Text style={{ fontFamily: FONT.mono, fontSize: 9, color: MIST.textFaint, marginTop: 2 }}>
+                  {notice.copyright}
+                </Text>
+              ) : null}
+              {notice.licenseText ? (
+                <Text style={{ fontFamily: FONT.sans, fontSize: 11, color: MIST.textFaint, lineHeight: 16, marginTop: 6 }}>
+                  {notice.licenseText}
+                </Text>
+              ) : null}
             </View>
           ))}
         </Section>
 
-        <Section title="Bundled assets">
-          {BUNDLED_ASSET_LICENSE_NOTICES.length === 0 ? (
-            <Text style={{ fontFamily: FONT.sans, fontSize: 13, color: MIST.textMute, lineHeight: 20 }}>
-              No third-party bundled media assets are currently listed.
-            </Text>
-          ) : (
-            BUNDLED_ASSET_LICENSE_NOTICES.map((asset) => (
+        {BUNDLED_ASSET_LICENSE_NOTICES.length > 0 ? (
+          <Section title="Bundled assets">
+            {BUNDLED_ASSET_LICENSE_NOTICES.map((asset) => (
               <View key={`${asset.kind}-${asset.name}`} style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: MIST.hairline }}>
                 <Text style={{ fontFamily: FONT.mono, fontSize: 12, color: MIST.text, fontWeight: '500' }}>
                   {asset.name}
@@ -88,17 +90,9 @@ export default function LicensesScreen() {
                   {asset.creator} · checked {asset.dateChecked}
                 </Text>
               </View>
-            ))
-          )}
-        </Section>
-
-        <Section title="Release checks">
-          {LICENSE_RELEASE_CHECKLIST.map((item) => (
-            <Text key={item} style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textFaint, lineHeight: 18, marginBottom: 6 }}>
-              {item}
-            </Text>
-          ))}
-        </Section>
+            ))}
+          </Section>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

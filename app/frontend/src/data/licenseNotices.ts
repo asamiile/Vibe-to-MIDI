@@ -42,10 +42,3 @@ export const RUNTIME_LICENSE_NOTICES: readonly LicenseNotice[] = [
   { packageName: 'tailwindcss', license: 'MIT', repository: 'https://github.com/tailwindlabs/tailwindcss' },
   { packageName: 'zustand', license: 'MIT', repository: 'https://github.com/pmndrs/zustand' },
 ];
-
-export const LICENSE_RELEASE_CHECKLIST: readonly string[] = [
-  'Regenerate runtime dependency notices from package-lock.json before public release.',
-  'Include required copyright notices and license text for bundled open source dependencies.',
-  'Confirm app icons and splash assets are original or have documented redistribution rights.',
-  'Add an AssetLicenseNotice entry for any bundled audio, MIDI, image, font, or other media asset.',
-];
