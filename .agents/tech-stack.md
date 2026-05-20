@@ -29,6 +29,17 @@ app/frontend/   ← React Native / Expo project root
 
 The audio engine implements an `AudioContext` singleton and a step-scheduled dub techno loop with kick, bass, noise/hat, and chord stab layers. The preview clamps BPM to 80-120 even when source vibe BPM ranges are faster.
 
+### React Native Audio API guidance
+
+Source: official React Native Audio API docs.
+
+- Keep a single shared `AudioContext`. Do not create `AudioContext` instances inside React components. The current singleton entry point is `app/frontend/src/features/audio-engine/adapter.ts`.
+- Resume a suspended context only through the adapter. Close the context only for explicit lifecycle cleanup.
+- Keep audio graph logic outside React components. UI should call feature APIs such as `playPreview()` or audition helpers.
+- Future dub echo work should evaluate `DelayNode` feedback routing instead of only rescheduling repeated chord stabs.
+- Future richer noise textures should evaluate generated `AudioBuffer` noise with `AudioBufferSourceNode`; do not bundle noise samples for this.
+- Future Generative Art playback may use `AnalyserNode` for audio-reactive visuals after Android dev-build performance testing.
+
 ## Styling
 
 | Package | Version | Notes |
@@ -80,6 +91,8 @@ __tests__/learning.test.ts    # learning cue helpers
 ```
 
 Audio engine is not unit-tested (requires native Oboe). Covered by manual device test.
+
+For future audio graph unit tests, prefer `react-native-audio-api/mock` from the official package when it is compatible with Jest. Keep the local mock at `app/frontend/src/__mocks__/react-native-audio-api.ts` only when a smaller mock is needed for Jest stability.
 
 ## Config files
 
