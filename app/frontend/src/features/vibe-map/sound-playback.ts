@@ -37,6 +37,7 @@ export interface NoisePlaybackProfile {
   gainRatio: number;
   cutoffRatio: number;
   qRatio: number;
+  continuous?: boolean;  // schedule one sustained node per loop instead of per-step hits
 }
 
 export interface DubDelaySpec {
@@ -129,10 +130,11 @@ export function getNoisePlaybackProfile(variant: NoiseVariantId): NoisePlaybackP
       return {
         freqs: [1600, 2900, 4800, 7100],
         type: (index) => (index % 2 === 0 ? 'triangle' : 'sawtooth'),
-        durationRatio: 4.2,
-        gainRatio: 0.26,
+        durationRatio: 1.04,  // slight overlap between loops for seamless join
+        gainRatio: 0.52,
         cutoffRatio: 0.82,
         qRatio: 0.45,
+        continuous: true,
       };
     case 'resonant-crack':
       return {

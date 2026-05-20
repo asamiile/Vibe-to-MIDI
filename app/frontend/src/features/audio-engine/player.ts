@@ -110,7 +110,8 @@ function scheduleNoise(
   gainValue: number,
   noiseFilter: { cutoff: number; q: number },
   variant: NoiseVariantId,
-  cleanupFns: Array<(t: number) => void>
+  cleanupFns: Array<(t: number) => void>,
+  sustained = false
 ): void {
   const profile = getNoisePlaybackProfile(variant);
   const bandpass = ctx.createBiquadFilter();
@@ -127,9 +128,17 @@ function scheduleNoise(
   lowpass.frequency.value = Math.min(cutoff * 1.35, 9000);
   lowpass.Q.value = 0.5;
 
-  gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.006);
-  gain.gain.linearRampToValueAtTime(0, startTime + effectiveDuration);
+  if (sustained) {
+    const release = 0.08;
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.02);
+    gain.gain.setValueAtTime(gainValue, startTime + effectiveDuration - release);
+    gain.gain.linearRampToValueAtTime(0, startTime + effectiveDuration);
+  } else {
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.006);
+    gain.gain.linearRampToValueAtTime(0, startTime + effectiveDuration);
+  }
 
   bandpass.connect(lowpass);
   lowpass.connect(gain);
@@ -299,19 +308,16 @@ export async function playPreview(
       });
     }
     if (playNoise && suggestion.noisePattern) {
-      suggestion.noisePattern.forEach((hit, step) => {
-        if (!hit) return;
-        const noiseProfile = getNoisePlaybackProfile(soundVariants.noise);
-        scheduleNoise(
-          ctx,
-          loopAt + step * stepDuration,
-          noiseDuration,
-          gain * soundMix.noise * AUDIO_PARAMS.noise.gainRatio * noiseProfile.gainRatio,
-          noiseFilterSpec,
-          soundVariants.noise,
-          cleanupAcc
-        );
-      });
+      const noiseProfile = getNoisePlaybackProfile(soundVariants.noise);
+      const noiseGain = gain * soundMix.noise * AUDIO_PARAMS.noise.gainRatio * noiseProfile.gainRatio;
+      if (noiseProfile.continuous) {
+        scheduleNoise(ctx, loopAt, loopDuration, noiseGain, noiseFilterSpec, soundVariants.noise, cleanupAcc, true);
+      } else {
+        suggestion.noisePattern.forEach((hit, step) => {
+          if (!hit) return;
+          scheduleNoise(ctx, loopAt + step * stepDuration, noiseDuration, noiseGain, noiseFilterSpec, soundVariants.noise, cleanupAcc);
+        });
+      }
     }
     if (playMelody) {
       melodySteps.forEach(({ midiNotes, step, durationSteps }) => {

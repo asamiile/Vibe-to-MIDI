@@ -468,8 +468,8 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     melodySuggested: true,
   },
 
-  summer: {
-    vibeId: 'summer',
+  lucid: {
+    vibeId: 'lucid',
     scale: { root: 'D', mode: 'dorian' },
     chord: { root: 'D', quality: 'minor9' },
     bassNotes: [38, 38, 45, 38],
@@ -477,7 +477,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     noisePattern: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false],
     chordStabPattern: STAB_DUB,
     soundLayers: [
-      { role: 'bass', descriptor: 'rounded summer sub, open but still filtered' },
+      { role: 'bass', descriptor: 'rounded open sub, filtered warmth' },
       { role: 'pad',  descriptor: 'wide minor9 chord stab, bright dub delay tail' },
       { role: 'drum', descriptor: 'soft four-on-floor kick with airy hat ticks' },
     ],
@@ -497,8 +497,8 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     melodySuggested: true,
   },
 
-  winter: {
-    vibeId: 'winter',
+  void: {
+    vibeId: 'void',
     scale: { root: 'F', mode: 'phrygian' },
     chord: { root: 'F', quality: 'minor7' },
     bassNotes: [29, 29, 28, 29],
@@ -532,10 +532,10 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     vibeId: 'corroded',
     scale: { root: 'C#', mode: 'phrygian' },
     chord: { root: 'C#', quality: 'minor7' },
-    bassNotes: [37, 37, 38, 37],
+    bassNotes: [37, 37, 37, 36],
     rhythmPattern: [true, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false],
     noisePattern: [true, false, false, false, true, false, false, true, false, false, true, false, true, false, false, true],
-    chordStabPattern: STAB_SPARSE,
+    chordStabPattern: STAB_OFFBEAT,
     soundLayers: [
       { role: 'bass', descriptor: 'corroded sub, heavy saturation filter' },
       { role: 'pad',  descriptor: 'dark minor7 stab, feedback overload tail' },
@@ -546,15 +546,15 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     bassFilter: { cutoff: 180, q: 2.8 },
     noiseFilter: { cutoff: 3000, q: 3.2 },  // 高Q狭帯域ノイズ — 金属的な腐食音
     chordStabFilter: { cutoff: 650, q: 2.4 },
-    dubDelay: { repeats: 5, stepOffset: 3, feedbackGain: 0.55 },
+    dubDelay: { repeats: 5, stepOffset: 3, feedbackGain: 0.58 },
     melodySuggested: true,
   },
 
   static: {
     vibeId: 'static',
-    scale: { root: 'B', mode: 'locrian' },
-    chord: { root: 'B', quality: 'diminished' },
-    bassNotes: [35, 35, 34, 35],
+    scale: { root: 'D', mode: 'locrian' },
+    chord: { root: 'D', quality: 'diminished' },
+    bassNotes: [38, 38, 36, 38],
     rhythmPattern: [true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
     noisePattern: HAT_ALL8,
     chordStabPattern: STAB_SPARSE,
@@ -563,10 +563,10 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
       { role: 'pad',  descriptor: 'diminished stab, dark plate smear' },
       { role: 'drum', descriptor: 'single deep kick, once per bar' },
     ],
-    bpmRange: [120, 128],
+    bpmRange: [125, 130],
     kickFilter: { cutoff: 65, q: 2.8 },
     bassFilter: { cutoff: 140, q: 1.8 },
-    noiseFilter: { cutoff: 6000, q: 0.5 },  // 広帯域ノイズ — ラジオスタティック
+    noiseFilter: { cutoff: 5000, q: 0.5 },  // 広帯域ノイズ — ラジオスタティック
     chordStabFilter: { cutoff: 700, q: 1.6 },
     dubDelay: { repeats: 4, stepOffset: 4, feedbackGain: 0.48 },
     melodySuggested: true,
@@ -577,9 +577,9 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     scale: { root: 'A', mode: 'phrygian' },
     chord: { root: 'A', quality: 'minor' },
     bassNotes: [33, 33, 34, 33],
-    rhythmPattern: [true, false, false, false, false, true, false, false, true, false, false, false, true, false, true, false],
+    rhythmPattern: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
     noisePattern: [true, false, true, true, false, false, true, false, true, true, false, false, false, true, false, false],
-    chordStabPattern: STAB_DUB,
+    chordStabPattern: STAB_OFFBEAT,
     soundLayers: [
       { role: 'bass', descriptor: 'raw pulse sub, industrial grit' },
       { role: 'pad',  descriptor: 'square-saw chord stab, minimal reverb' },
@@ -587,10 +587,10 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     ],
     bpmRange: [133, 140],
     kickFilter: { cutoff: 55, q: 4.0 },
-    bassFilter: { cutoff: 300, q: 2.0 },
+    bassFilter: { cutoff: 220, q: 2.0 },
     noiseFilter: { cutoff: 7000, q: 3.0 },  // 鋭い高Q金属ノイズ
     chordStabFilter: { cutoff: 1100, q: 1.8 },
-    dubDelay: { repeats: 2, stepOffset: 2, feedbackGain: 0.28 },
+    dubDelay: { repeats: 3, stepOffset: 2, feedbackGain: 0.28 },
     melodySuggested: true,
   },
 
@@ -737,14 +737,14 @@ export const VIBE_SOUND_VARIANTS: Record<VibeId, SoundVariantSelection> = {
     stab: 'sampled-chord-like',
     space: 'spring-style',
   },
-  summer: {
+  lucid: {
     kick: 'soft-909',
     bass: 'triangle-round',
     noise: 'closed-hat',
     stab: 'wide-detuned',
     space: 'spring-style',
   },
-  winter: {
+  void: {
     kick: 'muffled-room',
     bass: 'sine-sub',
     noise: 'bandpass-tick',
@@ -795,9 +795,9 @@ export const VIBE_SOUND_MIX: Record<VibeId, SoundMixLevels> = {
   euphoric:   { kick: 0.92, bass: 1.0,  noise: 0.72, stab: 1.1 },
   unstable:   { kick: 0.94, bass: 0.96, noise: 0.66, stab: 1.0 },
   retrowave:  { kick: 0.9,  bass: 1.02, noise: 0.6,  stab: 1.04 },
-  summer:     { kick: 0.92, bass: 0.94, noise: 0.7,  stab: 1.08 },
-  winter:     { kick: 0.88, bass: 1.08, noise: 0.34, stab: 0.98 },
+  lucid:      { kick: 0.92, bass: 0.94, noise: 0.7,  stab: 1.08 },
+  void:       { kick: 0.88, bass: 1.08, noise: 0.34, stab: 0.98 },
   corroded:   { kick: 0.86, bass: 1.1,  noise: 0.82, stab: 0.72 },
-  static:     { kick: 0.68, bass: 0.74, noise: 1.0,  stab: 0.54 },
+  static:     { kick: 0.68, bass: 0.74, noise: 0.85, stab: 0.54 },
   raw:        { kick: 1.15, bass: 1.06, noise: 0.74, stab: 0.72 },
 };
