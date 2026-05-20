@@ -7,15 +7,18 @@ import {
   Modal,
   ScrollView,
   BackHandler,
+  Linking,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 import { useAppStore } from '../src/data/store';
 import { getAllVibeIds } from '../src/features/vibe-map/engine';
 import { isAudioAvailable } from '../src/features/audio-engine/adapter';
 import { SuggestionPanel } from '../src/components/ui/SuggestionPanel';
 import { VIBE_LABELS } from '../src/features/vibe-map/labels';
 import { VibeGlyph } from '../src/components/ui/VibeGlyph';
+import { withSettingsReturn } from '../src/lib/navigation';
 import { MIST, FONT } from '../src/styles/theme';
 import type { VibeId } from '../src/features/vibe-map/types';
 
@@ -47,8 +50,8 @@ function VibeCell({
         aspectRatio: 1,
         borderRightWidth: 1,
         borderBottomWidth: 1,
-        borderRightColor: 'rgba(255,255,255,0.08)',
-        borderBottomColor: 'rgba(255,255,255,0.08)',
+        borderRightColor: MIST.hairline,
+        borderBottomColor: MIST.hairline,
         overflow: 'hidden',
       }}
     >
@@ -276,8 +279,9 @@ function SettingsModal({
 
         <ScrollView style={{ flex: 1 }}>
           {[
-            { label: 'Audio Debug', onPress: () => { onClose(); onDebugAudio(); } },
-            { label: 'Licenses',    onPress: () => { onClose(); onLicenses(); } },
+            ...(__DEV__ ? [{ label: 'Audio Debug', onPress: () => { onClose(); onDebugAudio(); } }] : []),
+            { label: 'Licenses',       onPress: () => { onClose(); onLicenses(); } },
+            { label: 'Privacy Policy', onPress: () => { void Linking.openURL('https://asamiile.github.io/Vibe-to-MIDI/privacy-policy.html'); } },
           ].map((item) => (
             <Pressable
               key={item.label}
@@ -303,6 +307,11 @@ function SettingsModal({
               </View>
             </Pressable>
           ))}
+          <View style={{ paddingVertical: 20, paddingHorizontal: 24 }}>
+            <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textGhost, letterSpacing: 1.5 }}>
+              VERSION {Constants.expoConfig?.version ?? '—'}
+            </Text>
+          </View>
         </ScrollView>
       </SafeAreaView>
     </Modal>
@@ -311,6 +320,7 @@ function SettingsModal({
 
 export default function HomeScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ settings?: string }>();
   const { activeVibeId, suggestion, isPlaying, selectVibe, play, stop } = useAppStore();
   const audioAvailable = isAudioAvailable();
   const [viewMode, setViewMode] = useState<ViewMode>('listen');
@@ -319,13 +329,25 @@ export default function HomeScreen() {
   const activeIndex = activeVibeId ? VIBE_IDS.indexOf(activeVibeId) + 1 : 0;
 
   useEffect(() => {
-    if (viewMode === 'listen') return;
+    if (params.settings === '1') {
+      setSettingsVisible(true);
+    }
+  }, [params.settings]);
+
+  useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      setViewMode('listen');
-      return true;
+      if (settingsVisible) {
+        setSettingsVisible(false);
+        return true;
+      }
+      if (viewMode !== 'listen') {
+        setViewMode('listen');
+        return true;
+      }
+      return false;
     });
     return () => sub.remove();
-  }, [viewMode]);
+  }, [settingsVisible, viewMode]);
 
   function handleVibePress(id: VibeId) {
     if (!audioAvailable) return;
@@ -402,7 +424,7 @@ export default function HomeScreen() {
                   flexDirection: 'row',
                   flexWrap: 'wrap',
                   borderLeftWidth: 1,
-                  borderLeftColor: 'rgba(255,255,255,0.08)',
+                  borderLeftColor: MIST.hairline,
                 }}
               >
                 {VIBE_IDS.map((id, i) => (
@@ -424,8 +446,8 @@ export default function HomeScreen() {
                       aspectRatio: 1,
                       borderRightWidth: 1,
                       borderBottomWidth: 1,
-                      borderRightColor: 'rgba(255,255,255,0.08)',
-                      borderBottomColor: 'rgba(255,255,255,0.08)',
+                      borderRightColor: MIST.hairline,
+                      borderBottomColor: MIST.hairline,
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
@@ -531,8 +553,8 @@ export default function HomeScreen() {
       <SettingsModal
         visible={settingsVisible}
         onClose={() => setSettingsVisible(false)}
-        onLicenses={() => router.push('/licenses')}
-        onDebugAudio={() => router.push('/debug-audio')}
+        onLicenses={() => router.push(withSettingsReturn('/licenses'))}
+        onDebugAudio={() => router.push(withSettingsReturn('/debug-audio'))}
       />
     </SafeAreaView>
   );
