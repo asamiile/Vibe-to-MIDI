@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppStore } from '../../data/store';
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
@@ -7,6 +8,7 @@ import { VIBE_LABELS } from '../../features/vibe-map/labels';
 import { WaveformVisualizer } from './WaveformVisualizer';
 import { ALL_AUDIO_LAYERS } from '../../features/audio-engine/constants';
 import type { AudioLayer } from '../../features/audio-engine/constants';
+import { isProFeatureEnabled } from '../../features/entitlements/pro-features';
 import { MIST, FONT } from '../../styles/theme';
 
 const LAYER_LABELS: Record<AudioLayer, string> = {
@@ -17,9 +19,11 @@ const LAYER_LABELS: Record<AudioLayer, string> = {
 };
 
 export function PlayerBar() {
+  const router = useRouter();
   const { bottom } = useSafeAreaInsets();
-  const { activeVibeId, suggestion, isPlaying, play, stop, activeLayers, toggleLayer } = useAppStore();
+  const { activeVibeId, suggestion, isPlaying, play, stop, activeLayers, toggleLayer, hasProAccess } = useAppStore();
   const audioAvailable = isAudioAvailable();
+  const artEnabled = isProFeatureEnabled('generative_art_playback', hasProAccess);
 
   const label = activeVibeId ? VIBE_LABELS[activeVibeId] ?? activeVibeId : null;
   const idle = !activeVibeId;
@@ -41,6 +45,7 @@ export function PlayerBar() {
         <View
           style={{
             flexDirection: 'row',
+            alignItems: 'center',
             paddingHorizontal: 24,
             paddingTop: 14,
             gap: 18,
@@ -69,6 +74,26 @@ export function PlayerBar() {
               </Pressable>
             );
           })}
+          <View style={{ flex: 1 }} />
+          <Pressable
+            android_disableSound
+            onPress={() => {
+              if (!artEnabled) router.push('/pro');
+            }}
+            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 4 })}
+          >
+            <Text
+              style={{
+                fontFamily: FONT.mono,
+                fontSize: 9,
+                fontWeight: '500',
+                letterSpacing: 2.2,
+                color: artEnabled && isPlaying ? MIST.accent : MIST.textGhost,
+              }}
+            >
+              ART {artEnabled ? 'READY' : 'PRO'}
+            </Text>
+          </Pressable>
         </View>
       )}
 

@@ -13,10 +13,13 @@ interface AppState {
   suggestion: MusicalSuggestion | null;
   isPlaying: boolean;
   activeLayers: Set<AudioLayer>;
+  hasProAccess: boolean;
+  proAccessSource: 'none' | 'dev-preview' | 'store';
   selectVibe: (id: VibeId) => void;
   play: () => void;
   stop: () => void;
   toggleLayer: (layer: AudioLayer) => void;
+  setDevProAccess: (enabled: boolean) => void;
 }
 
 function startPlayback(suggestion: MusicalSuggestion, layers: Set<AudioLayer>, onHandle: (h: PlayerHandle) => void) {
@@ -28,6 +31,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   suggestion: null,
   isPlaying: false,
   activeLayers: new Set(ALL_AUDIO_LAYERS),
+  hasProAccess: false,
+  proAccessSource: 'none',
 
   selectVibe: (id) => {
     _player?.stop();
@@ -77,5 +82,12 @@ export const useAppStore = create<AppState>((set, get) => ({
         }
       });
     }
+  },
+
+  setDevProAccess: (enabled) => {
+    set({
+      hasProAccess: enabled,
+      proAccessSource: enabled ? 'dev-preview' : 'none',
+    });
   },
 }));
