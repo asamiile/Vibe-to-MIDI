@@ -6,12 +6,12 @@ const ALL_VIBES: VibeId[] = [
   'wide', 'hypnotic', 'metallic', 'warm', 'unstable',
   'deep', 'rolling', 'cavernous', 'dry', 'groovy', 'nostalgic',
   'retrowave', 'gritty', 'euphoric', 'cinematic', 'summer', 'winter',
-  'corroded',
+  'corroded', 'static', 'raw',
 ];
 
 describe('getAllVibeIds', () => {
-  it('returns all 23 vibe ids', () => {
-    expect(getAllVibeIds()).toHaveLength(23);
+  it('returns all 25 vibe ids', () => {
+    expect(getAllVibeIds()).toHaveLength(25);
   });
 });
 

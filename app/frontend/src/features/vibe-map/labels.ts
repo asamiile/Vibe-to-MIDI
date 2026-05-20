@@ -24,4 +24,6 @@ export const VIBE_LABELS: Record<VibeId, string> = {
   summer: 'Summer',
   winter: 'Winter',
   corroded: 'Corroded',
+  static: 'Static',
+  raw: 'Raw',
 };
