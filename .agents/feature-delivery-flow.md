@@ -145,6 +145,8 @@ If tests cannot run, state exactly why.
 
 If the feature affects native audio, Android navigation, in-app purchases, or media performance, add a manual Android dev-build test note.
 
+Use E2E tests only for critical Android user journeys, such as first launch, selecting a vibe, opening MIDI guidance, playback controls, Settings routes, and Pro gating. Keep E2E assertions user-visible; do not inspect React component internals or store state.
+
 ## 6. Final Summary
 
 Final responses for feature delivery should include:
