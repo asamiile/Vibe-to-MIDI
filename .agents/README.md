@@ -13,7 +13,7 @@ Start from `../AGENTS.md`, then open only the file relevant to your task.
 - `android-dev-guide.md`: Vibe-to-MIDI Android Dev Build and smoke-test notes
 - `coding-standards.md`: code organization and quality rules
 - `design-system.md`: app-specific UI direction
-- `monetization.md`: Pro features, paid content, billing, and external payment policy
+- `entitlements.md`: Pro access, paid content, billing, and external payment policy
 - `security-ci-release.md`: repo-specific security, license, and release guardrails
 - `audio-licensing.md`: copyright-safe audio strategy
 - `research-plan.md`: research policy and public repository rules

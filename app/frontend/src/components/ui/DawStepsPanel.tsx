@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import type { MusicalSuggestion } from '../../features/vibe-map/types';
 import { buildDawStepsView } from '../../features/vibe-map/daw-view';
 import type { DawNoteView } from '../../features/vibe-map/daw-view';
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
 import { playAuditionChord, playAuditionNote } from '../../features/audio-engine/audition';
 import { useAppStore } from '../../data/store';
+import { isProFeatureEnabled } from '../../features/entitlements/pro-features';
 import { MIST, FONT } from '../../styles/theme';
 
 interface Props {
@@ -105,6 +107,53 @@ function TabLink({ label, active, onPress }: { label: string; active: boolean; o
   );
 }
 
+function ProAction({
+  title,
+  description,
+  enabled,
+  enabledLabel,
+  onPress,
+}: {
+  title: string;
+  description: string;
+  enabled: boolean;
+  enabledLabel: string;
+  onPress: () => void;
+}) {
+  return (
+    <View style={{ borderWidth: 1, borderColor: enabled ? MIST.accent : MIST.hairlineX, padding: 16, marginBottom: 28 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <Text style={{ fontFamily: FONT.mono, fontSize: 10, fontWeight: '500', letterSpacing: 2.2, textTransform: 'uppercase', color: enabled ? MIST.accent : MIST.text }}>
+          {title}
+        </Text>
+        <Text style={{ fontFamily: FONT.mono, fontSize: 8, letterSpacing: 1.6, textTransform: 'uppercase', color: enabled ? MIST.accent : MIST.textFaint }}>
+          Pro
+        </Text>
+      </View>
+      <Text style={{ fontFamily: FONT.sans, fontSize: 12, color: MIST.textFaint, lineHeight: 18, marginTop: 10 }}>
+        {description}
+      </Text>
+      <Pressable
+        android_disableSound
+        onPress={onPress}
+        style={({ pressed }) => ({
+          alignSelf: 'flex-start',
+          marginTop: 14,
+          paddingVertical: 10,
+          paddingHorizontal: 14,
+          borderWidth: 1,
+          borderColor: enabled ? MIST.accent : MIST.hairlineX,
+          opacity: pressed ? 0.6 : 1,
+        })}
+      >
+        <Text style={{ fontFamily: FONT.mono, fontSize: 9, fontWeight: '500', letterSpacing: 1.8, textTransform: 'uppercase', color: enabled ? MIST.accent : MIST.text }}>
+          {enabled ? enabledLabel : 'View Pro'}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
+
 function AuditionPill({
   label,
   disabled,
@@ -171,12 +220,14 @@ function AuditionNoteGroup({
 }
 
 export function DawStepsPanel({ suggestion }: Props) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = React.useState<MidiTab>('pattern');
   const [playingKey, setPlayingKey] = React.useState<string | null>(null);
   const playTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const view = buildDawStepsView(suggestion);
   const audioAvailable = isAudioAvailable();
-  const { isPlaying, stop } = useAppStore();
+  const { isPlaying, stop, hasProAccess } = useAppStore();
+  const midiExportEnabled = isProFeatureEnabled('midi_export', hasProAccess);
   const stopPreviewBeforeAudition = React.useCallback(() => {
     if (isPlaying) stop();
   }, [isPlaying, stop]);
@@ -217,6 +268,17 @@ export function DawStepsPanel({ suggestion }: Props) {
         {/* PATTERN — BPM + scale info, kick step grid, step placement */}
         {activeTab === 'pattern' && (
           <>
+            <ProAction
+              title="MIDI export"
+              description="Prepare this track idea for DAW export. Real file writing will be connected after billing and release setup are ready."
+              enabled={midiExportEnabled}
+              enabledLabel="Prepared"
+              onPress={() => {
+                if (!midiExportEnabled) {
+                  router.push('/pro');
+                }
+              }}
+            />
             <View style={{ flexDirection: 'row', gap: 10, marginBottom: 28 }}>
               <View style={{ paddingVertical: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: MIST.hairlineX }}>
                 <Text style={{ fontFamily: FONT.mono, fontSize: 24, color: MIST.text, letterSpacing: -0.5 }}>

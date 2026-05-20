@@ -232,11 +232,13 @@ function NavLink({
 function SettingsModal({
   visible,
   onClose,
+  onPro,
   onLicenses,
   onDebugAudio,
 }: {
   visible: boolean;
   onClose: () => void;
+  onPro: () => void;
   onLicenses: () => void;
   onDebugAudio: () => void;
 }) {
@@ -279,6 +281,7 @@ function SettingsModal({
 
         <ScrollView style={{ flex: 1 }}>
           {[
+            { label: 'Pro',            onPress: () => { onClose(); onPro(); } },
             ...(__DEV__ ? [{ label: 'Audio Debug', onPress: () => { onClose(); onDebugAudio(); } }] : []),
             { label: 'Licenses',       onPress: () => { onClose(); onLicenses(); } },
             { label: 'Privacy Policy', onPress: () => { void Linking.openURL('https://asamiile.github.io/Vibe-to-MIDI/privacy-policy.html'); } },
@@ -553,6 +556,7 @@ export default function HomeScreen() {
       <SettingsModal
         visible={settingsVisible}
         onClose={() => setSettingsVisible(false)}
+        onPro={() => router.push(withSettingsReturn('/pro'))}
         onLicenses={() => router.push(withSettingsReturn('/licenses'))}
         onDebugAudio={() => router.push(withSettingsReturn('/debug-audio'))}
       />
