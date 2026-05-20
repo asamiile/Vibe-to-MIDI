@@ -1,8 +1,9 @@
 import React, { useRef } from 'react';
 import { View, Text, Pressable, ScrollView, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getAudioContext, isAudioAvailable } from '../src/features/audio-engine/adapter';
+import { backToReturnTarget, useSettingsReturnOnStackBack } from '../src/lib/navigation';
 import { MIST, FONT } from '../src/styles/theme';
 
 type AudioCtx = NonNullable<Awaited<ReturnType<typeof getAudioContext>>>;
@@ -179,7 +180,13 @@ function SectionLabel({ children }: { children: string }) {
 
 export default function DebugAudioScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ returnTo?: string }>();
   const audioAvailable = isAudioAvailable();
+  useSettingsReturnOnStackBack(params.returnTo);
+
+  function handleBack() {
+    backToReturnTarget(router, params.returnTo);
+  }
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: MIST.bg }}>
@@ -191,11 +198,11 @@ export default function DebugAudioScreen() {
         </Text>
         <Pressable
           android_disableSound
-          onPress={() => router.back()}
+          onPress={handleBack}
           style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
         >
           <Text style={{ fontFamily: FONT.mono, fontSize: 10, fontWeight: '500', letterSpacing: 2.2, textTransform: 'uppercase', color: MIST.textFaint }}>
-            ← BACK
+            BACK
           </Text>
         </Pressable>
       </View>

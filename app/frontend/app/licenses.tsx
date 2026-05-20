@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, ScrollView, StatusBar, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   AUDIO_NOTICE,
@@ -8,6 +8,7 @@ import {
   LICENSE_RELEASE_CHECKLIST,
   RUNTIME_LICENSE_NOTICES,
 } from '../src/data/licenseNotices';
+import { backToReturnTarget, useSettingsReturnOnStackBack } from '../src/lib/navigation';
 import { MIST, FONT } from '../src/styles/theme';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -24,6 +25,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function LicensesScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ returnTo?: string }>();
+  useSettingsReturnOnStackBack(params.returnTo);
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: MIST.bg }}>
@@ -35,11 +38,11 @@ export default function LicensesScreen() {
         </Text>
         <Pressable
           android_disableSound
-          onPress={() => router.back()}
+          onPress={() => backToReturnTarget(router, params.returnTo)}
           style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
         >
           <Text style={{ fontFamily: FONT.mono, fontSize: 10, fontWeight: '500', letterSpacing: 2.2, textTransform: 'uppercase', color: MIST.textFaint }}>
-            ← BACK
+            BACK
           </Text>
         </Pressable>
       </View>

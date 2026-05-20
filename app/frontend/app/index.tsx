@@ -9,7 +9,7 @@ import {
   BackHandler,
   Linking,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { useAppStore } from '../src/data/store';
@@ -18,6 +18,7 @@ import { isAudioAvailable } from '../src/features/audio-engine/adapter';
 import { SuggestionPanel } from '../src/components/ui/SuggestionPanel';
 import { VIBE_LABELS } from '../src/features/vibe-map/labels';
 import { VibeGlyph } from '../src/components/ui/VibeGlyph';
+import { withSettingsReturn } from '../src/lib/navigation';
 import { MIST, FONT } from '../src/styles/theme';
 import type { VibeId } from '../src/features/vibe-map/types';
 
@@ -319,6 +320,7 @@ function SettingsModal({
 
 export default function HomeScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ settings?: string }>();
   const { activeVibeId, suggestion, isPlaying, selectVibe, play, stop } = useAppStore();
   const audioAvailable = isAudioAvailable();
   const [viewMode, setViewMode] = useState<ViewMode>('listen');
@@ -327,13 +329,25 @@ export default function HomeScreen() {
   const activeIndex = activeVibeId ? VIBE_IDS.indexOf(activeVibeId) + 1 : 0;
 
   useEffect(() => {
-    if (viewMode === 'listen') return;
+    if (params.settings === '1') {
+      setSettingsVisible(true);
+    }
+  }, [params.settings]);
+
+  useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      setViewMode('listen');
-      return true;
+      if (settingsVisible) {
+        setSettingsVisible(false);
+        return true;
+      }
+      if (viewMode !== 'listen') {
+        setViewMode('listen');
+        return true;
+      }
+      return false;
     });
     return () => sub.remove();
-  }, [viewMode]);
+  }, [settingsVisible, viewMode]);
 
   function handleVibePress(id: VibeId) {
     if (!audioAvailable) return;
@@ -539,8 +553,8 @@ export default function HomeScreen() {
       <SettingsModal
         visible={settingsVisible}
         onClose={() => setSettingsVisible(false)}
-        onLicenses={() => router.push('/licenses')}
-        onDebugAudio={() => router.push('/debug-audio')}
+        onLicenses={() => router.push(withSettingsReturn('/licenses'))}
+        onDebugAudio={() => router.push(withSettingsReturn('/debug-audio'))}
       />
     </SafeAreaView>
   );
