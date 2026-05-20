@@ -104,4 +104,10 @@ Run pre-implementation feature research with:
 /research-feature
 ```
 
+Run research-backed implementation and verification with:
+
+```text
+/feature-delivery
+```
+
 Agent docs are in [.agents/](.agents/). Start with [AGENTS.md](AGENTS.md).

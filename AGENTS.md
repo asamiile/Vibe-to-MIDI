@@ -46,6 +46,7 @@ Reference context includes underground club, live electronic performance, and sc
 - Audio licensing: `.agents/audio-licensing.md`
 - Research policy: `.agents/research-plan.md`
 - Local AI strategy: `.agents/local-ai-strategy.md`
+- Research-backed feature delivery: `.agents/feature-delivery-flow.md`
 - Agent workflow, installed skills policy: `.agents/agent-strategy.md`
 
 ## Non-Negotiables

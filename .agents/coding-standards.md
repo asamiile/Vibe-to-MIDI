@@ -42,6 +42,14 @@ Audio playback should not depend on React component state directly. Use a small 
 
 Visual rendering should consume normalized musical state rather than derive theory rules itself.
 
+## Platform-Specific Code
+
+Use `Platform` or `Platform.select` for small Android / iOS differences.
+
+Use platform-specific file extensions only when the implementation meaningfully diverges.
+
+Keep Android behavior first for MVP decisions.
+
 ## Testing
 
 Add tests for:

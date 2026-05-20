@@ -19,6 +19,7 @@ Start from `../AGENTS.md`, then open only the file relevant to your task.
 - `research-plan.md`: research policy and public repository rules
 - `market-research-python.md`: Python-based market research workflow before app implementation
 - `local-ai-strategy.md`: future AI without external AI APIs
+- `feature-delivery-flow.md`: research basis -> implementation branch -> develop -> test workflow
 - `agent-strategy.md`: installed skills policy, sub-agent usage, task splitting
 
 ## Installed Skills
@@ -36,6 +37,13 @@ Feature research command:
 Run feature research for <feature name>. Use the Vibe-to-MIDI research loop. Produce a notebook, summary, and MVP recommendation.
 ```
 
+Feature delivery command:
+
+```text
+Implement <feature> using research/features/<slug>/ as the basis. Follow the feature delivery flow.
+```
+
 ## Commands
 
 - `commands/research-feature.md`: cross-agent command for feature research before implementation
+- `commands/feature-delivery.md`: cross-agent command for research-backed implementation and validation

@@ -74,3 +74,22 @@ Expected flow:
 2. Read `.agents/market-research-python.md`.
 3. Create `research/features/<yyyy-mm-dd>_<feature-slug>/`.
 4. Write a concise notebook and recommendation.
+
+## Feature Delivery Command
+
+When the user asks to implement from research or asks for a `research -> develop -> test` flow:
+
+```text
+Implement <feature> using research/features/<slug>/ as the basis.
+Follow the feature delivery flow.
+```
+
+Expected flow:
+
+1. Read `AGENTS.md`.
+2. Read `.agents/feature-delivery-flow.md`.
+3. Identify the research directory, notebook, recommendation, decision date, relevant finding, and implementation scope.
+4. Create a delivery branch before editing.
+5. Implement the scoped change.
+6. Run typecheck and tests.
+7. Report branch, research basis, changed files, validation, deferred work, and license/assets status.

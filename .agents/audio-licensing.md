@@ -29,6 +29,18 @@ Use Tone.js or Web Audio API for:
 
 Generated synthesis lowers licensing risk and keeps the app lightweight.
 
+## Generated Noise
+
+For richer hiss, vinyl floor, tape noise, or percussion noise, prefer generated noise buffers over bundled samples.
+
+Allowed direction:
+
+- create white / pink / brown noise from random samples at runtime or build time
+- play generated buffers through `AudioBufferSourceNode`
+- filter generated noise through bandpass / lowpass / highpass nodes
+
+Do not add third-party noise samples unless redistribution rights inside a commercial app are explicit and documented.
+
 ## Sample Rules
 
 Do not commit:
