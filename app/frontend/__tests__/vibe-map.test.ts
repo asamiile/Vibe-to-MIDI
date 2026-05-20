@@ -5,12 +5,13 @@ const ALL_VIBES: VibeId[] = [
   'dark', 'floating', 'tense', 'repetitive', 'underground',
   'wide', 'hypnotic', 'metallic', 'warm', 'unstable',
   'deep', 'rolling', 'cavernous', 'dry', 'groovy', 'nostalgic',
-  'retrowave', 'gritty', 'euphoric', 'cinematic', 'summer', 'winter',
+  'retrowave', 'gritty', 'euphoric', 'cinematic', 'lucid', 'void',
+  'corroded', 'static', 'raw',
 ];
 
 describe('getAllVibeIds', () => {
-  it('returns all 22 vibe ids', () => {
-    expect(getAllVibeIds()).toHaveLength(22);
+  it('returns all 25 vibe ids', () => {
+    expect(getAllVibeIds()).toHaveLength(25);
   });
 });
 

@@ -17,6 +17,7 @@ const KICK_VARIANTS: readonly KickVariantId[] = [
   'soft-909',
   'muffled-room',
   'saturated-thump',
+  'industrial-stomp',
 ];
 
 const BASS_VARIANTS: readonly BassVariantId[] = [
@@ -31,6 +32,9 @@ const NOISE_VARIANTS: readonly NoiseVariantId[] = [
   'closed-hat',
   'vinyl-floor',
   'bandpass-tick',
+  'noise-burst',
+  'noise-floor',
+  'resonant-crack',
 ];
 
 const SPACE_VARIANTS: readonly SpaceVariantId[] = [

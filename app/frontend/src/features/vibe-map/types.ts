@@ -21,8 +21,11 @@ export type VibeId =
   | 'gritty'
   | 'euphoric'
   | 'cinematic'
-  | 'summer'
-  | 'winter';
+  | 'lucid'
+  | 'void'
+  | 'corroded'
+  | 'static'
+  | 'raw';
 
 export type ScaleMode =
   | 'minor'

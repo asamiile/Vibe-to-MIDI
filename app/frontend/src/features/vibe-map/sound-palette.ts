@@ -1,7 +1,7 @@
-export type KickVariantId = 'deep-sine' | 'soft-909' | 'muffled-room' | 'saturated-thump';
+export type KickVariantId = 'deep-sine' | 'soft-909' | 'muffled-room' | 'saturated-thump' | 'industrial-stomp';
 export type BassVariantId = 'saw-sub' | 'sine-sub' | 'triangle-round' | 'filtered-pulse';
 export type StabVariantId = 'saw-minor' | 'square-saw' | 'sampled-chord-like' | 'wide-detuned';
-export type NoiseVariantId = 'tape-hiss' | 'closed-hat' | 'vinyl-floor' | 'bandpass-tick';
+export type NoiseVariantId = 'tape-hiss' | 'closed-hat' | 'vinyl-floor' | 'bandpass-tick' | 'noise-burst' | 'noise-floor' | 'resonant-crack';
 export type SpaceVariantId = 'short-dub' | 'deep-feedback' | 'spring-style' | 'dark-plate';
 
 export type SoundPaletteLayer = 'kick' | 'bass' | 'noise' | 'stab' | 'space';
@@ -68,6 +68,15 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       source: 'sine/sub kick with clipped transient',
       target: 'synth track or drum synth slot',
       fxRole: 'soft clip, lowpass, gain trim',
+      playback: 'guidance',
+    },
+    {
+      id: 'industrial-stomp',
+      name: 'Industrial stomp',
+      type: 'Mono synth',
+      source: 'heavy clipped sine kick, hard transient, dark body',
+      target: 'synth track or drum synth slot',
+      fxRole: 'soft clip, lowpass dark, slow pitch drop',
       playback: 'guidance',
     },
   ],
@@ -144,6 +153,33 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       source: 'short resonant noise tick',
       target: 'drum rack percussion slot',
       fxRole: 'narrow bandpass, very short decay',
+      playback: 'guidance',
+    },
+    {
+      id: 'noise-burst',
+      name: 'Noise burst',
+      type: 'Noise synth',
+      source: 'short broadband noise burst',
+      target: 'noise synth track',
+      fxRole: 'lowpass, wide bandpass, sharp decay',
+      playback: 'guidance',
+    },
+    {
+      id: 'noise-floor',
+      name: 'Noise floor',
+      type: 'Noise synth',
+      source: 'continuous overlapping noise bed',
+      target: 'noise bed track',
+      fxRole: 'highpass, lowpass, long decay overlap',
+      playback: 'guidance',
+    },
+    {
+      id: 'resonant-crack',
+      name: 'Resonant crack',
+      type: 'Noise synth',
+      source: 'high-Q bandpass noise snap',
+      target: 'drum rack percussion slot',
+      fxRole: 'narrow bandpass, very short decay, high resonance',
       playback: 'guidance',
     },
   ],

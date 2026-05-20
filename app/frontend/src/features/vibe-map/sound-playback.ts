@@ -37,6 +37,7 @@ export interface NoisePlaybackProfile {
   gainRatio: number;
   cutoffRatio: number;
   qRatio: number;
+  continuous?: boolean;  // schedule one sustained node per loop instead of per-step hits
 }
 
 export interface DubDelaySpec {
@@ -53,6 +54,8 @@ export function getKickPlaybackProfile(variant: KickVariantId): KickPlaybackProf
       return { startFreq: 95, endFreq: 28, pitchDecay: 0.18, decay: 0.55, gainRatio: 1.45, cutoffRatio: 0.75 };
     case 'saturated-thump':
       return { startFreq: 135, endFreq: 35, pitchDecay: 0.11, decay: 0.42, gainRatio: 1.95, cutoffRatio: 0.95 };
+    case 'industrial-stomp':
+      return { startFreq: 150, endFreq: 28, pitchDecay: 0.08, decay: 0.58, gainRatio: 2.3, cutoffRatio: 0.7 };
     case 'deep-sine':
     default:
       return { startFreq: 120, endFreq: 30, pitchDecay: 0.14, decay: 0.45, gainRatio: 1.8, cutoffRatio: 1 };
@@ -113,6 +116,34 @@ export function getNoisePlaybackProfile(variant: NoiseVariantId): NoisePlaybackP
         gainRatio: 0.72,
         cutoffRatio: 0.95,
         qRatio: 1.7,
+      };
+    case 'noise-burst':
+      return {
+        freqs: [2800, 4500, 6800, 10000],
+        type: () => 'square',
+        durationRatio: 0.52,
+        gainRatio: 0.85,
+        cutoffRatio: 1.25,
+        qRatio: 0.55,
+      };
+    case 'noise-floor':
+      return {
+        freqs: [1600, 2900, 4800, 7100],
+        type: (index) => (index % 2 === 0 ? 'triangle' : 'sawtooth'),
+        durationRatio: 1.04,  // slight overlap between loops for seamless join
+        gainRatio: 0.52,
+        cutoffRatio: 0.82,
+        qRatio: 0.45,
+        continuous: true,
+      };
+    case 'resonant-crack':
+      return {
+        freqs: [4200, 5800, 8600, 11500],
+        type: (index) => (index % 2 === 0 ? 'sawtooth' : 'square'),
+        durationRatio: 0.28,
+        gainRatio: 0.84,
+        cutoffRatio: 1.05,
+        qRatio: 2.8,
       };
     case 'tape-hiss':
     default:

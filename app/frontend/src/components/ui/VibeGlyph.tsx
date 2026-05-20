@@ -26,8 +26,11 @@ const GLYPHS: Record<VibeId, string> = {
   gritty:      '⁘',   // scattered dust
   euphoric:    '▲',   // peak
   cinematic:   '□',   // frame
-  summer:      '✸',   // dense rays
-  winter:      '✳',   // six-point
+  lucid:       '✸',   // dense rays — clear, radiant
+  void:        '∅',   // empty set — void, null
+  corroded:    '≋',   // triple wave — degraded, corroded
+  static:      '▒',   // medium shade — noise static
+  raw:         '◼',   // solid square — unprocessed, blunt
 };
 
 interface Props {
