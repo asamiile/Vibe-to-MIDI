@@ -41,6 +41,7 @@ Reference context includes underground club, live electronic performance, and sc
 - **Android dev setup and build commands**: `.agents/android-dev-guide.md`
 - Coding standards: `.agents/coding-standards.md`
 - Design policy: `.agents/design-system.md`
+- Monetization and Pro feature policy: `.agents/monetization.md`
 - Security, CI, release: `.agents/security-ci-release.md`
 - Audio licensing: `.agents/audio-licensing.md`
 - Research policy: `.agents/research-plan.md`
