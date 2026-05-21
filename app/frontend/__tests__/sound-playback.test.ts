@@ -109,4 +109,11 @@ describe('sound playback profiles', () => {
       'deep-feedback'
     )).toEqual({ repeats: 3, stepOffset: 3, feedbackGain: 0.38 });
   });
+
+  it('caps high feedback to keep delay repeats controlled', () => {
+    expect(getEffectiveDubDelay(
+      { repeats: 5, stepOffset: 3, feedbackGain: 0.9 },
+      'deep-feedback'
+    ).feedbackGain).toBe(0.46);
+  });
 });

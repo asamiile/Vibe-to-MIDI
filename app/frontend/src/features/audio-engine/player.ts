@@ -69,9 +69,9 @@ function createAnalogDelay(
   const filter   = ctx.createBiquadFilter();
 
   delay.delayTime.value  = delaySeconds;
-  feedback.gain.value    = feedbackGain;
+  feedback.gain.value    = clamp(feedbackGain, 0.05, 0.46);
   filter.type            = 'lowpass';
-  filter.frequency.value = filterFreq;
+  filter.frequency.value = clamp(filterFreq, SAFETY_LIMITS.stabCutoff.min, SAFETY_LIMITS.stabCutoff.max);
 
   // feedback loop: delay → filter → feedback gain → delay
   delay.connect(filter as unknown as Parameters<typeof delay.connect>[0]);
@@ -99,6 +99,39 @@ function buildPeriodicWave(ctx: AudioCtx, real: number[], imag: number[]): Perio
 
 const periodicWaveCache = new WeakMap<AudioCtx, Partial<Record<'hollowOrgan' | 'bellLike', PeriodicWaveObj>>>();
 const waveshapeCurveCache = new Map<number, Float32Array>();
+
+const SAFETY_LIMITS = {
+  previewGain: 0.24,
+  kickGain: 0.46,
+  kickClickGain: 0.055,
+  bassVoiceGain: 0.22,
+  noiseGain: 0.032,
+  stabVoiceGain: 0.08,
+  kickCutoff: { min: 45, max: 180 },
+  bassCutoff: { min: 80, max: 1200 },
+  noiseBandpass: { min: 900, max: 7600 },
+  noiseLowpass: { min: 1800, max: 8200 },
+  stabCutoff: { min: 450, max: 2800 },
+  q: { min: 0.3, max: 2.6 },
+  shapeAmount: 0.55,
+} as const;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function clampQ(value: number): number {
+  return clamp(value, SAFETY_LIMITS.q.min, SAFETY_LIMITS.q.max);
+}
+
+function clampShapeAmount(amount?: number): number | undefined {
+  if (amount === undefined || amount <= 0) return undefined;
+  return clamp(amount, 0, SAFETY_LIMITS.shapeAmount);
+}
+
+function safeRampEnd(startTime: number, duration: number, tail = 0.01): number {
+  return startTime + Math.max(0.01, duration - tail);
+}
 
 // Odd harmonics only (1, 3, 5) — hollow organ / clarinet quality
 function hollowOrganWave(ctx: AudioCtx): PeriodicWaveObj {
@@ -167,20 +200,23 @@ function scheduleBass(
   osc.frequency.value = freq;
 
   filter.type = 'lowpass';
-  filter.Q.value = filterQ;
+  filter.Q.value = clampQ(filterQ);
+  const safeFilterFreq = clamp(filterFreq, SAFETY_LIMITS.bassCutoff.min, SAFETY_LIMITS.bassCutoff.max);
   if (sweep) {
-    filter.frequency.setValueAtTime(Math.max(filterFreq * sweep.startRatio, 20), startTime);
-    filter.frequency.exponentialRampToValueAtTime(Math.max(filterFreq * sweep.endRatio, 20), startTime + duration);
+    filter.frequency.setValueAtTime(clamp(safeFilterFreq * sweep.startRatio, SAFETY_LIMITS.bassCutoff.min, SAFETY_LIMITS.bassCutoff.max), startTime);
+    filter.frequency.exponentialRampToValueAtTime(clamp(safeFilterFreq * sweep.endRatio, SAFETY_LIMITS.bassCutoff.min, SAFETY_LIMITS.bassCutoff.max), startTime + duration);
   } else {
-    filter.frequency.value = filterFreq;
+    filter.frequency.value = safeFilterFreq;
   }
 
+  const safeGain = Math.min(gainValue, SAFETY_LIMITS.bassVoiceGain);
   gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.01);
-  gain.gain.linearRampToValueAtTime(0, startTime + duration - 0.01);
+  gain.gain.linearRampToValueAtTime(safeGain, startTime + 0.01);
+  gain.gain.linearRampToValueAtTime(0, safeRampEnd(startTime, duration));
 
   osc.connect(filter);
-  const shaper = shapeAmount !== undefined && shapeAmount > 0 ? createWaveShaper(ctx, shapeAmount) : undefined;
+  const safeShapeAmount = clampShapeAmount(shapeAmount);
+  const shaper = safeShapeAmount !== undefined ? createWaveShaper(ctx, safeShapeAmount) : undefined;
   if (shaper) {
     filter.connect(shaper as unknown as Parameters<Gain['connect']>[0]);
     shaper.connect(gain);
@@ -219,15 +255,21 @@ function scheduleKick(
   osc.frequency.linearRampToValueAtTime(profile.endFreq, startTime + profile.pitchDecay);
 
   filter.type = 'lowpass';
-  filter.frequency.value = (kickFilter?.cutoff ?? AUDIO_PARAMS.kick.filterFreq) * profile.cutoffRatio;
-  filter.Q.value = kickFilter?.q ?? AUDIO_PARAMS.kick.filterQ;
+  filter.frequency.value = clamp(
+    (kickFilter?.cutoff ?? AUDIO_PARAMS.kick.filterFreq) * profile.cutoffRatio,
+    SAFETY_LIMITS.kickCutoff.min,
+    SAFETY_LIMITS.kickCutoff.max
+  );
+  filter.Q.value = clampQ(kickFilter?.q ?? AUDIO_PARAMS.kick.filterQ);
 
-  gain.gain.setValueAtTime(gainValue * profile.gainRatio, startTime);
+  const bodyGain = Math.min(gainValue * profile.gainRatio, SAFETY_LIMITS.kickGain);
+  gain.gain.setValueAtTime(bodyGain, startTime);
   gain.gain.linearRampToValueAtTime(0, startTime + profile.decay);
 
   osc.connect(filter);
-  const shaper = profile.shapeAmount !== undefined && profile.shapeAmount > 0
-    ? createWaveShaper(ctx, profile.shapeAmount)
+  const safeShapeAmount = clampShapeAmount(profile.shapeAmount);
+  const shaper = safeShapeAmount !== undefined
+    ? createWaveShaper(ctx, safeShapeAmount)
     : undefined;
   if (shaper) {
     filter.connect(shaper as unknown as Parameters<Gain['connect']>[0]);
@@ -246,7 +288,10 @@ function scheduleKick(
     const clickGain = ctx.createGain();
     clickOsc.type = 'triangle';
     clickOsc.frequency.value = profile.clickFreq;
-    clickGain.gain.setValueAtTime(gainValue * profile.clickGainRatio, startTime);
+    clickGain.gain.setValueAtTime(
+      Math.min(gainValue * profile.clickGainRatio, SAFETY_LIMITS.kickClickGain),
+      startTime
+    );
     clickGain.gain.linearRampToValueAtTime(0, startTime + profile.clickDecay);
     clickOsc.connect(clickGain);
     clickGain.connect(ctx.destination);
@@ -271,26 +316,35 @@ function scheduleNoise(
   const bandpass = ctx.createBiquadFilter();
   const lowpass = ctx.createBiquadFilter();
   const gain = ctx.createGain();
-  const cutoff = Math.min(noiseFilter.cutoff * profile.cutoffRatio, 8200);
+  const cutoff = clamp(
+    noiseFilter.cutoff * profile.cutoffRatio,
+    SAFETY_LIMITS.noiseBandpass.min,
+    SAFETY_LIMITS.noiseBandpass.max
+  );
   const effectiveDuration = duration * profile.durationRatio;
+  const safeGain = Math.min(gainValue, SAFETY_LIMITS.noiseGain);
 
   bandpass.type = 'bandpass';
   bandpass.frequency.value = cutoff;
-  bandpass.Q.value = Math.max(0.7, noiseFilter.q * profile.qRatio);
+  bandpass.Q.value = clampQ(Math.max(0.7, noiseFilter.q * profile.qRatio));
 
   lowpass.type = 'lowpass';
-  lowpass.frequency.value = Math.min(cutoff * 1.35, 9000);
+  lowpass.frequency.value = clamp(
+    cutoff * 1.25,
+    SAFETY_LIMITS.noiseLowpass.min,
+    SAFETY_LIMITS.noiseLowpass.max
+  );
   lowpass.Q.value = 0.5;
 
   if (sustained) {
     const release = 0.08;
     gain.gain.setValueAtTime(0, startTime);
-    gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.02);
-    gain.gain.setValueAtTime(gainValue, startTime + effectiveDuration - release);
+    gain.gain.linearRampToValueAtTime(safeGain, startTime + 0.02);
+    gain.gain.setValueAtTime(safeGain, startTime + Math.max(0.02, effectiveDuration - release));
     gain.gain.linearRampToValueAtTime(0, startTime + effectiveDuration);
   } else {
     gain.gain.setValueAtTime(0, startTime);
-    gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.006);
+    gain.gain.linearRampToValueAtTime(safeGain, startTime + 0.006);
     gain.gain.linearRampToValueAtTime(0, startTime + effectiveDuration);
   }
 
@@ -349,21 +403,24 @@ function scheduleSynth(
   osc.frequency.value = freq;
 
   filter.type = 'lowpass';
-  filter.Q.value = filterQ;
+  filter.Q.value = clampQ(filterQ);
+  const safeFilterFreq = clamp(filterFreq, SAFETY_LIMITS.stabCutoff.min, SAFETY_LIMITS.stabCutoff.max);
   if (sweep) {
-    filter.frequency.setValueAtTime(Math.max(filterFreq * sweep.startRatio, 20), startTime);
-    filter.frequency.exponentialRampToValueAtTime(Math.max(filterFreq * sweep.endRatio, 20), startTime + duration);
+    filter.frequency.setValueAtTime(clamp(safeFilterFreq * sweep.startRatio, SAFETY_LIMITS.stabCutoff.min, SAFETY_LIMITS.stabCutoff.max), startTime);
+    filter.frequency.exponentialRampToValueAtTime(clamp(safeFilterFreq * sweep.endRatio, SAFETY_LIMITS.stabCutoff.min, SAFETY_LIMITS.stabCutoff.max), startTime + duration);
   } else {
-    filter.frequency.value = filterFreq;
+    filter.frequency.value = safeFilterFreq;
   }
 
+  const safeGain = Math.min(gainValue, SAFETY_LIMITS.stabVoiceGain);
   gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.006);
-  gain.gain.linearRampToValueAtTime(gainValue * 0.35, startTime + 0.18);
-  gain.gain.linearRampToValueAtTime(0, startTime + duration - 0.02);
+  gain.gain.linearRampToValueAtTime(safeGain, startTime + 0.006);
+  gain.gain.linearRampToValueAtTime(safeGain * 0.35, startTime + Math.min(0.18, duration * 0.65));
+  gain.gain.linearRampToValueAtTime(0, safeRampEnd(startTime, duration, 0.02));
 
   osc.connect(filter);
-  const shaper = shapeAmount !== undefined && shapeAmount > 0 ? createWaveShaper(ctx, shapeAmount) : undefined;
+  const safeShapeAmount = clampShapeAmount(shapeAmount);
+  const shaper = safeShapeAmount !== undefined ? createWaveShaper(ctx, safeShapeAmount) : undefined;
   if (shaper) {
     filter.connect(shaper as unknown as Parameters<Gain['connect']>[0]);
     shaper.connect(gain);
@@ -459,7 +516,8 @@ export async function playPreview(
   const rawBpm = getMidBpm(suggestion);
   const bpm = Math.max(AUDIO_PARAMS.bpmMin, Math.min(AUDIO_PARAMS.bpmMax, rawBpm));
   const stepDuration = 60 / bpm / 4;
-  const { gain = 0.3, activeLayers, pan } = options;
+  const { gain: requestedGain = SAFETY_LIMITS.previewGain, activeLayers, pan } = options;
+  const gain = Math.min(requestedGain, SAFETY_LIMITS.previewGain);
   const soundVariants = suggestion.soundVariants ?? DEFAULT_SOUND_VARIANTS;
   const soundMix = suggestion.soundMix ?? DEFAULT_SOUND_MIX;
 

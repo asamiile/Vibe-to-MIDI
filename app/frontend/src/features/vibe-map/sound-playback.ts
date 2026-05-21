@@ -312,16 +312,17 @@ export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProf
 }
 
 export function getEffectiveDubDelay(delay: DubDelaySpec, variant: SpaceVariantId): DubDelaySpec {
+  const capFeedback = (feedbackGain: number) => Math.min(Math.max(feedbackGain, 0.12), 0.46);
   switch (variant) {
     case 'short-dub':
-      return { ...delay, repeats: Math.min(delay.repeats, 2), feedbackGain: Math.min(delay.feedbackGain, 0.28) };
+      return { ...delay, repeats: Math.min(delay.repeats, 2), feedbackGain: Math.min(capFeedback(delay.feedbackGain), 0.28) };
     case 'deep-feedback':
-      return { ...delay, repeats: Math.max(delay.repeats, 3), feedbackGain: Math.max(delay.feedbackGain, 0.38) };
+      return { ...delay, repeats: Math.max(delay.repeats, 3), feedbackGain: capFeedback(Math.max(delay.feedbackGain, 0.38)) };
     case 'spring-style':
-      return { ...delay, repeats: Math.max(delay.repeats, 3), feedbackGain: Math.max(delay.feedbackGain, 0.34) };
+      return { ...delay, repeats: Math.max(delay.repeats, 3), feedbackGain: capFeedback(Math.max(delay.feedbackGain, 0.34)) };
     case 'dark-plate':
-      return { ...delay, repeats: Math.max(delay.repeats, 3), feedbackGain: Math.min(Math.max(delay.feedbackGain, 0.36), 0.46) };
+      return { ...delay, repeats: Math.max(delay.repeats, 3), feedbackGain: capFeedback(Math.max(delay.feedbackGain, 0.36)) };
     default:
-      return delay;
+      return { ...delay, feedbackGain: capFeedback(delay.feedbackGain) };
   }
 }
