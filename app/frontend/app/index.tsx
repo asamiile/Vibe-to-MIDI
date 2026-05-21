@@ -7,7 +7,6 @@ import {
   Modal,
   ScrollView,
   BackHandler,
-  Linking,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +14,7 @@ import Constants from 'expo-constants';
 import { useAppStore } from '../src/data/store';
 import { isAudioAvailable } from '../src/features/audio-engine/adapter';
 import { SuggestionPanel } from '../src/components/ui/SuggestionPanel';
+import { openAllowedExternalUrl, PRIVACY_POLICY_URL } from '../src/lib/external-links';
 import { withSettingsReturn } from '../src/lib/navigation';
 import { MIST, FONT } from '../src/styles/theme';
 
@@ -138,7 +138,7 @@ function SettingsModal({
             { label: 'Pro',            onPress: () => { onClose(); onPro(); } },
             ...(__DEV__ ? [{ label: 'Audio Debug', onPress: () => { onClose(); onDebugAudio(); } }] : []),
             { label: 'Licenses',       onPress: () => { onClose(); onLicenses(); } },
-            { label: 'Privacy Policy', onPress: () => { void Linking.openURL('https://asamiile.github.io/Vibe-to-MIDI/privacy-policy.html'); } },
+            { label: 'Privacy Policy', onPress: () => { void openAllowedExternalUrl(PRIVACY_POLICY_URL); } },
           ].map((item) => (
             <Pressable
               key={item.label}
@@ -178,7 +178,11 @@ function SettingsModal({
 export default function HomeScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ settings?: string }>();
-  const { activeSoundCombination, activeChord, suggestion, isPlaying, playRandomSoundCombination } = useAppStore();
+  const activeSoundCombination = useAppStore((state) => state.activeSoundCombination);
+  const activeChord = useAppStore((state) => state.activeChord);
+  const suggestion = useAppStore((state) => state.suggestion);
+  const isPlaying = useAppStore((state) => state.isPlaying);
+  const playRandomSoundCombination = useAppStore((state) => state.playRandomSoundCombination);
   const audioAvailable = isAudioAvailable();
   const [viewMode, setViewMode] = useState<ViewMode>('listen');
   const [settingsVisible, setSettingsVisible] = useState(false);

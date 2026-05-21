@@ -22,6 +22,7 @@ import { buildRandomStereoPan } from '../features/vibe-map/stereo-pan';
 import type { StereoPanSpec } from '../features/vibe-map/types';
 
 let _player: PlayerHandle | null = null;
+let _playbackToken = 0;
 
 interface AppState {
   soundConfigurations: readonly SoundConfiguration[];
@@ -46,9 +47,23 @@ function startPlayback(
   suggestion: MusicalSuggestion,
   layers: Set<AudioLayer>,
   pan: StereoPanSpec | null,
+  token: number,
   onHandle: (h: PlayerHandle) => void
 ) {
-  playPreview(suggestion, { activeLayers: layers, pan: pan ?? undefined }).then(onHandle);
+  playPreview(suggestion, { activeLayers: layers, pan: pan ?? undefined }).then((handle) => {
+    if (token !== _playbackToken) {
+      handle.stop();
+      return;
+    }
+    onHandle(handle);
+  });
+}
+
+function stopCurrentPlayer(): number {
+  _playbackToken += 1;
+  _player?.stop();
+  _player = null;
+  return _playbackToken;
 }
 
 // Picks a random vibe to use as a synthesis template (scale, mood, synth style).
@@ -88,8 +103,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       bpmRange: [bpm, bpm] as const,
     };
 
-    _player?.stop();
-    _player = null;
+    const token = stopCurrentPlayer();
     set({
       activeSoundCombination: combination,
       activeChord: chord,
@@ -99,8 +113,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       activeLayers,
       isPlaying: true,
     });
-    startPlayback(suggestion, activeLayers, pan, (handle) => {
-      if (get().isPlaying) {
+    startPlayback(suggestion, activeLayers, pan, token, (handle) => {
+      if (get().isPlaying && token === _playbackToken) {
         _player = handle;
       } else {
         handle.stop();
@@ -111,11 +125,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   play: () => {
     const { suggestion, activeLayers, activePan } = get();
     if (!suggestion) return;
-    _player?.stop();
-    _player = null;
+    const token = stopCurrentPlayer();
     set({ isPlaying: true });
-    startPlayback(suggestion, activeLayers, activePan, (handle) => {
-      if (get().isPlaying) {
+    startPlayback(suggestion, activeLayers, activePan, token, (handle) => {
+      if (get().isPlaying && token === _playbackToken) {
         _player = handle;
       } else {
         handle.stop();
@@ -124,8 +137,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   stop: () => {
-    _player?.stop();
-    _player = null;
+    stopCurrentPlayer();
     set({ isPlaying: false });
   },
 
@@ -136,10 +148,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     else next.add(layer);
     set({ activeLayers: next });
     if (isPlaying && suggestion) {
-      _player?.stop();
-      _player = null;
-      startPlayback(suggestion, next, activePan, (handle) => {
-        if (get().isPlaying) {
+      const token = stopCurrentPlayer();
+      startPlayback(suggestion, next, activePan, token, (handle) => {
+        if (get().isPlaying && token === _playbackToken) {
           _player = handle;
         } else {
           handle.stop();

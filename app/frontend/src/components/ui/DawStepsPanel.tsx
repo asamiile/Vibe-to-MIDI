@@ -224,13 +224,22 @@ export function DawStepsPanel({ suggestion }: Props) {
   const [activeTab, setActiveTab] = React.useState<MidiTab>('pattern');
   const [playingKey, setPlayingKey] = React.useState<string | null>(null);
   const playTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const view = buildDawStepsView(suggestion);
+  const view = React.useMemo(() => buildDawStepsView(suggestion), [suggestion]);
   const audioAvailable = isAudioAvailable();
-  const { isPlaying, stop, hasProAccess } = useAppStore();
+  const isPlaying = useAppStore((state) => state.isPlaying);
+  const stop = useAppStore((state) => state.stop);
+  const hasProAccess = useAppStore((state) => state.hasProAccess);
   const midiExportEnabled = isProFeatureEnabled('midi_export', hasProAccess);
   const stopPreviewBeforeAudition = React.useCallback(() => {
     if (isPlaying) stop();
   }, [isPlaying, stop]);
+
+  React.useEffect(() => () => {
+    if (playTimer.current) {
+      clearTimeout(playTimer.current);
+      playTimer.current = null;
+    }
+  }, []);
 
   function auditPlay(key: string, fn: () => void) {
     if (playTimer.current) clearTimeout(playTimer.current);

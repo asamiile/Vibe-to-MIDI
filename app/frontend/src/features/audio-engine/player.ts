@@ -96,24 +96,43 @@ function buildPeriodicWave(ctx: AudioCtx, real: number[], imag: number[]): Perio
   }).createPeriodicWave(new Float32Array(real), new Float32Array(imag));
 }
 
+const periodicWaveCache = new WeakMap<AudioCtx, Partial<Record<'hollowOrgan' | 'bellLike', PeriodicWaveObj>>>();
+const waveshapeCurveCache = new Map<number, Float32Array>();
+
 // Odd harmonics only (1, 3, 5) — hollow organ / clarinet quality
 function hollowOrganWave(ctx: AudioCtx): PeriodicWaveObj {
-  return buildPeriodicWave(ctx, [0, 1, 0, 0.33, 0, 0.2], [0, 0, 0, 0, 0, 0]);
+  const cache = periodicWaveCache.get(ctx) ?? {};
+  if (!cache.hollowOrgan) {
+    cache.hollowOrgan = buildPeriodicWave(ctx, [0, 1, 0, 0.33, 0, 0.2], [0, 0, 0, 0, 0, 0]);
+    periodicWaveCache.set(ctx, cache);
+  }
+  return cache.hollowOrgan;
 }
 
 // Inharmonic partials (2, 4, 7) — metallic bell quality
 function bellLikeWave(ctx: AudioCtx): PeriodicWaveObj {
-  return buildPeriodicWave(ctx, [0, 0, 0.8, 0, 0.5, 0, 0, 0.3], [0, 0, 0, 0, 0, 0, 0, 0]);
+  const cache = periodicWaveCache.get(ctx) ?? {};
+  if (!cache.bellLike) {
+    cache.bellLike = buildPeriodicWave(ctx, [0, 0, 0.8, 0, 0.5, 0, 0, 0.3], [0, 0, 0, 0, 0, 0, 0, 0]);
+    periodicWaveCache.set(ctx, cache);
+  }
+  return cache.bellLike;
 }
 
 function buildWaveshapeCurve(amount: number): Float32Array {
+  const normalized = Math.max(0, Math.min(1, amount));
+  const cacheKey = Math.round(normalized * 1000);
+  const cached = waveshapeCurveCache.get(cacheKey);
+  if (cached) return cached;
+
   const samples = 256;
   const curve = new Float32Array(samples);
-  const k = amount * 100;
+  const k = normalized * 100;
   for (let i = 0; i < samples; i++) {
     const x = (i * 2) / samples - 1;
     curve[i] = k === 0 ? x : ((Math.PI + k) * x) / (Math.PI + k * Math.abs(x));
   }
+  waveshapeCurveCache.set(cacheKey, curve);
   return curve;
 }
 
@@ -121,7 +140,7 @@ type WaveShaper = { curve: Float32Array | null; connect: (n: unknown) => void; d
 
 function createWaveShaper(ctx: AudioCtx, amount: number): WaveShaper {
   const shaper = (ctx as unknown as { createWaveShaper: () => WaveShaper }).createWaveShaper();
-  shaper.curve = buildWaveshapeCurve(Math.max(0, Math.min(1, amount)));
+  shaper.curve = buildWaveshapeCurve(amount);
   return shaper;
 }
 
