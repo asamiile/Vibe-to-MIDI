@@ -5,12 +5,13 @@ export class AudioContext {
   destination = {};
   createOscillator() {
     return {
-      type: 'sine',
+      type: 'sine' as OscillatorType,
       frequency: { value: 440 },
       connect: jest.fn(),
       disconnect: jest.fn(),
       start: jest.fn(),
       stop: jest.fn(),
+      setPeriodicWave: jest.fn(),
     };
   }
   createBiquadFilter() {
@@ -30,6 +31,30 @@ export class AudioContext {
         linearRampToValueAtTime: jest.fn(),
         cancelScheduledValues: jest.fn(),
       },
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+    };
+  }
+  createPeriodicWave(_real: Float32Array, _imag: Float32Array) {
+    return {};
+  }
+  createDelay(_maxDelay?: number) {
+    return {
+      delayTime: { value: 0 },
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+    };
+  }
+  createWaveShaper() {
+    return {
+      curve: null as Float32Array | null,
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+    };
+  }
+  createStereoPanner() {
+    return {
+      pan: { value: 0 },
       connect: jest.fn(),
       disconnect: jest.fn(),
     };

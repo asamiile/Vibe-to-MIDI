@@ -46,7 +46,9 @@ export type ChordQuality =
   | 'major7'
   | 'dominant7'
   | 'sus4'
-  | 'minor9';
+  | 'sus2'
+  | 'minor9'
+  | 'dim7';
 
 export interface ScaleSpec {
   root: string;
@@ -92,6 +94,24 @@ export interface DubDelaySpec {
   repeats: number;
   stepOffset: number;
   feedbackGain: number;
+  analog?: boolean;  // true = DelayNode feedback loop instead of step re-scheduling
+}
+
+export interface FilterSweepSpec {
+  target: 'bass' | 'stab' | 'both';
+  startRatio: number;  // cutoff multiplier at note start (e.g. 0.25 = 25% of base)
+  endRatio: number;    // cutoff multiplier at note end
+}
+
+export interface StereoPanSpec {
+  bass: number;   // -1.0 (L) to 1.0 (R), kick is always 0
+  noise: number;
+  stab: number;
+}
+
+export interface WaveshapeSpec {
+  target: 'bass' | 'stab' | 'both';
+  amount: number;  // 0 = clean, 1 = heavy clip
 }
 
 export interface SoundMixLevels {
@@ -118,5 +138,7 @@ export interface MusicalSuggestion {
   noiseFilter?: NoiseFilter;
   chordStabFilter?: ChordStabFilter;
   dubDelay?: DubDelaySpec;
+  filterSweep?: FilterSweepSpec;
+  waveshape?: WaveshapeSpec;
   melodySuggested?: boolean;      // false = SYNTH toggle hidden for this vibe
 }

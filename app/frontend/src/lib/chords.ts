@@ -10,7 +10,9 @@ const CHORD_INTERVALS: Record<ChordQuality, readonly number[]> = {
   major7:     [0, 4, 7, 11],
   dominant7:  [0, 4, 7, 10],
   sus4:       [0, 5, 7],
+  sus2:       [0, 2, 7],
   minor9:     [0, 3, 7, 10, 14],
+  dim7:       [0, 3, 6, 9],
 };
 
 export function getChordIntervals(quality: ChordQuality): readonly number[] {

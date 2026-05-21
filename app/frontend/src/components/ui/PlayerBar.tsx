@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppStore } from '../../data/store';
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
-import { VIBE_LABELS } from '../../features/vibe-map/labels';
 import { WaveformVisualizer } from './WaveformVisualizer';
 import { ALL_AUDIO_LAYERS } from '../../features/audio-engine/constants';
 import type { AudioLayer } from '../../features/audio-engine/constants';
@@ -21,12 +20,25 @@ const LAYER_LABELS: Record<AudioLayer, string> = {
 export function PlayerBar() {
   const router = useRouter();
   const { bottom } = useSafeAreaInsets();
-  const { activeVibeId, suggestion, isPlaying, play, stop, activeLayers, toggleLayer, hasProAccess } = useAppStore();
+  const {
+    activeSoundCombination,
+    activeChord,
+    suggestion,
+    isPlaying,
+    play,
+    stop,
+    activeLayers,
+    toggleLayer,
+    hasProAccess,
+  } = useAppStore();
   const audioAvailable = isAudioAvailable();
   const artEnabled = isProFeatureEnabled('generative_art_playback', hasProAccess);
 
-  const label = activeVibeId ? VIBE_LABELS[activeVibeId] ?? activeVibeId : null;
-  const idle = !activeVibeId;
+  const idle = !suggestion;
+  const activeLabel = [
+    activeSoundCombination?.label,
+    activeChord?.label,
+  ].filter(Boolean).join(' · ');
   const visibleLayers = ALL_AUDIO_LAYERS.filter((layer) => {
     if (layer === 'melody') return suggestion?.melodySuggested === true;
     return true;
@@ -41,7 +53,7 @@ export function PlayerBar() {
         paddingBottom: bottom,
       }}
     >
-      {activeVibeId && (
+      {suggestion && (
         <View
           style={{
             flexDirection: 'row',
@@ -132,12 +144,12 @@ export function PlayerBar() {
             fontSize: 12,
             fontWeight: '400',
             letterSpacing: 0.4,
-            color: label ? MIST.text : MIST.textGhost,
+            color: activeLabel ? MIST.text : MIST.textGhost,
             textTransform: 'uppercase',
           }}
           numberOfLines={1}
         >
-          {label ?? '— select vibe —'}
+          {activeLabel || '— tap play —'}
         </Text>
       </View>
     </View>

@@ -4,38 +4,17 @@ import {
   getEffectiveDubDelay,
   getKickPlaybackProfile,
   getNoisePlaybackProfile,
+  getStabPlaybackProfile,
 } from '../src/features/vibe-map/sound-playback';
 import type {
-  BassVariantId,
-  KickVariantId,
-  NoiseVariantId,
   SpaceVariantId,
 } from '../src/features/vibe-map/sound-palette';
-
-const KICK_VARIANTS: readonly KickVariantId[] = [
-  'deep-sine',
-  'soft-909',
-  'muffled-room',
-  'saturated-thump',
-  'industrial-stomp',
-];
-
-const BASS_VARIANTS: readonly BassVariantId[] = [
-  'saw-sub',
-  'sine-sub',
-  'triangle-round',
-  'filtered-pulse',
-];
-
-const NOISE_VARIANTS: readonly NoiseVariantId[] = [
-  'tape-hiss',
-  'closed-hat',
-  'vinyl-floor',
-  'bandpass-tick',
-  'noise-burst',
-  'noise-floor',
-  'resonant-crack',
-];
+import {
+  BASS_VARIANT_IDS,
+  KICK_VARIANT_IDS,
+  NOISE_VARIANT_IDS,
+  STAB_VARIANT_IDS,
+} from '../src/features/vibe-map/sound-palette';
 
 const SPACE_VARIANTS: readonly SpaceVariantId[] = [
   'short-dub',
@@ -54,7 +33,7 @@ describe('sound playback profiles', () => {
     });
   });
 
-  it.each(KICK_VARIANTS)('returns a valid kick profile for %s', (variant) => {
+  it.each(KICK_VARIANT_IDS)('returns a valid kick profile for %s', (variant) => {
     const profile = getKickPlaybackProfile(variant);
 
     expect(profile.startFreq).toBeGreaterThan(profile.endFreq);
@@ -62,9 +41,13 @@ describe('sound playback profiles', () => {
     expect(profile.decay).toBeGreaterThan(profile.pitchDecay);
     expect(profile.gainRatio).toBeGreaterThan(0);
     expect(profile.cutoffRatio).toBeGreaterThan(0);
+    if (profile.clickGainRatio !== undefined) {
+      expect(profile.clickFreq).toBeGreaterThan(0);
+      expect(profile.clickDecay).toBeGreaterThan(0);
+    }
   });
 
-  it.each(BASS_VARIANTS)('returns usable bass voices for %s', (variant) => {
+  it.each(BASS_VARIANT_IDS)('returns usable bass voices for %s', (variant) => {
     const voices = getBassPlaybackVoices(variant);
 
     expect(voices.length).toBeGreaterThanOrEqual(1);
@@ -75,13 +58,28 @@ describe('sound playback profiles', () => {
     });
   });
 
-  it.each(NOISE_VARIANTS)('keeps noise profile gain controlled for %s', (variant) => {
+  it.each(NOISE_VARIANT_IDS)('keeps noise profile gain controlled for %s', (variant) => {
     const profile = getNoisePlaybackProfile(variant);
 
     expect(profile.freqs.length).toBeGreaterThan(0);
     expect(profile.durationRatio).toBeGreaterThan(0);
     expect(profile.gainRatio).toBeGreaterThan(0);
     expect(profile.gainRatio).toBeLessThanOrEqual(0.85);
+    expect(profile.cutoffRatio).toBeGreaterThan(0);
+    expect(profile.qRatio).toBeGreaterThan(0);
+  });
+
+  it.each(STAB_VARIANT_IDS)('returns a usable stab profile for %s', (variant) => {
+    const profile = getStabPlaybackProfile(variant);
+    const notes = profile.notes([48, 51, 55, 58]);
+
+    expect(notes.length).toBeGreaterThan(0);
+    notes.forEach((midi) => {
+      expect(midi).toBeGreaterThanOrEqual(48);
+      expect(midi).toBeLessThanOrEqual(70);
+    });
+    expect(profile.durationRatio).toBeGreaterThan(0);
+    expect(profile.gainRatio).toBeGreaterThan(0);
     expect(profile.cutoffRatio).toBeGreaterThan(0);
     expect(profile.qRatio).toBeGreaterThan(0);
   });
@@ -110,5 +108,12 @@ describe('sound playback profiles', () => {
       { repeats: 1, stepOffset: 3, feedbackGain: 0.2 },
       'deep-feedback'
     )).toEqual({ repeats: 3, stepOffset: 3, feedbackGain: 0.38 });
+  });
+
+  it('caps high feedback to keep delay repeats controlled', () => {
+    expect(getEffectiveDubDelay(
+      { repeats: 5, stepOffset: 3, feedbackGain: 0.9 },
+      'deep-feedback'
+    ).feedbackGain).toBe(0.46);
   });
 });

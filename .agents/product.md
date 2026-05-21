@@ -72,12 +72,15 @@ English should be the primary product language. Japanese support should be plann
 
 One Android screen is enough for the first version.
 
-User flow:
+Current MVP flow:
 
-1. Select vibe tags.
-2. Hear a short generated pattern.
-3. See a visual response.
-4. Get DAW-ready suggestions.
+1. Tap the central play button on the TOP screen.
+2. The app randomly combines sound parts such as kick, bass, noise, and stab.
+3. The app randomly selects a chord candidate for bass and stab playback.
+4. Hear the generated dub techno loop immediately.
+5. Open MIDI / Learn only after something is playing.
+
+Do not present a song list or track catalog in the MVP. The product is not a music player. Treat playback as generated sound construction, not as selecting a saved song. MIDI, Learn, and Settings may be present as utility navigation, but they should not compete with the central play action.
 
 Initial vibe tags:
 

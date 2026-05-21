@@ -23,12 +23,12 @@ Avoid:
 
 ## Core Flow
 
-1. Select a vibe.
-2. Hear the generated dub techno loop.
+1. Tap the central TOP play button.
+2. Hear a generated dub techno loop built from random sound parts and a random chord.
 3. Open MIDI for practical DAW-entry values.
 4. Open Learn only when the user wants explanation.
 
-The first response to a vibe should be sound, not theory.
+The first response should be sound, not theory. The TOP screen should not show a song list, track catalog, or long selectable vibe grid for the current MVP. Keep the TOP screen focused on a single play action, with MIDI, Learn, and Settings as restrained utility controls.
 
 ## MIDI Screen Rule
 

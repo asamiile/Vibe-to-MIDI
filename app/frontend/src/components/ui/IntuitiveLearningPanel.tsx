@@ -142,7 +142,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
   const stopTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const audioAvailable = isAudioAvailable();
   const stopGlobalPreview = useAppStore((state) => state.stop);
-  const view = buildLearningFocusView(suggestion, focus);
+  const view = React.useMemo(() => buildLearningFocusView(suggestion, focus), [suggestion, focus]);
 
   const stopLocalPreview = React.useCallback((resetActive = true) => {
     if (stopTimer.current) {
