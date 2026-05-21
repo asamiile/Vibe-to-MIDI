@@ -11,6 +11,7 @@ import {
   getEffectiveDubDelay,
   getKickPlaybackProfile,
   getNoisePlaybackProfile,
+  getStabPlaybackProfile,
 } from '../vibe-map/sound-playback';
 import { AUDIO_PARAMS } from './constants';
 import type { AudioLayer } from './constants';
@@ -411,29 +412,38 @@ function scheduleChordStab(
   panValue?: number,
   shapeAmount?: number
 ): void {
+  const profile = getStabPlaybackProfile(variant);
+  const effectiveNotes = profile.notes(midiNotes);
+  const effectiveDuration = duration * profile.durationRatio;
+  const effectiveGain = gainValue * profile.gainRatio;
+  const effectiveFilterFreq = filterFreq * profile.cutoffRatio;
+  const effectiveFilterQ = filterQ * profile.qRatio;
   const wave = variant === 'hollow-organ' ? hollowOrganWave(ctx)
              : variant === 'bell-like'    ? bellLikeWave(ctx)
              : undefined;
-  const bellDuration = variant === 'bell-like' ? duration * 0.5 : duration;
+  const bellDuration = variant === 'bell-like' ? effectiveDuration * 0.5 : effectiveDuration;
 
-  midiNotes.forEach((midi, index) => {
+  effectiveNotes.forEach((midi, index) => {
     const baseFreq = noteFreq(midi);
-    const voiceGain = gainValue / midiNotes.length;
+    const voiceGain = effectiveGain / effectiveNotes.length;
     if (variant === 'square-saw') {
-      scheduleSynth(ctx, baseFreq, startTime, duration, voiceGain * 0.58, filterFreq, filterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
-      scheduleSynth(ctx, baseFreq, startTime, duration, voiceGain * 0.42, filterFreq * 0.88, filterQ, 'square', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain * 0.58, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain * 0.42, effectiveFilterFreq * 0.88, effectiveFilterQ, 'square', scheduledNodes, sweep, panValue, shapeAmount);
     } else if (variant === 'sampled-chord-like') {
-      scheduleSynth(ctx, baseFreq, startTime, duration * 0.72, voiceGain, filterFreq * 0.82, filterQ * 0.9, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration * 0.72, voiceGain, effectiveFilterFreq * 0.82, effectiveFilterQ * 0.9, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
     } else if (variant === 'wide-detuned') {
-      scheduleSynth(ctx, baseFreq * 0.997, startTime, duration, voiceGain * 0.5, filterFreq, filterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
-      scheduleSynth(ctx, baseFreq * 1.003, startTime, duration, voiceGain * 0.5, filterFreq, filterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq * 0.997, startTime, effectiveDuration, voiceGain * 0.5, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq * 1.003, startTime, effectiveDuration, voiceGain * 0.5, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
     } else if (wave) {
-      scheduleSynth(ctx, baseFreq, startTime, bellDuration, voiceGain, filterFreq, filterQ, 'sine', scheduledNodes, sweep, panValue, shapeAmount, wave);
+      scheduleSynth(ctx, baseFreq, startTime, bellDuration, voiceGain, effectiveFilterFreq, effectiveFilterQ, 'sine', scheduledNodes, sweep, panValue, shapeAmount, wave);
     } else {
-      scheduleSynth(ctx, baseFreq, startTime, duration, voiceGain, filterFreq, filterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
     }
     if (index === 0) {
-      scheduleSynth(ctx, noteFreq(midi - 12), startTime, duration, gainValue * 0.25, filterFreq, filterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, noteFreq(midi - 12), startTime, effectiveDuration, effectiveGain * 0.25, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+    }
+    if (profile.octaveShadow) {
+      scheduleSynth(ctx, noteFreq(midi + 12), startTime, effectiveDuration * 0.75, voiceGain * 0.22, effectiveFilterFreq * 1.12, effectiveFilterQ * 0.85, 'triangle', scheduledNodes, sweep, panValue, shapeAmount);
     }
   });
 }

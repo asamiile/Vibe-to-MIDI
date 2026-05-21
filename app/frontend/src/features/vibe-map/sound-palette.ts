@@ -9,9 +9,41 @@ export type KickVariantId =
   | 'rubber-kick'
   | 'dusty-tap'
   | 'hard-ping';
-export type BassVariantId = 'saw-sub' | 'sine-sub' | 'triangle-round' | 'filtered-pulse';
-export type StabVariantId = 'saw-minor' | 'square-saw' | 'sampled-chord-like' | 'wide-detuned' | 'hollow-organ' | 'bell-like';
-export type NoiseVariantId = 'tape-hiss' | 'closed-hat' | 'vinyl-floor' | 'bandpass-tick' | 'noise-burst' | 'noise-floor' | 'resonant-crack';
+export type BassVariantId =
+  | 'saw-sub'
+  | 'sine-sub'
+  | 'triangle-round'
+  | 'filtered-pulse'
+  | 'acid-round'
+  | 'dub-pluck-sub'
+  | 'wide-low-mid'
+  | 'distorted-rumble'
+  | 'sine-drop';
+export type StabVariantId =
+  | 'saw-minor'
+  | 'square-saw'
+  | 'sampled-chord-like'
+  | 'wide-detuned'
+  | 'hollow-organ'
+  | 'bell-like'
+  | 'rootless-voicing'
+  | 'octave-shadow'
+  | 'short-muted'
+  | 'long-smear'
+  | 'inverted-stab';
+export type NoiseVariantId =
+  | 'tape-hiss'
+  | 'closed-hat'
+  | 'vinyl-floor'
+  | 'bandpass-tick'
+  | 'noise-burst'
+  | 'noise-floor'
+  | 'resonant-crack'
+  | 'shaker-dust'
+  | 'open-air-hat'
+  | 'metal-tick'
+  | 'sidechain-floor'
+  | 'tape-clicks';
 export type SpaceVariantId = 'short-dub' | 'deep-feedback' | 'spring-style' | 'dark-plate';
 
 export type SoundPaletteLayer = 'kick' | 'bass' | 'noise' | 'stab' | 'space';
@@ -55,9 +87,65 @@ export const KICK_VARIANT_IDS: readonly KickVariantId[] = [
   'hard-ping',
 ];
 
+export const BASS_VARIANT_IDS: readonly BassVariantId[] = [
+  'saw-sub',
+  'sine-sub',
+  'triangle-round',
+  'filtered-pulse',
+  'acid-round',
+  'dub-pluck-sub',
+  'wide-low-mid',
+  'distorted-rumble',
+  'sine-drop',
+];
+
+export const NOISE_VARIANT_IDS: readonly NoiseVariantId[] = [
+  'tape-hiss',
+  'closed-hat',
+  'vinyl-floor',
+  'bandpass-tick',
+  'noise-burst',
+  'noise-floor',
+  'resonant-crack',
+  'shaker-dust',
+  'open-air-hat',
+  'metal-tick',
+  'sidechain-floor',
+  'tape-clicks',
+];
+
+export const STAB_VARIANT_IDS: readonly StabVariantId[] = [
+  'saw-minor',
+  'square-saw',
+  'sampled-chord-like',
+  'wide-detuned',
+  'hollow-organ',
+  'bell-like',
+  'rootless-voicing',
+  'octave-shadow',
+  'short-muted',
+  'long-smear',
+  'inverted-stab',
+];
+
 export function pickKickVariant(random: () => number = Math.random): KickVariantId {
   const index = Math.floor(random() * KICK_VARIANT_IDS.length);
   return KICK_VARIANT_IDS[Math.min(index, KICK_VARIANT_IDS.length - 1)];
+}
+
+export function pickBassVariant(random: () => number = Math.random): BassVariantId {
+  const index = Math.floor(random() * BASS_VARIANT_IDS.length);
+  return BASS_VARIANT_IDS[Math.min(index, BASS_VARIANT_IDS.length - 1)];
+}
+
+export function pickNoiseVariant(random: () => number = Math.random): NoiseVariantId {
+  const index = Math.floor(random() * NOISE_VARIANT_IDS.length);
+  return NOISE_VARIANT_IDS[Math.min(index, NOISE_VARIANT_IDS.length - 1)];
+}
+
+export function pickStabVariant(random: () => number = Math.random): StabVariantId {
+  const index = Math.floor(random() * STAB_VARIANT_IDS.length);
+  return STAB_VARIANT_IDS[Math.min(index, STAB_VARIANT_IDS.length - 1)];
 }
 
 export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> = {
@@ -190,6 +278,51 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       fxRole: 'lowpass, resonance, light drive',
       playback: 'guidance',
     },
+    {
+      id: 'acid-round',
+      name: 'Acid round',
+      type: 'Mono bass synth',
+      source: 'rounded pulse bass with resonant lowpass',
+      target: 'bass synth track',
+      fxRole: 'resonant lowpass, light drive, short envelope',
+      playback: 'preview',
+    },
+    {
+      id: 'dub-pluck-sub',
+      name: 'Dub pluck sub',
+      type: 'Mono bass synth',
+      source: 'short sine/triangle sub pluck',
+      target: 'bass synth track',
+      fxRole: 'short amp envelope, dark lowpass',
+      playback: 'preview',
+    },
+    {
+      id: 'wide-low-mid',
+      name: 'Wide low-mid',
+      type: 'Layered bass synth',
+      source: 'centered sub with quiet octave low-mid layer',
+      target: 'bass synth track',
+      fxRole: 'lowpass, subtle width on upper layer',
+      playback: 'preview',
+    },
+    {
+      id: 'distorted-rumble',
+      name: 'Distorted rumble',
+      type: 'Mono bass synth',
+      source: 'dark saw/square sub with clipped low mids',
+      target: 'bass synth track',
+      fxRole: 'waveshape, lowpass, gain trim',
+      playback: 'preview',
+    },
+    {
+      id: 'sine-drop',
+      name: 'Sine drop',
+      type: 'Mono bass synth',
+      source: 'sine sub with a soft pitch-drop feel',
+      target: 'bass synth track',
+      fxRole: 'lowpass, slow envelope, subtle pitch fall',
+      playback: 'preview',
+    },
   ],
   noise: [
     {
@@ -255,6 +388,51 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       fxRole: 'narrow bandpass, very short decay, high resonance',
       playback: 'guidance',
     },
+    {
+      id: 'shaker-dust',
+      name: 'Shaker dust',
+      type: 'Noise synth',
+      source: 'fine-grain short noise ticks',
+      target: 'noise or shaker synth track',
+      fxRole: 'high bandpass, short decay, low gain',
+      playback: 'preview',
+    },
+    {
+      id: 'open-air-hat',
+      name: 'Open air hat',
+      type: 'Noise synth',
+      source: 'longer airy hat wash',
+      target: 'hat or noise synth track',
+      fxRole: 'wide bandpass, longer decay, soft lowpass',
+      playback: 'preview',
+    },
+    {
+      id: 'metal-tick',
+      name: 'Metal tick',
+      type: 'Noise synth',
+      source: 'bright metallic resonant tick',
+      target: 'percussion synth slot',
+      fxRole: 'high-Q bandpass, short decay',
+      playback: 'preview',
+    },
+    {
+      id: 'sidechain-floor',
+      name: 'Sidechain floor',
+      type: 'Noise bed',
+      source: 'continuous floor with kick-ducking guidance',
+      target: 'noise bed track',
+      fxRole: 'highpass, lowpass, sidechain from kick',
+      playback: 'preview',
+    },
+    {
+      id: 'tape-clicks',
+      name: 'Tape clicks',
+      type: 'Noise synth',
+      source: 'small tape-style clicks and dusty ticks',
+      target: 'noise or percussion track',
+      fxRole: 'bandpass, random-like placement, low gain',
+      playback: 'preview',
+    },
   ],
   stab: [
     {
@@ -310,6 +488,51 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       target: 'poly synth track',
       fxRole: 'lowpass, short decay, dub delay',
       playback: 'guidance',
+    },
+    {
+      id: 'rootless-voicing',
+      name: 'Rootless voicing',
+      type: 'Poly synth',
+      source: 'chord stab with root reduced or removed',
+      target: 'poly synth track',
+      fxRole: 'lowpass, dub delay, leave bass to carry root',
+      playback: 'preview',
+    },
+    {
+      id: 'octave-shadow',
+      name: 'Octave shadow',
+      type: 'Poly synth',
+      source: 'main stab with a quiet upper-octave shadow',
+      target: 'poly synth track',
+      fxRole: 'lowpass, width, dub delay',
+      playback: 'preview',
+    },
+    {
+      id: 'short-muted',
+      name: 'Short muted',
+      type: 'Poly synth',
+      source: 'tight filtered chord stab',
+      target: 'poly synth track',
+      fxRole: 'short envelope, darker lowpass',
+      playback: 'preview',
+    },
+    {
+      id: 'long-smear',
+      name: 'Long smear',
+      type: 'Poly synth',
+      source: 'longer smeared chord tail',
+      target: 'poly synth track',
+      fxRole: 'long envelope, lowpass, heavier delay send',
+      playback: 'preview',
+    },
+    {
+      id: 'inverted-stab',
+      name: 'Inverted stab',
+      type: 'Poly synth',
+      source: 'inverted chord voicing for suspended movement',
+      target: 'poly synth track',
+      fxRole: 'lowpass, dub delay',
+      playback: 'preview',
     },
   ],
   space: [

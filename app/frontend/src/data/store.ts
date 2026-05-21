@@ -17,7 +17,13 @@ import {
   type SoundCombination,
   type SoundConfiguration,
 } from '../features/vibe-map/sound-combinations';
-import { DEFAULT_SOUND_VARIANTS, pickKickVariant } from '../features/vibe-map/sound-palette';
+import {
+  DEFAULT_SOUND_VARIANTS,
+  pickBassVariant,
+  pickKickVariant,
+  pickNoiseVariant,
+  pickStabVariant,
+} from '../features/vibe-map/sound-palette';
 import { pickKickRhythmProfile } from '../features/vibe-map/kick-rhythm';
 import { pickRandomBpm } from '../features/vibe-map/random-bpm';
 import { buildRandomStereoPan } from '../features/vibe-map/stereo-pan';
@@ -108,6 +114,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       soundVariants: {
         ...(baseSuggestion.soundVariants ?? DEFAULT_SOUND_VARIANTS),
         kick: pickKickVariant(),
+        bass: pickBassVariant(),
+        noise: pickNoiseVariant(),
+        stab: pickStabVariant(),
       },
       bpmRange: [bpm, bpm] as const,
     };

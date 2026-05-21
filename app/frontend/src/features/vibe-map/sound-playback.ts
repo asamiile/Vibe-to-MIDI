@@ -4,6 +4,7 @@ import type {
   KickVariantId,
   NoiseVariantId,
   SpaceVariantId,
+  StabVariantId,
 } from './sound-palette';
 import type { SoundMixLevels } from './types';
 
@@ -42,6 +43,15 @@ export interface NoisePlaybackProfile {
   cutoffRatio: number;
   qRatio: number;
   continuous?: boolean;  // schedule one sustained node per loop instead of per-step hits
+}
+
+export interface StabPlaybackProfile {
+  notes: (midiNotes: readonly number[]) => readonly number[];
+  durationRatio: number;
+  gainRatio: number;
+  cutoffRatio: number;
+  qRatio: number;
+  octaveShadow?: boolean;
 }
 
 export interface DubDelaySpec {
@@ -93,6 +103,32 @@ export function getBassPlaybackVoices(variant: BassVariantId): readonly BassPlay
       return [
         { type: 'square', octaveOffset: 0, gainRatio: 0.8, cutoffRatio: 0.75 },
         { type: 'triangle', octaveOffset: 12, gainRatio: 0.16, cutoffRatio: 0.9 },
+      ];
+    case 'acid-round':
+      return [
+        { type: 'square', octaveOffset: 0, gainRatio: 0.72, cutoffRatio: 1.35 },
+        { type: 'sawtooth', octaveOffset: 12, gainRatio: 0.16, cutoffRatio: 1.55 },
+      ];
+    case 'dub-pluck-sub':
+      return [
+        { type: 'sine', octaveOffset: 0, gainRatio: 0.85, cutoffRatio: 0.62 },
+        { type: 'triangle', octaveOffset: 12, gainRatio: 0.1, cutoffRatio: 0.75 },
+      ];
+    case 'wide-low-mid':
+      return [
+        { type: 'sine', octaveOffset: 0, gainRatio: 0.9, cutoffRatio: 0.78 },
+        { type: 'sawtooth', octaveOffset: 12, gainRatio: 0.22, cutoffRatio: 1.1 },
+        { type: 'triangle', octaveOffset: 19, gainRatio: 0.08, cutoffRatio: 1.2 },
+      ];
+    case 'distorted-rumble':
+      return [
+        { type: 'sawtooth', octaveOffset: 0, gainRatio: 0.82, cutoffRatio: 0.65 },
+        { type: 'square', octaveOffset: 12, gainRatio: 0.18, cutoffRatio: 0.85 },
+      ];
+    case 'sine-drop':
+      return [
+        { type: 'sine', octaveOffset: 0, gainRatio: 1.02, cutoffRatio: 0.72 },
+        { type: 'triangle', octaveOffset: 12, gainRatio: 0.09, cutoffRatio: 0.9 },
       ];
     case 'saw-sub':
     default:
@@ -160,6 +196,52 @@ export function getNoisePlaybackProfile(variant: NoiseVariantId): NoisePlaybackP
         cutoffRatio: 1.05,
         qRatio: 2.8,
       };
+    case 'shaker-dust':
+      return {
+        freqs: [6200, 7600, 9100, 10800],
+        type: (index) => (index % 2 === 0 ? 'triangle' : 'square'),
+        durationRatio: 0.34,
+        gainRatio: 0.46,
+        cutoffRatio: 1.28,
+        qRatio: 1.45,
+      };
+    case 'open-air-hat':
+      return {
+        freqs: [5400, 7200, 9400, 11800],
+        type: (index) => (index % 2 === 0 ? 'sawtooth' : 'triangle'),
+        durationRatio: 1.55,
+        gainRatio: 0.64,
+        cutoffRatio: 1.42,
+        qRatio: 0.7,
+      };
+    case 'metal-tick':
+      return {
+        freqs: [7200, 9100, 12400, 13800],
+        type: (index) => (index % 2 === 0 ? 'square' : 'sawtooth'),
+        durationRatio: 0.22,
+        gainRatio: 0.62,
+        cutoffRatio: 1.2,
+        qRatio: 3.4,
+      };
+    case 'sidechain-floor':
+      return {
+        freqs: [900, 1700, 3400, 6200],
+        type: (index) => (index % 2 === 0 ? 'triangle' : 'sawtooth'),
+        durationRatio: 1.03,
+        gainRatio: 0.42,
+        cutoffRatio: 0.78,
+        qRatio: 0.4,
+        continuous: true,
+      };
+    case 'tape-clicks':
+      return {
+        freqs: [1800, 2600, 3900, 5400],
+        type: (index) => (index % 2 === 0 ? 'square' : 'triangle'),
+        durationRatio: 0.26,
+        gainRatio: 0.5,
+        cutoffRatio: 0.92,
+        qRatio: 1.9,
+      };
     case 'tape-hiss':
     default:
       return {
@@ -167,6 +249,62 @@ export function getNoisePlaybackProfile(variant: NoiseVariantId): NoisePlaybackP
         type: (index) => (index % 2 === 0 ? 'triangle' : 'sawtooth'),
         durationRatio: 1,
         gainRatio: 0.78,
+        cutoffRatio: 1,
+        qRatio: 1,
+      };
+  }
+}
+
+export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProfile {
+  switch (variant) {
+    case 'rootless-voicing':
+      return {
+        notes: (midiNotes) => (midiNotes.length > 2 ? midiNotes.slice(1) : midiNotes),
+        durationRatio: 0.9,
+        gainRatio: 0.92,
+        cutoffRatio: 0.9,
+        qRatio: 1.05,
+      };
+    case 'octave-shadow':
+      return {
+        notes: (midiNotes) => midiNotes,
+        durationRatio: 1,
+        gainRatio: 0.82,
+        cutoffRatio: 1.08,
+        qRatio: 0.95,
+        octaveShadow: true,
+      };
+    case 'short-muted':
+      return {
+        notes: (midiNotes) => midiNotes,
+        durationRatio: 0.46,
+        gainRatio: 0.86,
+        cutoffRatio: 0.62,
+        qRatio: 1.25,
+      };
+    case 'long-smear':
+      return {
+        notes: (midiNotes) => midiNotes,
+        durationRatio: 1.65,
+        gainRatio: 0.72,
+        cutoffRatio: 0.78,
+        qRatio: 0.82,
+      };
+    case 'inverted-stab':
+      return {
+        notes: (midiNotes) => (
+          midiNotes.length > 2 ? [...midiNotes.slice(1), midiNotes[0] + 12] : midiNotes
+        ),
+        durationRatio: 1,
+        gainRatio: 0.9,
+        cutoffRatio: 0.96,
+        qRatio: 1,
+      };
+    default:
+      return {
+        notes: (midiNotes) => midiNotes,
+        durationRatio: 1,
+        gainRatio: 1,
         cutoffRatio: 1,
         qRatio: 1,
       };
