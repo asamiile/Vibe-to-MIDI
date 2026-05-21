@@ -26,11 +26,20 @@ function pickLayerCount(total: number, random: () => number): number {
   return Math.min(total, 2 + Math.floor(random() * (total - 1)));
 }
 
+function fisherYatesShuffle<T>(arr: T[], random: () => number): T[] {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 export function buildRandomSoundCombination(
   configurations: readonly SoundConfiguration[],
   random: () => number = Math.random
 ): SoundCombination {
-  const shuffled = [...configurations].sort(() => random() - 0.5);
+  const shuffled = fisherYatesShuffle([...configurations], random);
   const selected = shuffled.slice(0, pickLayerCount(shuffled.length, random));
   const normalized = selected.length > 0 ? selected : configurations.slice(0, 1);
   const ids = normalized.map((configuration) => configuration.id);

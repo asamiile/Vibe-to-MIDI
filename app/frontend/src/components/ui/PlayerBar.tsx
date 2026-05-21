@@ -149,7 +149,7 @@ export function PlayerBar() {
           }}
           numberOfLines={1}
         >
-          {activeLabel || '— sound only —'}
+          {activeLabel || '— tap play —'}
         </Text>
       </View>
     </View>

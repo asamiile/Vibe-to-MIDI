@@ -43,6 +43,8 @@ function startPlayback(suggestion: MusicalSuggestion, layers: Set<AudioLayer>, o
   playPreview(suggestion, { activeLayers: layers }).then(onHandle);
 }
 
+// Picks a random vibe to use as a synthesis template (scale, mood, synth style).
+// BPM and chord are overridden separately; this only provides the base parameters.
 function pickPlaybackSuggestion(): MusicalSuggestion {
   const vibeIds = getAllVibeIds();
   const vibeId = vibeIds[Math.floor(Math.random() * vibeIds.length)];
@@ -121,7 +123,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const next = new Set(activeLayers);
     if (next.has(layer)) next.delete(layer);
     else next.add(layer);
-    set({ activeLayers: next, activeSoundCombination: null });
+    set({ activeLayers: next });
     if (isPlaying && suggestion) {
       _player?.stop();
       _player = null;
