@@ -46,11 +46,21 @@ Early persistence:
 
 Initial feature set:
 
-- vibe tag selection
+- TOP central play button with MIDI / Learn / Settings utility navigation
+- random sound-layer construction from store-held sound configurations
+- random chord selection from a chord pool
 - generated synth playback
 - generated rhythm playback
 - visual response
 - suggested scale/chords/bass/rhythm/sound hints
+
+Current generation model:
+
+- Keep sound-part definitions in store state as `soundConfigurations`.
+- Keep reusable chord candidates in a data module, then expose them through store as `chordPool`.
+- Store only the active generated state in `activeSoundCombination`, `activeChord`, `activeLayers`, and `suggestion`.
+- Do not model generated playback as a "song" or "track". Avoid song lists, track titles, and saved music catalogs until a separate product decision introduces them.
+- The audio engine should continue using generated synthesis. Do not add bundled audio files for this flow.
 
 Learning Flow Requirements:
 
