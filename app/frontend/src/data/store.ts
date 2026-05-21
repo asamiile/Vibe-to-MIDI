@@ -17,6 +17,8 @@ import {
   type SoundCombination,
   type SoundConfiguration,
 } from '../features/vibe-map/sound-combinations';
+import { DEFAULT_SOUND_VARIANTS, pickKickVariant } from '../features/vibe-map/sound-palette';
+import { pickKickRhythmProfile } from '../features/vibe-map/kick-rhythm';
 import { pickRandomBpm } from '../features/vibe-map/random-bpm';
 import { buildRandomStereoPan } from '../features/vibe-map/stereo-pan';
 import type { StereoPanSpec } from '../features/vibe-map/types';
@@ -94,12 +96,19 @@ export const useAppStore = create<AppState>((set, get) => ({
     const bpm = pickRandomBpm();
     const pan = buildRandomStereoPan();
     const activeLayers = new Set(combination.layers);
+    const kickRhythm = pickKickRhythmProfile();
+    const baseSuggestion = pickPlaybackSuggestion();
     const suggestion = {
       ...applyChordCandidate(
-        pickPlaybackSuggestion(),
+        baseSuggestion,
         chord,
         { forceMelody: activeLayers.has('melody') }
       ),
+      rhythmPattern: activeLayers.has('kick') ? kickRhythm.pattern : baseSuggestion.rhythmPattern,
+      soundVariants: {
+        ...(baseSuggestion.soundVariants ?? DEFAULT_SOUND_VARIANTS),
+        kick: pickKickVariant(),
+      },
       bpmRange: [bpm, bpm] as const,
     };
 

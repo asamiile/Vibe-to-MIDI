@@ -225,12 +225,34 @@ function scheduleKick(
   gain.gain.linearRampToValueAtTime(0, startTime + profile.decay);
 
   osc.connect(filter);
-  filter.connect(gain);
+  const shaper = profile.shapeAmount !== undefined && profile.shapeAmount > 0
+    ? createWaveShaper(ctx, profile.shapeAmount)
+    : undefined;
+  if (shaper) {
+    filter.connect(shaper as unknown as Parameters<Gain['connect']>[0]);
+    shaper.connect(gain);
+  } else {
+    filter.connect(gain);
+  }
   gain.connect(ctx.destination);
-  scheduledNodes.push({ oscillator: osc, gain });
+  scheduledNodes.push({ oscillator: osc, gain, shaper });
 
   osc.start(startTime);
   osc.stop(startTime + profile.decay + 0.05);
+
+  if (profile.clickFreq && profile.clickGainRatio && profile.clickDecay) {
+    const clickOsc = ctx.createOscillator();
+    const clickGain = ctx.createGain();
+    clickOsc.type = 'triangle';
+    clickOsc.frequency.value = profile.clickFreq;
+    clickGain.gain.setValueAtTime(gainValue * profile.clickGainRatio, startTime);
+    clickGain.gain.linearRampToValueAtTime(0, startTime + profile.clickDecay);
+    clickOsc.connect(clickGain);
+    clickGain.connect(ctx.destination);
+    scheduledNodes.push({ oscillator: clickOsc, gain: clickGain });
+    clickOsc.start(startTime);
+    clickOsc.stop(startTime + profile.clickDecay + 0.02);
+  }
 }
 
 function scheduleNoise(

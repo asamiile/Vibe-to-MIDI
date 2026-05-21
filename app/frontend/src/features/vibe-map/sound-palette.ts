@@ -1,4 +1,14 @@
-export type KickVariantId = 'deep-sine' | 'soft-909' | 'muffled-room' | 'saturated-thump' | 'industrial-stomp';
+export type KickVariantId =
+  | 'deep-sine'
+  | 'soft-909'
+  | 'muffled-room'
+  | 'saturated-thump'
+  | 'industrial-stomp'
+  | 'short-click'
+  | 'sub-boom'
+  | 'rubber-kick'
+  | 'dusty-tap'
+  | 'hard-ping';
 export type BassVariantId = 'saw-sub' | 'sine-sub' | 'triangle-round' | 'filtered-pulse';
 export type StabVariantId = 'saw-minor' | 'square-saw' | 'sampled-chord-like' | 'wide-detuned' | 'hollow-organ' | 'bell-like';
 export type NoiseVariantId = 'tape-hiss' | 'closed-hat' | 'vinyl-floor' | 'bandpass-tick' | 'noise-burst' | 'noise-floor' | 'resonant-crack';
@@ -31,6 +41,24 @@ export const DEFAULT_SOUND_VARIANTS: SoundVariantSelection = {
   stab: 'saw-minor',
   space: 'deep-feedback',
 };
+
+export const KICK_VARIANT_IDS: readonly KickVariantId[] = [
+  'deep-sine',
+  'soft-909',
+  'muffled-room',
+  'saturated-thump',
+  'industrial-stomp',
+  'short-click',
+  'sub-boom',
+  'rubber-kick',
+  'dusty-tap',
+  'hard-ping',
+];
+
+export function pickKickVariant(random: () => number = Math.random): KickVariantId {
+  const index = Math.floor(random() * KICK_VARIANT_IDS.length);
+  return KICK_VARIANT_IDS[Math.min(index, KICK_VARIANT_IDS.length - 1)];
+}
 
 export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> = {
   kick: [
@@ -78,6 +106,51 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       target: 'synth track or drum synth slot',
       fxRole: 'soft clip, lowpass dark, slow pitch drop',
       playback: 'guidance',
+    },
+    {
+      id: 'short-click',
+      name: 'Short click',
+      type: 'Drum synth',
+      source: 'short sine body with sharp click transient',
+      target: 'drum rack kick slot',
+      fxRole: 'short decay, click layer, tight lowpass',
+      playback: 'preview',
+    },
+    {
+      id: 'sub-boom',
+      name: 'Sub boom',
+      type: 'Mono synth',
+      source: 'low sine boom with slow pitch fall',
+      target: 'synth track or drum synth slot',
+      fxRole: 'long decay, dark lowpass, low transient',
+      playback: 'preview',
+    },
+    {
+      id: 'rubber-kick',
+      name: 'Rubber kick',
+      type: 'Drum synth',
+      source: 'rounded elastic pitch drop',
+      target: 'drum rack kick slot',
+      fxRole: 'medium decay, soft transient, light drive',
+      playback: 'preview',
+    },
+    {
+      id: 'dusty-tap',
+      name: 'Dusty tap',
+      type: 'Drum synth',
+      source: 'quiet dusty pulse under lowpass',
+      target: 'drum rack kick or percussion slot',
+      fxRole: 'low gain, short decay, dark lowpass',
+      playback: 'preview',
+    },
+    {
+      id: 'hard-ping',
+      name: 'Hard ping',
+      type: 'Drum synth',
+      source: 'high pitched click into compact sub body',
+      target: 'drum rack kick slot',
+      fxRole: 'fast pitch drop, bright click, clipped transient',
+      playback: 'preview',
     },
   ],
   bass: [

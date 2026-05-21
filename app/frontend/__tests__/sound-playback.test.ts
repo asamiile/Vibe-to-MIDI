@@ -7,18 +7,10 @@ import {
 } from '../src/features/vibe-map/sound-playback';
 import type {
   BassVariantId,
-  KickVariantId,
   NoiseVariantId,
   SpaceVariantId,
 } from '../src/features/vibe-map/sound-palette';
-
-const KICK_VARIANTS: readonly KickVariantId[] = [
-  'deep-sine',
-  'soft-909',
-  'muffled-room',
-  'saturated-thump',
-  'industrial-stomp',
-];
+import { KICK_VARIANT_IDS } from '../src/features/vibe-map/sound-palette';
 
 const BASS_VARIANTS: readonly BassVariantId[] = [
   'saw-sub',
@@ -54,7 +46,7 @@ describe('sound playback profiles', () => {
     });
   });
 
-  it.each(KICK_VARIANTS)('returns a valid kick profile for %s', (variant) => {
+  it.each(KICK_VARIANT_IDS)('returns a valid kick profile for %s', (variant) => {
     const profile = getKickPlaybackProfile(variant);
 
     expect(profile.startFreq).toBeGreaterThan(profile.endFreq);
@@ -62,6 +54,10 @@ describe('sound playback profiles', () => {
     expect(profile.decay).toBeGreaterThan(profile.pitchDecay);
     expect(profile.gainRatio).toBeGreaterThan(0);
     expect(profile.cutoffRatio).toBeGreaterThan(0);
+    if (profile.clickGainRatio !== undefined) {
+      expect(profile.clickFreq).toBeGreaterThan(0);
+      expect(profile.clickDecay).toBeGreaterThan(0);
+    }
   });
 
   it.each(BASS_VARIANTS)('returns usable bass voices for %s', (variant) => {

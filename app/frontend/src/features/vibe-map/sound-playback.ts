@@ -21,6 +21,10 @@ export interface KickPlaybackProfile {
   decay: number;
   gainRatio: number;
   cutoffRatio: number;
+  clickFreq?: number;
+  clickGainRatio?: number;
+  clickDecay?: number;
+  shapeAmount?: number;
 }
 
 export interface BassPlaybackVoice {
@@ -50,13 +54,23 @@ export interface DubDelaySpec {
 export function getKickPlaybackProfile(variant: KickVariantId): KickPlaybackProfile {
   switch (variant) {
     case 'soft-909':
-      return { startFreq: 105, endFreq: 38, pitchDecay: 0.09, decay: 0.34, gainRatio: 1.55, cutoffRatio: 1.15 };
+      return { startFreq: 105, endFreq: 38, pitchDecay: 0.09, decay: 0.34, gainRatio: 1.55, cutoffRatio: 1.15, clickFreq: 1400, clickGainRatio: 0.08, clickDecay: 0.014 };
     case 'muffled-room':
       return { startFreq: 95, endFreq: 28, pitchDecay: 0.18, decay: 0.55, gainRatio: 1.45, cutoffRatio: 0.75 };
     case 'saturated-thump':
-      return { startFreq: 135, endFreq: 35, pitchDecay: 0.11, decay: 0.42, gainRatio: 1.95, cutoffRatio: 0.95 };
+      return { startFreq: 135, endFreq: 35, pitchDecay: 0.11, decay: 0.42, gainRatio: 1.95, cutoffRatio: 0.95, shapeAmount: 0.28, clickFreq: 950, clickGainRatio: 0.1, clickDecay: 0.012 };
     case 'industrial-stomp':
-      return { startFreq: 150, endFreq: 28, pitchDecay: 0.08, decay: 0.58, gainRatio: 2.3, cutoffRatio: 0.7 };
+      return { startFreq: 150, endFreq: 28, pitchDecay: 0.08, decay: 0.58, gainRatio: 2.3, cutoffRatio: 0.7, shapeAmount: 0.45, clickFreq: 720, clickGainRatio: 0.14, clickDecay: 0.018 };
+    case 'short-click':
+      return { startFreq: 170, endFreq: 42, pitchDecay: 0.045, decay: 0.22, gainRatio: 1.35, cutoffRatio: 1.35, clickFreq: 2100, clickGainRatio: 0.18, clickDecay: 0.01 };
+    case 'sub-boom':
+      return { startFreq: 92, endFreq: 24, pitchDecay: 0.22, decay: 0.72, gainRatio: 1.65, cutoffRatio: 0.68 };
+    case 'rubber-kick':
+      return { startFreq: 118, endFreq: 34, pitchDecay: 0.16, decay: 0.46, gainRatio: 1.72, cutoffRatio: 1.05, shapeAmount: 0.14, clickFreq: 1050, clickGainRatio: 0.06, clickDecay: 0.014 };
+    case 'dusty-tap':
+      return { startFreq: 108, endFreq: 48, pitchDecay: 0.055, decay: 0.18, gainRatio: 0.92, cutoffRatio: 0.55, clickFreq: 680, clickGainRatio: 0.08, clickDecay: 0.012 };
+    case 'hard-ping':
+      return { startFreq: 210, endFreq: 45, pitchDecay: 0.04, decay: 0.28, gainRatio: 1.7, cutoffRatio: 1.5, shapeAmount: 0.36, clickFreq: 2600, clickGainRatio: 0.22, clickDecay: 0.009 };
     case 'deep-sine':
     default:
       return { startFreq: 120, endFreq: 30, pitchDecay: 0.14, decay: 0.45, gainRatio: 1.8, cutoffRatio: 1 };
