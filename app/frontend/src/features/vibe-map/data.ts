@@ -60,7 +60,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     bassFilter: { cutoff: 350,  q: 0.6 },
     noiseFilter: { cutoff: 8000, q: 0.5 },  // 空気感のあるやさしいハット
     chordStabFilter: { cutoff: 1400, q: 0.8 },
-    dubDelay: { repeats: 4, stepOffset: 2, feedbackGain: 0.38 },
+    dubDelay: { repeats: 4, stepOffset: 2, feedbackGain: 0.38, analog: true },
     melodySuggested: true,
   },
 
@@ -152,6 +152,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     noiseFilter: { cutoff: 8000, q: 0.9 },  // 均一で催眠的なオフビートハット
     chordStabFilter: { cutoff: 1050, q: 1.3 },
     dubDelay: { repeats: 4, stepOffset: 2, feedbackGain: 0.36 },
+    filterSweep: { target: 'bass', startRatio: 0.25, endRatio: 1.0 },
     melodySuggested: true,
   },
 
@@ -196,6 +197,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     noiseFilter: { cutoff: 7500, q: 0.6 },  // ソフトで温かいハット
     chordStabFilter: { cutoff: 1200, q: 0.8 },
     dubDelay: { repeats: 4, stepOffset: 3, feedbackGain: 0.35 },
+    filterSweep: { target: 'both', startRatio: 0.4, endRatio: 1.1 },
     melodySuggested: true,
   },
 
@@ -218,6 +220,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     noiseFilter: { cutoff: 5200, q: 0.9 },
     chordStabFilter: { cutoff: 780, q: 1.5 },
     dubDelay: { repeats: 5, stepOffset: 3, feedbackGain: 0.43 },
+    filterSweep: { target: 'bass', startRatio: 0.18, endRatio: 1.0 },
     melodySuggested: true,
   },
 
@@ -396,6 +399,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     noiseFilter: { cutoff: 3500, q: 3.5 },  // 高Q共鳴で金属的なきしみノイズ
     chordStabFilter: { cutoff: 800, q: 2.0 },
     dubDelay: { repeats: 3, stepOffset: 3, feedbackGain: 0.46 },
+    waveshape: { target: 'both', amount: 0.72 },
     melodySuggested: true,
   },
 
@@ -433,7 +437,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     chordStabPattern: [false, false, false, true, false, false, false, false, false, false, true, false, false, false, false, true],
     soundLayers: [
       { role: 'bass', descriptor: 'floating whole-tone bass, unresolved' },
-      { role: 'pad',  descriptor: 'deconstructed reverb cluster, no tonal center' },
+      { role: 'pad',  descriptor: 'bell-like chord stab, metallic decay' },
       { role: 'drum', descriptor: 'displaced kick, metric ambiguity' },
     ],
     bpmRange: [125, 132],
@@ -464,7 +468,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     bassFilter: { cutoff: 350,  q: 1.0 },
     noiseFilter: { cutoff: 9000, q: 0.8 }, // クラシックなクローズドハット
     chordStabFilter: { cutoff: 1500, q: 1.0 },
-    dubDelay: { repeats: 4, stepOffset: 3, feedbackGain: 0.34 },
+    dubDelay: { repeats: 4, stepOffset: 3, feedbackGain: 0.34, analog: true },
     melodySuggested: true,
   },
 
@@ -478,14 +482,14 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     chordStabPattern: STAB_DUB,
     soundLayers: [
       { role: 'bass', descriptor: 'rounded open sub, filtered warmth' },
-      { role: 'pad',  descriptor: 'wide minor9 chord stab, bright dub delay tail' },
+      { role: 'pad',  descriptor: 'hollow organ chord stab, bright dub delay tail' },
       { role: 'drum', descriptor: 'soft four-on-floor kick with airy hat ticks' },
     ],
     soundVariants: {
       kick: 'soft-909',
       bass: 'triangle-round',
       noise: 'closed-hat',
-      stab: 'wide-detuned',
+      stab: 'hollow-organ',
       space: 'spring-style',
     },
     bpmRange: [124, 130],
@@ -494,6 +498,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     noiseFilter: { cutoff: 7600, q: 0.8 },
     chordStabFilter: { cutoff: 1850, q: 0.7 },
     dubDelay: { repeats: 4, stepOffset: 2, feedbackGain: 0.32 },
+    filterSweep: { target: 'stab', startRatio: 0.35, endRatio: 1.2 },
     melodySuggested: true,
   },
 
@@ -547,6 +552,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     noiseFilter: { cutoff: 3000, q: 3.2 },  // 高Q狭帯域ノイズ — 金属的な腐食音
     chordStabFilter: { cutoff: 650, q: 2.4 },
     dubDelay: { repeats: 5, stepOffset: 3, feedbackGain: 0.58 },
+    waveshape: { target: 'bass', amount: 0.85 },
     melodySuggested: true,
   },
 
@@ -591,6 +597,7 @@ export const VIBE_MAP: Record<VibeId, MusicalSuggestion> = {
     noiseFilter: { cutoff: 7000, q: 3.0 },  // 鋭い高Q金属ノイズ
     chordStabFilter: { cutoff: 1100, q: 1.8 },
     dubDelay: { repeats: 3, stepOffset: 2, feedbackGain: 0.28 },
+    waveshape: { target: 'stab', amount: 0.55 },
     melodySuggested: true,
   },
 
@@ -727,7 +734,7 @@ export const VIBE_SOUND_VARIANTS: Record<VibeId, SoundVariantSelection> = {
     kick: 'muffled-room',
     bass: 'filtered-pulse',
     noise: 'bandpass-tick',
-    stab: 'wide-detuned',
+    stab: 'bell-like',
     space: 'dark-plate',
   },
   retrowave: {

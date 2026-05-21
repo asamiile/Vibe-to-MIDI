@@ -1,6 +1,6 @@
 export type KickVariantId = 'deep-sine' | 'soft-909' | 'muffled-room' | 'saturated-thump' | 'industrial-stomp';
 export type BassVariantId = 'saw-sub' | 'sine-sub' | 'triangle-round' | 'filtered-pulse';
-export type StabVariantId = 'saw-minor' | 'square-saw' | 'sampled-chord-like' | 'wide-detuned';
+export type StabVariantId = 'saw-minor' | 'square-saw' | 'sampled-chord-like' | 'wide-detuned' | 'hollow-organ' | 'bell-like';
 export type NoiseVariantId = 'tape-hiss' | 'closed-hat' | 'vinyl-floor' | 'bandpass-tick' | 'noise-burst' | 'noise-floor' | 'resonant-crack';
 export type SpaceVariantId = 'short-dub' | 'deep-feedback' | 'spring-style' | 'dark-plate';
 
@@ -218,6 +218,24 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       source: 'detuned saw chord with stereo spread',
       target: 'poly synth track',
       fxRole: 'lowpass, width, dark reverb, dub delay',
+      playback: 'guidance',
+    },
+    {
+      id: 'hollow-organ',
+      name: 'Hollow organ',
+      type: 'Poly synth',
+      source: 'odd-harmonic additive chord (1st + 3rd + 5th partials)',
+      target: 'poly synth track',
+      fxRole: 'lowpass, dub delay',
+      playback: 'preview',
+    },
+    {
+      id: 'bell-like',
+      name: 'Bell-like',
+      type: 'Poly synth',
+      source: 'inharmonic additive chord (2nd + 4th + 7th partials)',
+      target: 'poly synth track',
+      fxRole: 'lowpass, short decay, dub delay',
       playback: 'guidance',
     },
   ],

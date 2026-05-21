@@ -18,6 +18,8 @@ import {
   type SoundConfiguration,
 } from '../features/vibe-map/sound-combinations';
 import { pickRandomBpm } from '../features/vibe-map/random-bpm';
+import { buildRandomStereoPan } from '../features/vibe-map/stereo-pan';
+import type { StereoPanSpec } from '../features/vibe-map/types';
 
 let _player: PlayerHandle | null = null;
 
@@ -27,6 +29,7 @@ interface AppState {
   activeSoundCombination: SoundCombination | null;
   activeChord: ChordCandidate | null;
   activeBpm: number | null;
+  activePan: StereoPanSpec | null;
   suggestion: MusicalSuggestion | null;
   isPlaying: boolean;
   activeLayers: Set<AudioLayer>;
@@ -39,8 +42,13 @@ interface AppState {
   setDevProAccess: (enabled: boolean) => void;
 }
 
-function startPlayback(suggestion: MusicalSuggestion, layers: Set<AudioLayer>, onHandle: (h: PlayerHandle) => void) {
-  playPreview(suggestion, { activeLayers: layers }).then(onHandle);
+function startPlayback(
+  suggestion: MusicalSuggestion,
+  layers: Set<AudioLayer>,
+  pan: StereoPanSpec | null,
+  onHandle: (h: PlayerHandle) => void
+) {
+  playPreview(suggestion, { activeLayers: layers, pan: pan ?? undefined }).then(onHandle);
 }
 
 // Picks a random vibe to use as a synthesis template (scale, mood, synth style).
@@ -57,6 +65,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   activeSoundCombination: null,
   activeChord: null,
   activeBpm: null,
+  activePan: null,
   suggestion: null,
   isPlaying: false,
   activeLayers: new Set(ALL_AUDIO_LAYERS),
@@ -68,6 +77,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const combination = buildRandomSoundCombination(soundConfigurations);
     const chord = pickChordCandidate(chordPool);
     const bpm = pickRandomBpm();
+    const pan = buildRandomStereoPan();
     const activeLayers = new Set(combination.layers);
     const suggestion = {
       ...applyChordCandidate(
@@ -84,11 +94,12 @@ export const useAppStore = create<AppState>((set, get) => ({
       activeSoundCombination: combination,
       activeChord: chord,
       activeBpm: bpm,
+      activePan: pan,
       suggestion,
       activeLayers,
       isPlaying: true,
     });
-    startPlayback(suggestion, activeLayers, (handle) => {
+    startPlayback(suggestion, activeLayers, pan, (handle) => {
       if (get().isPlaying) {
         _player = handle;
       } else {
@@ -98,12 +109,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   play: () => {
-    const { suggestion, activeLayers } = get();
+    const { suggestion, activeLayers, activePan } = get();
     if (!suggestion) return;
     _player?.stop();
     _player = null;
     set({ isPlaying: true });
-    startPlayback(suggestion, activeLayers, (handle) => {
+    startPlayback(suggestion, activeLayers, activePan, (handle) => {
       if (get().isPlaying) {
         _player = handle;
       } else {
@@ -119,7 +130,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   toggleLayer: (layer) => {
-    const { activeLayers, isPlaying, suggestion } = get();
+    const { activeLayers, isPlaying, suggestion, activePan } = get();
     const next = new Set(activeLayers);
     if (next.has(layer)) next.delete(layer);
     else next.add(layer);
@@ -127,7 +138,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (isPlaying && suggestion) {
       _player?.stop();
       _player = null;
-      startPlayback(suggestion, next, (handle) => {
+      startPlayback(suggestion, next, activePan, (handle) => {
         if (get().isPlaying) {
           _player = handle;
         } else {

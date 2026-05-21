@@ -14,10 +14,12 @@ import {
 } from '../vibe-map/sound-playback';
 import { AUDIO_PARAMS } from './constants';
 import type { AudioLayer } from './constants';
+import type { StereoPanSpec } from '../vibe-map/types';
 
 interface PlayOptions {
   gain?: number;
   activeLayers?: ReadonlySet<AudioLayer>;
+  pan?: StereoPanSpec;
 }
 
 export interface PlayerHandle {
@@ -30,9 +32,97 @@ type AudioCtx = NonNullable<Awaited<ReturnType<typeof getAudioContext>>>;
 type Oscillator = ReturnType<AudioCtx['createOscillator']>;
 type Gain = ReturnType<AudioCtx['createGain']>;
 
+interface AudioPanner {
+  pan: { value: number };
+  connect: (destination: unknown) => void;
+  disconnect: () => void;
+}
+
 interface ScheduledNode {
   oscillator: Oscillator;
   gain: Gain;
+  panner?: AudioPanner;
+  shaper?: WaveShaper;
+}
+
+function createPanner(ctx: AudioCtx, panValue: number): AudioPanner {
+  const panner = (ctx as unknown as { createStereoPanner: () => AudioPanner }).createStereoPanner();
+  panner.pan.value = panValue;
+  return panner;
+}
+
+interface AnalogDelayHandle {
+  input: Parameters<Gain['connect']>[0];
+  disconnect: () => void;
+}
+
+function createAnalogDelay(
+  ctx: AudioCtx,
+  delaySeconds: number,
+  feedbackGain: number,
+  filterFreq: number
+): AnalogDelayHandle {
+  type DelayNode = { delayTime: { value: number }; connect: (n: unknown) => void; disconnect: () => void };
+  const delay    = (ctx as unknown as { createDelay: (max: number) => DelayNode }).createDelay(delaySeconds + 0.01);
+  const feedback = ctx.createGain();
+  const filter   = ctx.createBiquadFilter();
+
+  delay.delayTime.value  = delaySeconds;
+  feedback.gain.value    = feedbackGain;
+  filter.type            = 'lowpass';
+  filter.frequency.value = filterFreq;
+
+  // feedback loop: delay → filter → feedback gain → delay
+  delay.connect(filter as unknown as Parameters<typeof delay.connect>[0]);
+  filter.connect(feedback);
+  feedback.connect(delay as unknown as Parameters<Gain['connect']>[0]);
+  delay.connect(ctx.destination as unknown as Parameters<typeof delay.connect>[0]);
+
+  return {
+    input: delay as unknown as Parameters<Gain['connect']>[0],
+    disconnect: () => {
+      delay.disconnect();
+      filter.disconnect();
+      feedback.disconnect();
+    },
+  };
+}
+
+type PeriodicWaveObj = object;
+
+function buildPeriodicWave(ctx: AudioCtx, real: number[], imag: number[]): PeriodicWaveObj {
+  return (ctx as unknown as {
+    createPeriodicWave: (r: Float32Array, i: Float32Array) => PeriodicWaveObj;
+  }).createPeriodicWave(new Float32Array(real), new Float32Array(imag));
+}
+
+// Odd harmonics only (1, 3, 5) — hollow organ / clarinet quality
+function hollowOrganWave(ctx: AudioCtx): PeriodicWaveObj {
+  return buildPeriodicWave(ctx, [0, 1, 0, 0.33, 0, 0.2], [0, 0, 0, 0, 0, 0]);
+}
+
+// Inharmonic partials (2, 4, 7) — metallic bell quality
+function bellLikeWave(ctx: AudioCtx): PeriodicWaveObj {
+  return buildPeriodicWave(ctx, [0, 0, 0.8, 0, 0.5, 0, 0, 0.3], [0, 0, 0, 0, 0, 0, 0, 0]);
+}
+
+function buildWaveshapeCurve(amount: number): Float32Array {
+  const samples = 256;
+  const curve = new Float32Array(samples);
+  const k = amount * 100;
+  for (let i = 0; i < samples; i++) {
+    const x = (i * 2) / samples - 1;
+    curve[i] = k === 0 ? x : ((Math.PI + k) * x) / (Math.PI + k * Math.abs(x));
+  }
+  return curve;
+}
+
+type WaveShaper = { curve: Float32Array | null; connect: (n: unknown) => void; disconnect: () => void };
+
+function createWaveShaper(ctx: AudioCtx, amount: number): WaveShaper {
+  const shaper = (ctx as unknown as { createWaveShaper: () => WaveShaper }).createWaveShaper();
+  shaper.curve = buildWaveshapeCurve(Math.max(0, Math.min(1, amount)));
+  return shaper;
 }
 
 function scheduleBass(
@@ -44,7 +134,10 @@ function scheduleBass(
   filterFreq: number,
   filterQ: number,
   type: OscillatorType,
-  scheduledNodes: ScheduledNode[]
+  scheduledNodes: ScheduledNode[],
+  sweep?: { startRatio: number; endRatio: number },
+  panValue?: number,
+  shapeAmount?: number
 ): void {
   const osc = ctx.createOscillator();
   const filter = ctx.createBiquadFilter();
@@ -54,17 +147,35 @@ function scheduleBass(
   osc.frequency.value = freq;
 
   filter.type = 'lowpass';
-  filter.frequency.value = filterFreq;
   filter.Q.value = filterQ;
+  if (sweep) {
+    filter.frequency.setValueAtTime(Math.max(filterFreq * sweep.startRatio, 20), startTime);
+    filter.frequency.exponentialRampToValueAtTime(Math.max(filterFreq * sweep.endRatio, 20), startTime + duration);
+  } else {
+    filter.frequency.value = filterFreq;
+  }
 
   gain.gain.setValueAtTime(0, startTime);
   gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.01);
   gain.gain.linearRampToValueAtTime(0, startTime + duration - 0.01);
 
   osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(ctx.destination);
-  scheduledNodes.push({ oscillator: osc, gain });
+  const shaper = shapeAmount !== undefined && shapeAmount > 0 ? createWaveShaper(ctx, shapeAmount) : undefined;
+  if (shaper) {
+    filter.connect(shaper as unknown as Parameters<Gain['connect']>[0]);
+    shaper.connect(gain);
+  } else {
+    filter.connect(gain);
+  }
+  if (panValue !== undefined) {
+    const panner = createPanner(ctx, panValue);
+    gain.connect(panner as unknown as Parameters<Gain['connect']>[0]);
+    panner.connect(ctx.destination);
+    scheduledNodes.push({ oscillator: osc, gain, panner, shaper });
+  } else {
+    gain.connect(ctx.destination);
+    scheduledNodes.push({ oscillator: osc, gain, shaper });
+  }
 
   osc.start(startTime);
   osc.stop(startTime + duration);
@@ -111,7 +222,8 @@ function scheduleNoise(
   noiseFilter: { cutoff: number; q: number },
   variant: NoiseVariantId,
   cleanupFns: Array<(t: number) => void>,
-  sustained = false
+  sustained = false,
+  panValue?: number
 ): void {
   const profile = getNoisePlaybackProfile(variant);
   const bandpass = ctx.createBiquadFilter();
@@ -142,7 +254,13 @@ function scheduleNoise(
 
   bandpass.connect(lowpass);
   lowpass.connect(gain);
-  gain.connect(ctx.destination);
+  const panner = panValue !== undefined ? createPanner(ctx, panValue) : undefined;
+  if (panner) {
+    gain.connect(panner as unknown as Parameters<Gain['connect']>[0]);
+    panner.connect(ctx.destination);
+  } else {
+    gain.connect(ctx.destination);
+  }
 
   const oscs = profile.freqs.map((freq, index) => {
     const osc = ctx.createOscillator();
@@ -158,6 +276,7 @@ function scheduleNoise(
     gain.gain.cancelScheduledValues(t);
     gain.gain.setValueAtTime(0, t);
     oscs.forEach((osc) => { try { osc.stop(t); } catch {} });
+    panner?.disconnect();
   });
 }
 
@@ -170,18 +289,31 @@ function scheduleSynth(
   filterFreq: number,
   filterQ: number,
   type: OscillatorType,
-  scheduledNodes: ScheduledNode[]
+  scheduledNodes: ScheduledNode[],
+  sweep?: { startRatio: number; endRatio: number },
+  panValue?: number,
+  shapeAmount?: number,
+  periodicWave?: PeriodicWaveObj
 ): void {
   const osc = ctx.createOscillator();
   const filter = ctx.createBiquadFilter();
   const gain = ctx.createGain();
 
-  osc.type = type;
+  if (periodicWave) {
+    (osc as unknown as { setPeriodicWave: (w: PeriodicWaveObj) => void }).setPeriodicWave(periodicWave);
+  } else {
+    osc.type = type;
+  }
   osc.frequency.value = freq;
 
   filter.type = 'lowpass';
-  filter.frequency.value = filterFreq;
   filter.Q.value = filterQ;
+  if (sweep) {
+    filter.frequency.setValueAtTime(Math.max(filterFreq * sweep.startRatio, 20), startTime);
+    filter.frequency.exponentialRampToValueAtTime(Math.max(filterFreq * sweep.endRatio, 20), startTime + duration);
+  } else {
+    filter.frequency.value = filterFreq;
+  }
 
   gain.gain.setValueAtTime(0, startTime);
   gain.gain.linearRampToValueAtTime(gainValue, startTime + 0.006);
@@ -189,9 +321,22 @@ function scheduleSynth(
   gain.gain.linearRampToValueAtTime(0, startTime + duration - 0.02);
 
   osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(ctx.destination);
-  scheduledNodes.push({ oscillator: osc, gain });
+  const shaper = shapeAmount !== undefined && shapeAmount > 0 ? createWaveShaper(ctx, shapeAmount) : undefined;
+  if (shaper) {
+    filter.connect(shaper as unknown as Parameters<Gain['connect']>[0]);
+    shaper.connect(gain);
+  } else {
+    filter.connect(gain);
+  }
+  if (panValue !== undefined) {
+    const panner = createPanner(ctx, panValue);
+    gain.connect(panner as unknown as Parameters<Gain['connect']>[0]);
+    panner.connect(ctx.destination);
+    scheduledNodes.push({ oscillator: osc, gain, panner, shaper });
+  } else {
+    gain.connect(ctx.destination);
+    scheduledNodes.push({ oscillator: osc, gain, shaper });
+  }
 
   osc.start(startTime);
   osc.stop(startTime + duration);
@@ -220,24 +365,34 @@ function scheduleChordStab(
   filterFreq: number,
   filterQ: number,
   variant: StabVariantId,
-  scheduledNodes: ScheduledNode[]
+  scheduledNodes: ScheduledNode[],
+  sweep?: { startRatio: number; endRatio: number },
+  panValue?: number,
+  shapeAmount?: number
 ): void {
+  const wave = variant === 'hollow-organ' ? hollowOrganWave(ctx)
+             : variant === 'bell-like'    ? bellLikeWave(ctx)
+             : undefined;
+  const bellDuration = variant === 'bell-like' ? duration * 0.5 : duration;
+
   midiNotes.forEach((midi, index) => {
     const baseFreq = noteFreq(midi);
     const voiceGain = gainValue / midiNotes.length;
     if (variant === 'square-saw') {
-      scheduleSynth(ctx, baseFreq, startTime, duration, voiceGain * 0.58, filterFreq, filterQ, 'sawtooth', scheduledNodes);
-      scheduleSynth(ctx, baseFreq, startTime, duration, voiceGain * 0.42, filterFreq * 0.88, filterQ, 'square', scheduledNodes);
+      scheduleSynth(ctx, baseFreq, startTime, duration, voiceGain * 0.58, filterFreq, filterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq, startTime, duration, voiceGain * 0.42, filterFreq * 0.88, filterQ, 'square', scheduledNodes, sweep, panValue, shapeAmount);
     } else if (variant === 'sampled-chord-like') {
-      scheduleSynth(ctx, baseFreq, startTime, duration * 0.72, voiceGain, filterFreq * 0.82, filterQ * 0.9, 'sawtooth', scheduledNodes);
+      scheduleSynth(ctx, baseFreq, startTime, duration * 0.72, voiceGain, filterFreq * 0.82, filterQ * 0.9, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
     } else if (variant === 'wide-detuned') {
-      scheduleSynth(ctx, baseFreq * 0.997, startTime, duration, voiceGain * 0.5, filterFreq, filterQ, 'sawtooth', scheduledNodes);
-      scheduleSynth(ctx, baseFreq * 1.003, startTime, duration, voiceGain * 0.5, filterFreq, filterQ, 'sawtooth', scheduledNodes);
+      scheduleSynth(ctx, baseFreq * 0.997, startTime, duration, voiceGain * 0.5, filterFreq, filterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq * 1.003, startTime, duration, voiceGain * 0.5, filterFreq, filterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+    } else if (wave) {
+      scheduleSynth(ctx, baseFreq, startTime, bellDuration, voiceGain, filterFreq, filterQ, 'sine', scheduledNodes, sweep, panValue, shapeAmount, wave);
     } else {
-      scheduleSynth(ctx, baseFreq, startTime, duration, voiceGain, filterFreq, filterQ, 'sawtooth', scheduledNodes);
+      scheduleSynth(ctx, baseFreq, startTime, duration, voiceGain, filterFreq, filterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
     }
     if (index === 0) {
-      scheduleSynth(ctx, noteFreq(midi - 12), startTime, duration, gainValue * 0.25, filterFreq, filterQ, 'sawtooth', scheduledNodes);
+      scheduleSynth(ctx, noteFreq(midi - 12), startTime, duration, gainValue * 0.25, filterFreq, filterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
     }
   });
 }
@@ -253,7 +408,7 @@ export async function playPreview(
   const rawBpm = getMidBpm(suggestion);
   const bpm = Math.max(AUDIO_PARAMS.bpmMin, Math.min(AUDIO_PARAMS.bpmMax, rawBpm));
   const stepDuration = 60 / bpm / 4;
-  const { gain = 0.3, activeLayers } = options;
+  const { gain = 0.3, activeLayers, pan } = options;
   const soundVariants = suggestion.soundVariants ?? DEFAULT_SOUND_VARIANTS;
   const soundMix = suggestion.soundMix ?? DEFAULT_SOUND_MIX;
 
@@ -273,10 +428,20 @@ export async function playPreview(
   );
   const noiseDuration   = AUDIO_PARAMS.noise.decayMs / 1000;
   const melodySteps     = playMelody ? buildMelodySteps(suggestion) : [];
+  const filterSweep     = suggestion.filterSweep;
+  const bassSweep       = (filterSweep?.target === 'bass' || filterSweep?.target === 'both') ? filterSweep : undefined;
+  const stabSweep       = (filterSweep?.target === 'stab' || filterSweep?.target === 'both') ? filterSweep : undefined;
+  const waveshape       = suggestion.waveshape;
+  const bassShape       = (waveshape?.target === 'bass' || waveshape?.target === 'both') ? waveshape.amount : undefined;
+  const stabShape       = (waveshape?.target === 'stab' || waveshape?.target === 'both') ? waveshape.amount : undefined;
 
   const now = ctx.currentTime + 0.05;
   const activeNodes: ScheduledNode[] = [];
   const activeCleanupFns: Array<(t: number) => void> = [];
+
+  const bassPan  = pan?.bass;
+  const noisePan = pan?.noise;
+  const stabPan  = pan?.stab;
 
   function schedulePattern(
     loopAt: number,
@@ -296,7 +461,10 @@ export async function playPreview(
             bassFilterFreq * voice.cutoffRatio,
             bassFilterQ,
             voice.type,
-            nodeAcc
+            nodeAcc,
+            bassSweep,
+            bassPan,
+            bassShape
           );
         });
       });
@@ -311,32 +479,45 @@ export async function playPreview(
       const noiseProfile = getNoisePlaybackProfile(soundVariants.noise);
       const noiseGain = gain * soundMix.noise * AUDIO_PARAMS.noise.gainRatio * noiseProfile.gainRatio;
       if (noiseProfile.continuous) {
-        scheduleNoise(ctx, loopAt, loopDuration, noiseGain, noiseFilterSpec, soundVariants.noise, cleanupAcc, true);
+        scheduleNoise(ctx, loopAt, loopDuration, noiseGain, noiseFilterSpec, soundVariants.noise, cleanupAcc, true, noisePan);
       } else {
         suggestion.noisePattern.forEach((hit, step) => {
           if (!hit) return;
-          scheduleNoise(ctx, loopAt + step * stepDuration, noiseDuration, noiseGain, noiseFilterSpec, soundVariants.noise, cleanupAcc);
+          scheduleNoise(ctx, loopAt + step * stepDuration, noiseDuration, noiseGain, noiseFilterSpec, soundVariants.noise, cleanupAcc, false, noisePan);
         });
       }
     }
     if (playMelody) {
-      melodySteps.forEach(({ midiNotes, step, durationSteps }) => {
-        const start = loopAt + step * stepDuration;
-        scheduleChordStab(ctx, midiNotes, start, durationSteps * stepDuration, gain * soundMix.stab * AUDIO_PARAMS.melody.gainRatio, stabFilterSpec.cutoff, stabFilterSpec.q, soundVariants.stab, nodeAcc);
-        for (let repeat = 1; repeat <= dubDelay.repeats; repeat += 1) {
-          scheduleChordStab(
-            ctx,
-            midiNotes,
-            start + repeat * dubDelay.stepOffset * stepDuration,
-            durationSteps * stepDuration,
-            gain * soundMix.stab * AUDIO_PARAMS.melody.gainRatio * Math.pow(dubDelay.feedbackGain, repeat),
-            stabFilterSpec.cutoff,
-            stabFilterSpec.q,
-            soundVariants.stab,
-            nodeAcc
-          );
-        }
-      });
+      if (dubDelay.analog) {
+        const delaySeconds = dubDelay.stepOffset * stepDuration;
+        const analogDelay = createAnalogDelay(ctx, delaySeconds, dubDelay.feedbackGain, stabFilterSpec.cutoff * 0.7);
+        cleanupAcc.push(() => analogDelay.disconnect());
+        melodySteps.forEach(({ midiNotes, step, durationSteps }) => {
+          const start = loopAt + step * stepDuration;
+          const hitNodes: ScheduledNode[] = [];
+          scheduleChordStab(ctx, midiNotes, start, durationSteps * stepDuration, gain * soundMix.stab * AUDIO_PARAMS.melody.gainRatio, stabFilterSpec.cutoff, stabFilterSpec.q, soundVariants.stab, hitNodes, stabSweep, stabPan, stabShape);
+          hitNodes.forEach(({ gain: g }) => g.connect(analogDelay.input));
+          nodeAcc.push(...hitNodes);
+        });
+      } else {
+        melodySteps.forEach(({ midiNotes, step, durationSteps }) => {
+          const start = loopAt + step * stepDuration;
+          scheduleChordStab(ctx, midiNotes, start, durationSteps * stepDuration, gain * soundMix.stab * AUDIO_PARAMS.melody.gainRatio, stabFilterSpec.cutoff, stabFilterSpec.q, soundVariants.stab, nodeAcc, stabSweep, stabPan, stabShape);
+          for (let repeat = 1; repeat <= dubDelay.repeats; repeat += 1) {
+            scheduleChordStab(
+              ctx,
+              midiNotes,
+              start + repeat * dubDelay.stepOffset * stepDuration,
+              durationSteps * stepDuration,
+              gain * soundMix.stab * AUDIO_PARAMS.melody.gainRatio * Math.pow(dubDelay.feedbackGain, repeat),
+              stabFilterSpec.cutoff,
+              stabFilterSpec.q,
+              soundVariants.stab,
+              nodeAcc
+            );
+          }
+        });
+      }
     }
   }
 
@@ -356,9 +537,11 @@ export async function playPreview(
 
     // Disconnect nodes from this loop after they have finished playing
     const cleanupTimer = setTimeout(() => {
-      loopNodes.forEach(({ oscillator, gain: g }) => {
+      loopNodes.forEach(({ oscillator, gain: g, panner, shaper }) => {
         oscillator.disconnect?.();
         g.disconnect?.();
+        panner?.disconnect();
+        shaper?.disconnect();
       });
       loopNodes.forEach((n) => {
         const i = activeNodes.indexOf(n);
@@ -382,12 +565,14 @@ export async function playPreview(
       clearTimeout(loopTimer);
       cleanupTimers.forEach(clearTimeout);
       const t = ctx.currentTime;
-      activeNodes.splice(0).forEach(({ oscillator, gain: g }) => {
+      activeNodes.splice(0).forEach(({ oscillator, gain: g, panner, shaper }) => {
         g.gain.cancelScheduledValues(t);
         g.gain.setValueAtTime(0, t);
         try { oscillator.stop(t); } catch {}
         oscillator.disconnect?.();
         g.disconnect?.();
+        panner?.disconnect();
+        shaper?.disconnect();
       });
       activeCleanupFns.splice(0).forEach((fn) => fn(t));
     },

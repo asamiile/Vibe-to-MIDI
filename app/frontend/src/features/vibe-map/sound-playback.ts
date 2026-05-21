@@ -44,6 +44,7 @@ export interface DubDelaySpec {
   repeats: number;
   stepOffset: number;
   feedbackGain: number;
+  analog?: boolean;
 }
 
 export function getKickPlaybackProfile(variant: KickVariantId): KickPlaybackProfile {
