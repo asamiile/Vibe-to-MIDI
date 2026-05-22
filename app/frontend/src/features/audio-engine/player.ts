@@ -649,7 +649,12 @@ export async function playPreview(
     if (stopped) return;
     const loopNodes: ScheduledNode[] = [];
     const loopCleanups: Array<(t: number) => void> = [];
-    schedulePattern(loopStart, loopNodes, loopCleanups);
+    try {
+      schedulePattern(loopStart, loopNodes, loopCleanups);
+    } catch {
+      stopped = true;
+      return;
+    }
     activeNodes.push(...loopNodes);
     activeCleanupFns.push(...loopCleanups);
 

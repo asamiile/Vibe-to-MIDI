@@ -67,6 +67,10 @@ function startPlayback(
       return;
     }
     onHandle(handle);
+  }).catch(() => {
+    if (token === _playbackToken) {
+      useAppStore.setState({ isPlaying: false });
+    }
   });
 }
 
