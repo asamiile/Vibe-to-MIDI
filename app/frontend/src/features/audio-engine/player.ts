@@ -571,9 +571,9 @@ export async function playPreview(
             bassFilterQ,
             voice.type,
             nodeAcc,
-            bassSweep,
+            voice.sweep ?? bassSweep,
             bassPan,
-            bassShape
+            voice.shapeAmount ?? bassShape
           );
         });
       });
@@ -597,9 +597,15 @@ export async function playPreview(
       }
     }
     if (playMelody) {
+      const stabProfile = getStabPlaybackProfile(soundVariants.stab);
       if (dubDelay.analog) {
         const delaySeconds = dubDelay.stepOffset * stepDuration;
-        const analogDelay = createAnalogDelay(ctx, delaySeconds, dubDelay.feedbackGain, stabFilterSpec.cutoff * 0.7);
+        const analogDelay = createAnalogDelay(
+          ctx,
+          delaySeconds,
+          dubDelay.feedbackGain * stabProfile.delaySendRatio,
+          stabFilterSpec.cutoff * stabProfile.repeatFilterRatio
+        );
         cleanupAcc.push(() => analogDelay.disconnect());
         melodySteps.forEach(({ midiNotes, step, durationSteps }) => {
           const start = loopAt + step * stepDuration;
@@ -617,12 +623,15 @@ export async function playPreview(
               ctx,
               midiNotes,
               start + repeat * dubDelay.stepOffset * stepDuration,
-              durationSteps * stepDuration,
-              gain * soundMix.stab * AUDIO_PARAMS.melody.gainRatio * Math.pow(dubDelay.feedbackGain, repeat),
-              stabFilterSpec.cutoff,
+              durationSteps * stepDuration * stabProfile.repeatDurationRatio,
+              gain * soundMix.stab * AUDIO_PARAMS.melody.gainRatio * stabProfile.delaySendRatio * Math.pow(dubDelay.feedbackGain, repeat),
+              stabFilterSpec.cutoff * Math.pow(stabProfile.repeatFilterRatio, repeat),
               stabFilterSpec.q,
               soundVariants.stab,
-              nodeAcc
+              nodeAcc,
+              undefined,
+              stabPan,
+              stabProfile.repeatShapeAmount,
             );
           }
         });
