@@ -295,7 +295,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
               textTransform: 'uppercase',
             }}
           >
-            Result · {view.resultWord}
+            Loop feels · {view.resultWord}
           </Text>
         </View>
 
