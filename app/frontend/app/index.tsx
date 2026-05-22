@@ -10,11 +10,11 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Constants from 'expo-constants';
 import { useAppStore } from '../src/data/store';
 import { isAudioAvailable } from '../src/features/audio-engine/adapter';
 import { PlaybackVisual } from '../src/components/ui/PlaybackVisual';
 import { SuggestionPanel } from '../src/components/ui/SuggestionPanel';
+import { getAppRuntimeMetadata } from '../src/lib/app-metadata';
 import { openAllowedExternalUrl, PRIVACY_POLICY_URL } from '../src/lib/external-links';
 import { withSettingsReturn } from '../src/lib/navigation';
 import { MIST, FONT } from '../src/styles/theme';
@@ -97,6 +97,15 @@ function SettingsModal({
   onLicenses: () => void;
   onDebugAudio: () => void;
 }) {
+  const metadata = getAppRuntimeMetadata();
+  const metadataRows = [
+    ['VERSION', metadata.version],
+    ['BUILD', metadata.nativeBuild],
+    ['PACKAGE', metadata.packageName],
+    ['EAS PROJECT', metadata.easProjectId],
+    ['RUNTIME', metadata.executionEnvironment],
+  ] as const;
+
   return (
     <Modal
       visible={visible}
@@ -165,10 +174,16 @@ function SettingsModal({
               </View>
             </Pressable>
           ))}
-          <View style={{ paddingVertical: 20, paddingHorizontal: 24 }}>
-            <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textGhost, letterSpacing: 1.5 }}>
-              VERSION {Constants.expoConfig?.version ?? '—'}
-            </Text>
+          <View style={{ paddingVertical: 20, paddingHorizontal: 24, gap: 7 }}>
+            {metadataRows.map(([label, value]) => (
+              <Text
+                key={label}
+                selectable
+                style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textGhost, letterSpacing: 1.3 }}
+              >
+                {label} {value}
+              </Text>
+            ))}
           </View>
         </ScrollView>
       </SafeAreaView>

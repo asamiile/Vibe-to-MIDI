@@ -92,6 +92,40 @@ Add:
 
 Keep generated MIDI simple and reliable before adding advanced arrangement features.
 
+## Phase 3.5: Release Operations Prep
+
+Goal:
+
+Prepare the first public Android release so crashes, bad updates, support
+reports, and app-version issues can be diagnosed without adding unnecessary
+analytics.
+
+Research:
+
+- `research/features/2026-05-23_release-operations-observability/`
+
+Current implementation status:
+
+- Settings exposes selectable runtime diagnostics for support reports.
+- Release operations plan lives in `.agents/security-ci-release.md`.
+
+Before release:
+
+- Add Sentry and source map upload for EAS Build.
+- If EAS Update is enabled, add source map upload and rollback/fix-forward
+  runbook.
+- Update privacy policy for crash diagnostics.
+- Keep Google Play Android vitals as the store-quality source of truth.
+- Create a manual release smoke-test checklist for Android audio/video.
+
+After release:
+
+- Monitor Sentry and Google Play Android vitals.
+- Triage launch crashes, foreground crashes, ANRs, audio/video failures, then
+  lower-priority UI defects.
+- Add Remote Config, Firebase, EAS Observe, or RevenueCat webhooks only when the
+  specific operational need exists.
+
 ## Phase 4: Mac App Strategy
 
 Only after the Android MVP proves useful:
