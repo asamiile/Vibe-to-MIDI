@@ -70,7 +70,7 @@ Git and commit only app-ready compressed assets.
 Use this naming pattern:
 
 ```text
-{plan}-playback-loop-{visual-theme}-{index}.mp4
+{plan}_{art-work}_{orientation}.mp4
 ```
 
 Allowed `plan` values:
@@ -78,13 +78,18 @@ Allowed `plan` values:
 - `free` for assets available to every user
 - `pro` for paid-plan assets gated by entitlement checks
 
-Use lowercase kebab-case for `visual-theme`, and two-digit numbering for
-`index` (`01`, `02`, `03`). Example names:
+Use lowercase kebab-case for `art-work`. Allowed `orientation` values:
+
+- `portrait` for vertical phone-first videos, usually 720x1280
+- `landscape` for horizontal videos, usually 1280x720
+
+Example names:
 
 ```text
-free-playback-loop-bioluminescent-network-01.mp4
-pro-playback-loop-deep-grid-01.mp4
-pro-playback-loop-dust-field-01.mp4
+free_bioluminescent-network_portrait.mp4
+free_bioluminescent-network_landscape.mp4
+pro_deep-grid_portrait.mp4
+pro_deep-grid_landscape.mp4
 ```
 
 If adding a Pro visual, wire selection through entitlement-aware metadata rather

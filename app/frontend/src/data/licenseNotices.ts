@@ -22,9 +22,19 @@ export const AUDIO_NOTICE =
 
 export const BUNDLED_ASSET_LICENSE_NOTICES: readonly AssetLicenseNotice[] = [
   {
-    name: 'free-playback-loop-bioluminescent-network-01.mp4',
+    name: 'free_bioluminescent-network_landscape.mp4',
     kind: 'video',
-    source: 'app/frontend/assets/visuals/free-playback-loop-bioluminescent-network-01.mp4',
+    source: 'app/frontend/assets/visuals/free_bioluminescent-network_landscape.mp4',
+    creator: 'Project owner',
+    license: 'Original app asset',
+    attributionRequired: false,
+    redistributionAllowed: true,
+    dateChecked: '2026-05-22',
+  },
+  {
+    name: 'free_bioluminescent-network_portrait.mp4',
+    kind: 'video',
+    source: 'app/frontend/assets/visuals/free_bioluminescent-network_portrait.mp4',
     creator: 'Project owner',
     license: 'Original app asset',
     attributionRequired: false,
