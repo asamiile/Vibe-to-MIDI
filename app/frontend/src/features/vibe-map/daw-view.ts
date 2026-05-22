@@ -13,6 +13,7 @@ import {
   getEffectiveDubDelay,
   getKickPlaybackProfile,
   getNoisePlaybackProfile,
+  getStabPlaybackProfile,
 } from './sound-playback';
 import { getMidBpm } from './engine';
 import type { MusicalSuggestion } from './types';
@@ -93,6 +94,7 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
   const kickPlayback = getKickPlaybackProfile(soundVariants.kick);
   const bassPlaybackVoices = getBassPlaybackVoices(soundVariants.bass);
   const noisePlayback = getNoisePlaybackProfile(soundVariants.noise);
+  const stabPlayback = getStabPlaybackProfile(soundVariants.stab);
   const playbackDubDelay = getEffectiveDubDelay(dubDelay, soundVariants.space);
   const kickPlaybackCutoff = Math.round(kickFilter.cutoff * kickPlayback.cutoffRatio);
   const noisePlaybackCutoff = Math.min(Math.round(noiseFilter.cutoff * noisePlayback.cutoffRatio), 8200);
@@ -100,7 +102,11 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
   const bassVoiceSettings = bassPlaybackVoices
     .map((voice) => {
       const octave = voice.octaveOffset === 0 ? 'root' : `+${voice.octaveOffset} semitones`;
-      return `${voice.type} ${octave} gain ${(voice.gainRatio * 100).toFixed(0)}% cutoff ${Math.round(bassFilter.cutoff * voice.cutoffRatio)} Hz`;
+      const movement = voice.sweep
+        ? ` sweep ${(voice.sweep.startRatio * 100).toFixed(0)}% -> ${(voice.sweep.endRatio * 100).toFixed(0)}%`
+        : '';
+      const drive = voice.shapeAmount ? ` drive ${(voice.shapeAmount * 100).toFixed(0)}%` : '';
+      return `${voice.type} ${octave} gain ${(voice.gainRatio * 100).toFixed(0)}% cutoff ${Math.round(bassFilter.cutoff * voice.cutoffRatio)} Hz${movement}${drive}`;
     })
     .join('; ');
   const noisePartials = noisePlayback.freqs
@@ -184,7 +190,7 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
         type: stabVariant.type,
         source: stabVariant.source,
         target: stabVariant.target,
-        fx: `${stabVariant.fxRole}; track gain ${(soundMix.stab * 100).toFixed(0)}%; lowpass ${stabFilter.cutoff} Hz Q ${stabFilter.q} -> ${spaceVariant.name} (${spaceVariant.fxRole})`,
+        fx: `${stabVariant.fxRole}; track gain ${(soundMix.stab * 100).toFixed(0)}%; lowpass ${stabFilter.cutoff} Hz Q ${stabFilter.q}; echo send ${(stabPlayback.delaySendRatio * 100).toFixed(0)}%, repeat filter ${(stabPlayback.repeatFilterRatio * 100).toFixed(0)}% -> ${spaceVariant.name} (${spaceVariant.fxRole})`,
         alternatives: soundVariantOptions('stab', soundVariants.stab),
       },
       {
@@ -193,7 +199,7 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
         type: spaceVariant.type,
         source: spaceVariant.source,
         target: spaceVariant.target,
-        fx: `${playbackDubDelay.repeats} repeats; repeat every ${playbackDubDelay.stepOffset} steps; feedback gain ${(playbackDubDelay.feedbackGain * 100).toFixed(0)}%`,
+        fx: `${playbackDubDelay.repeats} repeats; repeat every ${playbackDubDelay.stepOffset} steps; feedback gain ${(playbackDubDelay.feedbackGain * 100).toFixed(0)}%; repeat darkening ${(stabPlayback.repeatFilterRatio * 100).toFixed(0)}% per echo`,
         alternatives: soundVariantOptions('space', soundVariants.space),
       },
     ],
@@ -212,11 +218,11 @@ export function buildDawStepsView(suggestion: MusicalSuggestion): DawStepsView {
       },
       {
         label: 'Chord stab',
-        value: `${stabVariant.name}; ${stabVariant.source}; attack ${AUDIO_PARAMS.melody.attackMs} ms; decay ${AUDIO_PARAMS.melody.decayMs} ms; sustain ${(AUDIO_PARAMS.melody.sustainRatio * 100).toFixed(0)}%; track gain ${(soundMix.stab * 100).toFixed(0)}%; lowpass ${stabFilter.cutoff} Hz Q ${stabFilter.q}`,
+        value: `${stabVariant.name}; ${stabVariant.source}; attack ${AUDIO_PARAMS.melody.attackMs} ms; duration ${(stabPlayback.durationRatio * 100).toFixed(0)}%; echo send ${(stabPlayback.delaySendRatio * 100).toFixed(0)}%; repeat filter ${(stabPlayback.repeatFilterRatio * 100).toFixed(0)}%; track gain ${(soundMix.stab * 100).toFixed(0)}%; lowpass ${stabFilter.cutoff} Hz Q ${stabFilter.q}`,
       },
       {
         label: 'Dub echo',
-        value: `${spaceVariant.name}; ${playbackDubDelay.repeats} repeats; repeat every ${playbackDubDelay.stepOffset} steps; feedback gain ${(playbackDubDelay.feedbackGain * 100).toFixed(0)}%`,
+        value: `${spaceVariant.name}; ${playbackDubDelay.repeats} repeats; repeat every ${playbackDubDelay.stepOffset} steps; feedback gain ${(playbackDubDelay.feedbackGain * 100).toFixed(0)}%; repeat duration ${(stabPlayback.repeatDurationRatio * 100).toFixed(0)}%; repeat darkening ${(stabPlayback.repeatFilterRatio * 100).toFixed(0)}%`,
       },
     ],
   };

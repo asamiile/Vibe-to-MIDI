@@ -33,6 +33,8 @@ export interface BassPlaybackVoice {
   octaveOffset: number;
   gainRatio: number;
   cutoffRatio: number;
+  sweep?: { startRatio: number; endRatio: number };
+  shapeAmount?: number;
 }
 
 export interface NoisePlaybackProfile {
@@ -52,6 +54,10 @@ export interface StabPlaybackProfile {
   cutoffRatio: number;
   qRatio: number;
   octaveShadow?: boolean;
+  delaySendRatio: number;
+  repeatFilterRatio: number;
+  repeatDurationRatio: number;
+  repeatShapeAmount?: number;
 }
 
 export interface DubDelaySpec {
@@ -101,17 +107,17 @@ export function getBassPlaybackVoices(variant: BassVariantId): readonly BassPlay
       ];
     case 'filtered-pulse':
       return [
-        { type: 'square', octaveOffset: 0, gainRatio: 0.8, cutoffRatio: 0.75 },
+        { type: 'square', octaveOffset: 0, gainRatio: 0.8, cutoffRatio: 0.75, sweep: { startRatio: 1.28, endRatio: 0.72 }, shapeAmount: 0.08 },
         { type: 'triangle', octaveOffset: 12, gainRatio: 0.16, cutoffRatio: 0.9 },
       ];
     case 'acid-round':
       return [
-        { type: 'square', octaveOffset: 0, gainRatio: 0.72, cutoffRatio: 1.35 },
-        { type: 'sawtooth', octaveOffset: 12, gainRatio: 0.16, cutoffRatio: 1.55 },
+        { type: 'square', octaveOffset: 0, gainRatio: 0.72, cutoffRatio: 1.35, sweep: { startRatio: 1.35, endRatio: 0.62 }, shapeAmount: 0.16 },
+        { type: 'sawtooth', octaveOffset: 12, gainRatio: 0.16, cutoffRatio: 1.55, sweep: { startRatio: 1.2, endRatio: 0.7 }, shapeAmount: 0.1 },
       ];
     case 'dub-pluck-sub':
       return [
-        { type: 'sine', octaveOffset: 0, gainRatio: 0.85, cutoffRatio: 0.62 },
+        { type: 'sine', octaveOffset: 0, gainRatio: 0.85, cutoffRatio: 0.62, sweep: { startRatio: 1.18, endRatio: 0.64 } },
         { type: 'triangle', octaveOffset: 12, gainRatio: 0.1, cutoffRatio: 0.75 },
       ];
     case 'wide-low-mid':
@@ -122,12 +128,12 @@ export function getBassPlaybackVoices(variant: BassVariantId): readonly BassPlay
       ];
     case 'distorted-rumble':
       return [
-        { type: 'sawtooth', octaveOffset: 0, gainRatio: 0.82, cutoffRatio: 0.65 },
-        { type: 'square', octaveOffset: 12, gainRatio: 0.18, cutoffRatio: 0.85 },
+        { type: 'sawtooth', octaveOffset: 0, gainRatio: 0.82, cutoffRatio: 0.65, sweep: { startRatio: 0.9, endRatio: 0.54 }, shapeAmount: 0.3 },
+        { type: 'square', octaveOffset: 12, gainRatio: 0.18, cutoffRatio: 0.85, shapeAmount: 0.2 },
       ];
     case 'sine-drop':
       return [
-        { type: 'sine', octaveOffset: 0, gainRatio: 1.02, cutoffRatio: 0.72 },
+        { type: 'sine', octaveOffset: 0, gainRatio: 1.02, cutoffRatio: 0.72, sweep: { startRatio: 1.08, endRatio: 0.68 } },
         { type: 'triangle', octaveOffset: 12, gainRatio: 0.09, cutoffRatio: 0.9 },
       ];
     case 'saw-sub':
@@ -264,6 +270,9 @@ export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProf
         gainRatio: 0.92,
         cutoffRatio: 0.9,
         qRatio: 1.05,
+        delaySendRatio: 1.08,
+        repeatFilterRatio: 0.78,
+        repeatDurationRatio: 0.92,
       };
     case 'octave-shadow':
       return {
@@ -273,6 +282,9 @@ export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProf
         cutoffRatio: 1.08,
         qRatio: 0.95,
         octaveShadow: true,
+        delaySendRatio: 1.18,
+        repeatFilterRatio: 0.74,
+        repeatDurationRatio: 1.08,
       };
     case 'short-muted':
       return {
@@ -281,6 +293,9 @@ export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProf
         gainRatio: 0.86,
         cutoffRatio: 0.62,
         qRatio: 1.25,
+        delaySendRatio: 0.68,
+        repeatFilterRatio: 0.62,
+        repeatDurationRatio: 0.72,
       };
     case 'long-smear':
       return {
@@ -289,6 +304,10 @@ export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProf
         gainRatio: 0.72,
         cutoffRatio: 0.78,
         qRatio: 0.82,
+        delaySendRatio: 1.35,
+        repeatFilterRatio: 0.72,
+        repeatDurationRatio: 1.18,
+        repeatShapeAmount: 0.08,
       };
     case 'inverted-stab':
       return {
@@ -299,6 +318,9 @@ export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProf
         gainRatio: 0.9,
         cutoffRatio: 0.96,
         qRatio: 1,
+        delaySendRatio: 1.02,
+        repeatFilterRatio: 0.76,
+        repeatDurationRatio: 1,
       };
     default:
       return {
@@ -307,6 +329,10 @@ export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProf
         gainRatio: 1,
         cutoffRatio: 1,
         qRatio: 1,
+        delaySendRatio: variant === 'bell-like' ? 0.72 : 1,
+        repeatFilterRatio: variant === 'bell-like' ? 0.82 : 0.76,
+        repeatDurationRatio: variant === 'sampled-chord-like' ? 0.84 : 1,
+        repeatShapeAmount: variant === 'wide-detuned' ? 0.06 : undefined,
       };
   }
 }

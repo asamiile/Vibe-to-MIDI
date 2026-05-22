@@ -55,6 +55,14 @@ describe('sound playback profiles', () => {
       expect(['sine', 'triangle', 'sawtooth', 'square']).toContain(voice.type);
       expect(voice.gainRatio).toBeGreaterThan(0);
       expect(voice.cutoffRatio).toBeGreaterThan(0);
+      if (voice.sweep) {
+        expect(voice.sweep.startRatio).toBeGreaterThan(0);
+        expect(voice.sweep.endRatio).toBeGreaterThan(0);
+      }
+      if (voice.shapeAmount !== undefined) {
+        expect(voice.shapeAmount).toBeGreaterThan(0);
+        expect(voice.shapeAmount).toBeLessThanOrEqual(0.55);
+      }
     });
   });
 
@@ -82,6 +90,14 @@ describe('sound playback profiles', () => {
     expect(profile.gainRatio).toBeGreaterThan(0);
     expect(profile.cutoffRatio).toBeGreaterThan(0);
     expect(profile.qRatio).toBeGreaterThan(0);
+    expect(profile.delaySendRatio).toBeGreaterThan(0);
+    expect(profile.repeatFilterRatio).toBeGreaterThan(0);
+    expect(profile.repeatFilterRatio).toBeLessThanOrEqual(1);
+    expect(profile.repeatDurationRatio).toBeGreaterThan(0);
+    if (profile.repeatShapeAmount !== undefined) {
+      expect(profile.repeatShapeAmount).toBeGreaterThan(0);
+      expect(profile.repeatShapeAmount).toBeLessThanOrEqual(0.55);
+    }
   });
 
   it.each(SPACE_VARIANTS)('returns a bounded delay profile for %s', (variant) => {
