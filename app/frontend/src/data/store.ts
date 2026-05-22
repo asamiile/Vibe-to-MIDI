@@ -28,6 +28,7 @@ import { pickKickRhythmProfile } from '../features/vibe-map/kick-rhythm';
 import { pickRandomBpm } from '../features/vibe-map/random-bpm';
 import { buildRandomStereoPan } from '../features/vibe-map/stereo-pan';
 import type { StereoPanSpec } from '../features/vibe-map/types';
+import { DEFAULT_PLAYBACK_ARTWORK_ID } from '../features/playback-visuals/artworks';
 
 let _player: PlayerHandle | null = null;
 let _playbackToken = 0;
@@ -44,10 +45,12 @@ interface AppState {
   activeLayers: Set<AudioLayer>;
   hasProAccess: boolean;
   proAccessSource: 'none' | 'dev-preview' | 'store';
+  activeArtworkId: string;
   playRandomSoundCombination: () => void;
   play: () => void;
   stop: () => void;
   toggleLayer: (layer: AudioLayer) => void;
+  setActiveArtworkId: (artworkId: string) => void;
   setDevProAccess: (enabled: boolean) => void;
 }
 
@@ -94,6 +97,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   activeLayers: new Set(ALL_AUDIO_LAYERS),
   hasProAccess: false,
   proAccessSource: 'none',
+  activeArtworkId: DEFAULT_PLAYBACK_ARTWORK_ID,
 
   playRandomSoundCombination: () => {
     const { chordPool, soundConfigurations } = get();
@@ -175,6 +179,10 @@ export const useAppStore = create<AppState>((set, get) => ({
         }
       });
     }
+  },
+
+  setActiveArtworkId: (artworkId) => {
+    set({ activeArtworkId: artworkId });
   },
 
   setDevProAccess: (enabled) => {

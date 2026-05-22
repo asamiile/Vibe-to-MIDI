@@ -36,6 +36,11 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# large local source media
+/assets/visuals/*.mp4
+!/assets/visuals/free_bioluminescent-network_landscape.mp4
+!/assets/visuals/free_bioluminescent-network_portrait.mp4
+
 # generated native folders
 /ios
 /android

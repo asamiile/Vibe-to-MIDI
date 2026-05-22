@@ -75,6 +75,18 @@ eas build --profile development --platform android
 npx expo run:android
 ```
 
+For iOS local development:
+
+```bash
+npx expo run:ios
+```
+
+Then start Metro for the installed dev build:
+
+```bash
+npx expo start --dev-client
+```
+
 After the first build, JS changes hot-reload without rebuilding.
 
 ### Licenses and notices
