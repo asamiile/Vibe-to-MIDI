@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { useAppStore } from '../src/data/store';
 import { isAudioAvailable } from '../src/features/audio-engine/adapter';
+import { PlaybackVisual } from '../src/components/ui/PlaybackVisual';
 import { SuggestionPanel } from '../src/components/ui/SuggestionPanel';
 import { openAllowedExternalUrl, PRIVACY_POLICY_URL } from '../src/lib/external-links';
 import { withSettingsReturn } from '../src/lib/navigation';
@@ -248,7 +249,8 @@ export default function HomeScreen() {
               right={<NavLink label="≡" onPress={() => setSettingsVisible(true)} />}
             />
 
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              <PlaybackVisual isPlaying={isPlaying} />
               <Pressable
                 android_disableSound
                 accessibilityRole="button"
@@ -263,7 +265,9 @@ export default function HomeScreen() {
                   justifyContent: 'center',
                   borderWidth: 1,
                   borderColor: isPlaying ? MIST.accent : MIST.hairline,
+                  backgroundColor: isPlaying ? 'rgba(10,10,10,0.36)' : 'rgba(10,10,10,0.62)',
                   opacity: !audioAvailable ? 0.35 : pressed ? 0.62 : 1,
+                  zIndex: 1,
                 })}
               >
                 <Text

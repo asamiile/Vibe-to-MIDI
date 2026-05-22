@@ -32,7 +32,8 @@
     },
     "plugins": [
       "expo-router",
-      "react-native-audio-api"
+      "react-native-audio-api",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

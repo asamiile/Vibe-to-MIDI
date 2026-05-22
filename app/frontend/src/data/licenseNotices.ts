@@ -8,7 +8,7 @@ export interface LicenseNotice {
 
 export interface AssetLicenseNotice {
   name: string;
-  kind: 'audio' | 'midi' | 'image' | 'font' | 'other';
+  kind: 'audio' | 'midi' | 'image' | 'video' | 'font' | 'other';
   source: string;
   creator: string;
   license: string;
@@ -20,7 +20,18 @@ export interface AssetLicenseNotice {
 export const AUDIO_NOTICE =
   'Preview audio is generated at runtime with oscillator synthesis. No third-party audio files, loops, stems, samples, or MIDI files are bundled in the current app.';
 
-export const BUNDLED_ASSET_LICENSE_NOTICES: readonly AssetLicenseNotice[] = [];
+export const BUNDLED_ASSET_LICENSE_NOTICES: readonly AssetLicenseNotice[] = [
+  {
+    name: 'free-playback-loop-bioluminescent-network-01.mp4',
+    kind: 'video',
+    source: 'app/frontend/assets/visuals/free-playback-loop-bioluminescent-network-01.mp4',
+    creator: 'Project owner',
+    license: 'Original app asset',
+    attributionRequired: false,
+    redistributionAllowed: true,
+    dateChecked: '2026-05-22',
+  },
+];
 
 export const RUNTIME_LICENSE_NOTICES: readonly LicenseNotice[] = [
   { packageName: '@tonejs/midi', license: 'MIT', repository: 'https://github.com/Tonejs/Midi' },
@@ -30,6 +41,7 @@ export const RUNTIME_LICENSE_NOTICES: readonly LicenseNotice[] = [
   { packageName: 'expo-linking', license: 'MIT', repository: 'https://github.com/expo/expo' },
   { packageName: 'expo-router', license: 'MIT', repository: 'https://github.com/expo/expo' },
   { packageName: 'expo-status-bar', license: 'MIT', repository: 'https://github.com/expo/expo' },
+  { packageName: 'expo-video', license: 'MIT', repository: 'https://github.com/expo/expo' },
   { packageName: 'nativewind', license: 'MIT', repository: 'https://github.com/marklawlor/nativewind' },
   { packageName: 'react', license: 'MIT', repository: 'https://github.com/facebook/react' },
   { packageName: 'react-native', license: 'MIT', repository: 'https://github.com/facebook/react-native' },

@@ -62,6 +62,34 @@ If adding an audio file, also add license metadata:
 - attribution requirement
 - date checked
 
+## Bundled Visual Assets
+
+For playback-loop videos and other bundled visual media, keep source files out of
+Git and commit only app-ready compressed assets.
+
+Use this naming pattern:
+
+```text
+{plan}-playback-loop-{visual-theme}-{index}.mp4
+```
+
+Allowed `plan` values:
+
+- `free` for assets available to every user
+- `pro` for paid-plan assets gated by entitlement checks
+
+Use lowercase kebab-case for `visual-theme`, and two-digit numbering for
+`index` (`01`, `02`, `03`). Example names:
+
+```text
+free-playback-loop-bioluminescent-network-01.mp4
+pro-playback-loop-deep-grid-01.mp4
+pro-playback-loop-dust-field-01.mp4
+```
+
+If adding a Pro visual, wire selection through entitlement-aware metadata rather
+than hard-coding a paid asset as the default playback visual.
+
 ## Paid Assets
 
 Paid tools can be useful for producing original sounds, but their output must be reviewed.

@@ -28,6 +28,24 @@ See [../../.agents/tech-stack.md](../../.agents/tech-stack.md) for library decis
 
 Once installed, JS/TS code changes hot-reload without rebuilding. Rebuild is only needed when adding/removing native modules or changing `app.json` native config.
 
+### Local dev build commands
+
+From `app/frontend`:
+
+```bash
+# Android emulator / connected Android device
+npx expo run:android
+
+# iOS simulator / connected iOS device
+npx expo run:ios
+```
+
+Then start Metro for the installed dev build:
+
+```bash
+npx expo start --dev-client
+```
+
 ---
 
 ## Tests
