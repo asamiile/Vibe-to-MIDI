@@ -1,9 +1,7 @@
 import React from 'react';
 import { useWindowDimensions, View } from 'react-native';
+import { getPlaybackArtwork } from '../../features/playback-visuals/artworks';
 import { MIST } from '../../styles/theme';
-
-const PLAYBACK_LOOP_LANDSCAPE = require('../../../assets/visuals/free_bioluminescent-network_landscape.mp4');
-const PLAYBACK_LOOP_PORTRAIT = require('../../../assets/visuals/free_bioluminescent-network_portrait.mp4');
 
 type ExpoVideoModule = typeof import('expo-video');
 type PlaybackVisualOrientation = 'landscape' | 'portrait';
@@ -19,20 +17,25 @@ function loadExpoVideo(): ExpoVideoModule | null {
 
 interface Props {
   isPlaying: boolean;
+  artworkId: string;
 }
 
-export function PlaybackVisual({ isPlaying }: Props) {
+interface PlaybackStateProps {
+  isPlaying: boolean;
+}
+
+export function PlaybackVisual({ isPlaying, artworkId }: Props) {
   const { width, height } = useWindowDimensions();
   const expoVideo = React.useMemo(() => loadExpoVideo(), []);
   const orientation: PlaybackVisualOrientation = height >= width ? 'portrait' : 'landscape';
-  const source = orientation === 'portrait' ? PLAYBACK_LOOP_PORTRAIT : PLAYBACK_LOOP_LANDSCAPE;
+  const source = getPlaybackArtwork(artworkId).sources[orientation];
 
   if (!expoVideo) {
     return <PlaybackVisualFallback isPlaying={isPlaying} />;
   }
   return (
     <PlaybackVideo
-      key={orientation}
+      key={`${artworkId}-${orientation}`}
       expoVideo={expoVideo}
       isPlaying={isPlaying}
       source={source}
@@ -44,7 +47,7 @@ function PlaybackVideo({
   expoVideo,
   isPlaying,
   source,
-}: Props & {
+}: PlaybackStateProps & {
   expoVideo: ExpoVideoModule;
   source: number;
 }) {
@@ -95,7 +98,7 @@ function PlaybackVideo({
   );
 }
 
-function PlaybackVisualFallback({ isPlaying }: Props) {
+function PlaybackVisualFallback({ isPlaying }: PlaybackStateProps) {
   return (
     <View
       pointerEvents="none"

@@ -183,6 +183,7 @@ export default function HomeScreen() {
   const activeChord = useAppStore((state) => state.activeChord);
   const suggestion = useAppStore((state) => state.suggestion);
   const isPlaying = useAppStore((state) => state.isPlaying);
+  const activeArtworkId = useAppStore((state) => state.activeArtworkId);
   const playRandomSoundCombination = useAppStore((state) => state.playRandomSoundCombination);
   const audioAvailable = isAudioAvailable();
   const [viewMode, setViewMode] = useState<ViewMode>('listen');
@@ -250,7 +251,7 @@ export default function HomeScreen() {
             />
 
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-              <PlaybackVisual isPlaying={isPlaying} />
+              <PlaybackVisual isPlaying={isPlaying} artworkId={activeArtworkId} />
               <Pressable
                 android_disableSound
                 accessibilityRole="button"

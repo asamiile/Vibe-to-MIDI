@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, Pressable, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppStore } from '../../data/store';
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
@@ -8,6 +7,10 @@ import { WaveformVisualizer } from './WaveformVisualizer';
 import { ALL_AUDIO_LAYERS } from '../../features/audio-engine/constants';
 import type { AudioLayer } from '../../features/audio-engine/constants';
 import { isProFeatureEnabled } from '../../features/entitlements/pro-features';
+import {
+  getPlaybackArtwork,
+  getSelectablePlaybackArtworks,
+} from '../../features/playback-visuals/artworks';
 import { MIST, FONT } from '../../styles/theme';
 
 const LAYER_LABELS: Record<AudioLayer, string> = {
@@ -18,8 +21,8 @@ const LAYER_LABELS: Record<AudioLayer, string> = {
 };
 
 export function PlayerBar() {
-  const router = useRouter();
   const { bottom } = useSafeAreaInsets();
+  const [artPickerVisible, setArtPickerVisible] = React.useState(false);
   const {
     activeSoundCombination,
     activeChord,
@@ -30,9 +33,13 @@ export function PlayerBar() {
     activeLayers,
     toggleLayer,
     hasProAccess,
+    activeArtworkId,
+    setActiveArtworkId,
   } = useAppStore();
   const audioAvailable = isAudioAvailable();
   const artEnabled = isProFeatureEnabled('generative_art_playback', hasProAccess);
+  const activeArtwork = getPlaybackArtwork(activeArtworkId);
+  const selectableArtworks = getSelectablePlaybackArtworks(hasProAccess);
 
   const idle = !suggestion;
   const activeLabel = [
@@ -87,25 +94,27 @@ export function PlayerBar() {
             );
           })}
           <View style={{ flex: 1 }} />
-          <Pressable
-            android_disableSound
-            onPress={() => {
-              if (!artEnabled) router.push('/pro');
-            }}
-            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 4 })}
-          >
-            <Text
-              style={{
-                fontFamily: FONT.mono,
-                fontSize: 9,
-                fontWeight: '500',
-                letterSpacing: 2.2,
-                color: artEnabled && isPlaying ? MIST.accent : MIST.textGhost,
-              }}
+          {artEnabled && (
+            <Pressable
+              android_disableSound
+              accessibilityRole="button"
+              accessibilityLabel="アートワークを選択"
+              onPress={() => setArtPickerVisible(true)}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 4 })}
             >
-              ART {artEnabled ? 'READY' : 'PRO'}
-            </Text>
-          </Pressable>
+              <Text
+                style={{
+                  fontFamily: FONT.mono,
+                  fontSize: 9,
+                  fontWeight: '500',
+                  letterSpacing: 2.2,
+                  color: isPlaying ? MIST.accent : MIST.textGhost,
+                }}
+              >
+                ART: {activeArtwork.shortLabel}
+              </Text>
+            </Pressable>
+          )}
         </View>
       )}
 
@@ -152,6 +161,104 @@ export function PlayerBar() {
           {activeLabel || '— tap play —'}
         </Text>
       </View>
+
+      <Modal
+        visible={artPickerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setArtPickerVisible(false)}
+      >
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="アートワーク選択を閉じる"
+          onPress={() => setArtPickerVisible(false)}
+          style={{
+            flex: 1,
+            justifyContent: 'flex-end',
+            backgroundColor: 'rgba(0,0,0,0.58)',
+          }}
+        >
+          <Pressable
+            onPress={(event) => event.stopPropagation()}
+            style={{
+              borderTopWidth: 1,
+              borderTopColor: MIST.hairline,
+              backgroundColor: MIST.bg,
+              paddingHorizontal: 24,
+              paddingTop: 18,
+              paddingBottom: bottom + 18,
+              gap: 14,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+              <Text
+                style={{
+                  fontFamily: FONT.mono,
+                  fontSize: 10,
+                  fontWeight: '500',
+                  letterSpacing: 2.2,
+                  color: MIST.textFaint,
+                }}
+              >
+                ARTWORK
+              </Text>
+              <Pressable
+                android_disableSound
+                onPress={() => setArtPickerVisible(false)}
+                style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 6 })}
+              >
+                <Text
+                  style={{
+                    fontFamily: FONT.mono,
+                    fontSize: 10,
+                    fontWeight: '500',
+                    letterSpacing: 2.2,
+                    color: MIST.textFaint,
+                  }}
+                >
+                  CLOSE
+                </Text>
+              </Pressable>
+            </View>
+
+            {selectableArtworks.map((artwork) => {
+              const selected = artwork.id === activeArtworkId;
+              return (
+                <Pressable
+                  key={artwork.id}
+                  android_disableSound
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => {
+                    setActiveArtworkId(artwork.id);
+                    setArtPickerVisible(false);
+                  }}
+                  style={({ pressed }) => ({
+                    opacity: pressed ? 0.62 : 1,
+                    borderWidth: 1,
+                    borderColor: selected ? MIST.accent : MIST.hairline,
+                    backgroundColor: selected ? MIST.accentDim : 'transparent',
+                    paddingHorizontal: 16,
+                    paddingVertical: 16,
+                    borderRadius: 8,
+                  })}
+                >
+                  <Text
+                    style={{
+                      fontFamily: FONT.sans,
+                      fontSize: 15,
+                      fontWeight: '400',
+                      color: selected ? MIST.accent : MIST.text,
+                    }}
+                  >
+                    {artwork.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
