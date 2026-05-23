@@ -1,23 +1,15 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      bump_type:
-        description: 'Version bump type'
-        required: true
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
+  push:
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   release:
-    name: Bump version and create release
+    name: Auto-detect bump type and release
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -27,20 +19,56 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Skip if version bump commit
+        id: check
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          if echo "$COMMIT_MSG" | grep -q "^chore: bump version to v"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Configure git
+        if: steps.check.outputs.skip == 'false'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Detect bump type from conventional commits
+        if: steps.check.outputs.skip == 'false'
+        id: detect
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s")
+          else
+            COMMITS=$(git log "${LAST_TAG}..HEAD" --pretty=format:"%s")
+          fi
+
+          BUMP_TYPE="patch"
+          if echo "$COMMITS" | grep -qE "^(\w+)(\(.+\))?!:|^BREAKING CHANGE:"; then
+            BUMP_TYPE="major"
+          elif echo "$COMMITS" | grep -qE "^feat(\(.+\))?:"; then
+            BUMP_TYPE="minor"
+          fi
+
+          echo "bump_type=$BUMP_TYPE" >> "$GITHUB_OUTPUT"
+          echo "Detected: $BUMP_TYPE"
+          echo "--- commits since last tag ---"
+          echo "$COMMITS"
+
       - name: Bump version
+        if: steps.check.outputs.skip == 'false'
         id: bump
         run: |
           CURRENT_VERSION=$(jq -r '.expo.version' app.json)
           CURRENT_VERSION_CODE=$(jq -r '.expo.android.versionCode' app.json)
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
 
-          case "${{ inputs.bump_type }}" in
+          case "${{ steps.detect.outputs.bump_type }}" in
             major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
             minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
             patch) PATCH=$((PATCH + 1)) ;;
@@ -53,7 +81,6 @@ jobs:
             '.expo.version = $v | .expo.android.versionCode = $vc | .expo.ios.buildNumber = $bn' \
             app.json > app.json.tmp && mv app.json.tmp app.json
 
-          # Update package.json version to match
           jq --arg v "$NEW_VERSION" '.version = $v' \
             package.json > package.json.tmp && mv package.json.tmp package.json
 
@@ -62,6 +89,7 @@ jobs:
           echo "Bumped $CURRENT_VERSION -> $NEW_VERSION (versionCode: $CURRENT_VERSION_CODE -> $NEW_VERSION_CODE)"
 
       - name: Commit and tag
+        if: steps.check.outputs.skip == 'false'
         run: |
           git add app.json package.json
           git commit -m "chore: bump version to v${{ steps.bump.outputs.new_version }}"
@@ -69,6 +97,7 @@ jobs:
           git push origin HEAD:main --follow-tags
 
       - name: Create GitHub Release
+        if: steps.check.outputs.skip == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
