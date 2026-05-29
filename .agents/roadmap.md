@@ -70,10 +70,11 @@ Batch these in a dedicated design phase.
 
 ### 1. Persistence
 
-- [ ] Choose persistence approach.
-- [ ] Save favorite generated ideas.
-- [ ] Restore saved ideas into playback/MIDI/Learn views.
-- [ ] Add tests for saved idea serialization.
+- [x] Choose persistence approach — expo-file-system/legacy + JSON
+- [x] Save favorite generated ideas — bookmark button in PlayerBar, duplicate guard via `isCurrentIdeaSaved`
+- [x] Restore saved ideas into playback/MIDI/Learn views — Saved Ideas modal, tap to load
+- [x] Add tests for saved idea serialization — 4 tests passing
+- [ ] QA on device — verify file read/write, load playback, delete
 
 ### 2. Billing
 

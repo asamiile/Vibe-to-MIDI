@@ -143,6 +143,8 @@ export function PlayerBar() {
     hasProAccess,
     activeArtworkId,
     setActiveArtworkId,
+    saveCurrentIdea,
+    isCurrentIdeaSaved,
   } = useAppStore();
   const audioAvailable = isAudioAvailable();
   const artEnabled = isProFeatureEnabled('generative_art_playback', hasProAccess);
@@ -285,6 +287,22 @@ export function PlayerBar() {
         >
           {activeLabel || '— tap play —'}
         </Text>
+        {suggestion && (
+          <Pressable
+            android_disableSound
+            accessibilityRole="button"
+            accessibilityLabel="現在のアイデアを保存"
+            disabled={isCurrentIdeaSaved}
+            onPress={() => { void saveCurrentIdea(); }}
+            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 4 })}
+          >
+            <MaterialIcons
+              name={isCurrentIdeaSaved ? 'bookmark' : 'bookmark-border'}
+              size={20}
+              color={isCurrentIdeaSaved ? MIST.accent : MIST.textFaint}
+            />
+          </Pressable>
+        )}
       </View>
 
       <Modal
