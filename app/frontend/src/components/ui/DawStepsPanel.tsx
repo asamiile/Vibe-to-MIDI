@@ -9,6 +9,7 @@ import { playAuditionChord, playAuditionNote } from '../../features/audio-engine
 import { useAppStore } from '../../data/store';
 import { isProFeatureEnabled } from '../../features/entitlements/pro-features';
 import { buildMidiExport } from '../../features/midi-export/export-midi';
+import { shareMidiExport } from '../../features/midi-export/share-midi';
 import { MIST, FONT } from '../../styles/theme';
 import { KickStepGrid } from './KickStepGrid';
 
@@ -181,11 +182,13 @@ function TrackNameBar({
 
 function MidiExportBar({
   enabled,
+  busy,
   message,
   onExport,
   onUpgrade,
 }: {
   enabled: boolean;
+  busy: boolean;
   message: string | null;
   onExport: () => void;
   onUpgrade: () => void;
@@ -201,9 +204,10 @@ function MidiExportBar({
     >
       <Pressable
         android_disableSound
+        disabled={busy}
         onPress={enabled ? onExport : onUpgrade}
         style={({ pressed }) => ({
-          opacity: pressed ? 0.65 : 1,
+          opacity: busy ? 0.5 : pressed ? 0.65 : 1,
           paddingVertical: 12,
           paddingHorizontal: 14,
           borderWidth: 1,
@@ -222,7 +226,7 @@ function MidiExportBar({
             textTransform: 'uppercase',
           }}
         >
-          {enabled ? 'Generate .mid' : 'Export MIDI · Pro'}
+          {enabled ? (busy ? 'Exporting .mid' : 'Export .mid') : 'Export MIDI · Pro'}
         </Text>
       </Pressable>
       <Text
@@ -235,7 +239,7 @@ function MidiExportBar({
         }}
         numberOfLines={2}
       >
-        {message ?? (enabled ? 'Create the current loop as DAW-ready MIDI data.' : 'Unlock .mid export for DAW editing.')}
+        {message ?? (enabled ? 'Share the current loop as a DAW-ready MIDI file.' : 'Unlock .mid export for DAW editing.')}
       </Text>
     </View>
   );
@@ -334,6 +338,7 @@ export function DawStepsPanel({ suggestion }: Props) {
   const [activeTab, setActiveTab] = React.useState<MidiTab>('pattern');
   const [playingKey, setPlayingKey] = React.useState<string | null>(null);
   const [midiExportMessage, setMidiExportMessage] = React.useState<string | null>(null);
+  const [midiExportBusy, setMidiExportBusy] = React.useState(false);
   const playTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const view = React.useMemo(() => buildDawStepsView(suggestion), [suggestion]);
   const audioAvailable = isAudioAvailable();
@@ -364,9 +369,19 @@ export function DawStepsPanel({ suggestion }: Props) {
     playTimer.current = setTimeout(() => setPlayingKey(null), 900);
   }
 
-  function handleMidiExport() {
-    const exported = buildMidiExport(suggestion);
-    setMidiExportMessage(`${exported.filename} · ${exported.bytes.length} bytes ready`);
+  async function handleMidiExport() {
+    if (midiExportBusy) return;
+    setMidiExportBusy(true);
+    setMidiExportMessage(null);
+    try {
+      const exported = buildMidiExport(suggestion);
+      const shared = await shareMidiExport(exported);
+      setMidiExportMessage(`${shared.filename} ready to share`);
+    } catch {
+      setMidiExportMessage('MIDI export failed. Try again from a development build.');
+    } finally {
+      setMidiExportBusy(false);
+    }
   }
 
   const chordNotesLabel = view.audition.chordNotes.map((note) => note.label).join(' ');
@@ -403,8 +418,9 @@ export function DawStepsPanel({ suggestion }: Props) {
 
       <MidiExportBar
         enabled={midiExportEnabled}
+        busy={midiExportBusy}
         message={midiExportMessage}
-        onExport={handleMidiExport}
+        onExport={() => { void handleMidiExport(); }}
         onUpgrade={() => router.push('/pro')}
       />
 
