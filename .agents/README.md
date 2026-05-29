@@ -32,6 +32,18 @@ Start from `../AGENTS.md`, then open only the file relevant to your task.
 - `feature-delivery-flow.md`: research basis -> implementation branch -> develop -> test workflow
 - `agent-strategy.md`: installed skills policy, sub-agent usage, task splitting
 
+## Guardrail References
+
+- Product direction: `product.md`
+- Music direction: `music-direction.md`
+- Tech stack and commands: `tech-stack.md`
+- Android dev build: `android-dev-guide.md`
+- Design direction: `design-system.md`
+- Entitlements and billing: `entitlements.md`
+- Security and release: `security-ci-release.md`
+- Audio and visual licensing: `audio-licensing.md`
+- Feature delivery workflow: `feature-delivery-flow.md`
+
 ## Installed Skills
 
 Installed skills live under `skills-lock.json` and `.agents/skills/**`.
