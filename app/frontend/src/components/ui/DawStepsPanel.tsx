@@ -1,11 +1,15 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import type { MusicalSuggestion } from '../../features/vibe-map/types';
 import { buildDawStepsView } from '../../features/vibe-map/daw-view';
 import type { DawNoteView } from '../../features/vibe-map/daw-view';
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
 import { playAuditionChord, playAuditionNote } from '../../features/audio-engine/audition';
 import { useAppStore } from '../../data/store';
+import { isProFeatureEnabled } from '../../features/entitlements/pro-features';
+import { buildMidiExport } from '../../features/midi-export/export-midi';
+import { shareMidiExport } from '../../features/midi-export/share-midi';
 import { MIST, FONT } from '../../styles/theme';
 import { KickStepGrid } from './KickStepGrid';
 
@@ -176,6 +180,71 @@ function TrackNameBar({
   );
 }
 
+function MidiExportBar({
+  enabled,
+  busy,
+  message,
+  onExport,
+  onUpgrade,
+}: {
+  enabled: boolean;
+  busy: boolean;
+  message: string | null;
+  onExport: () => void;
+  onUpgrade: () => void;
+}) {
+  return (
+    <View
+      style={{
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: MIST.hairline,
+      }}
+    >
+      <Pressable
+        android_disableSound
+        disabled={busy}
+        onPress={enabled ? onExport : onUpgrade}
+        style={({ pressed }) => ({
+          opacity: busy ? 0.5 : pressed ? 0.65 : 1,
+          paddingVertical: 12,
+          paddingHorizontal: 14,
+          borderWidth: 1,
+          borderColor: enabled ? MIST.accent : MIST.hairlineX,
+          backgroundColor: enabled ? MIST.accentDim : 'transparent',
+          alignItems: 'center',
+        })}
+      >
+        <Text
+          style={{
+            fontFamily: FONT.mono,
+            fontSize: 10,
+            fontWeight: '500',
+            letterSpacing: 2.2,
+            color: enabled ? MIST.accent : MIST.text,
+            textTransform: 'uppercase',
+          }}
+        >
+          {enabled ? (busy ? 'Exporting .mid' : 'Export .mid') : 'Export MIDI · Pro'}
+        </Text>
+      </Pressable>
+      <Text
+        style={{
+          marginTop: 8,
+          fontFamily: FONT.sans,
+          fontSize: 11,
+          color: message ? MIST.textMute : MIST.textFaint,
+          lineHeight: 16,
+        }}
+        numberOfLines={2}
+      >
+        {message ?? (enabled ? 'Share the current loop as a DAW-ready MIDI file.' : 'Unlock .mid export for DAW editing.')}
+      </Text>
+    </View>
+  );
+}
+
 function AuditionPill({
   label,
   disabled,
@@ -265,13 +334,18 @@ function hitStepsLabel(pattern?: readonly boolean[]): string {
 }
 
 export function DawStepsPanel({ suggestion }: Props) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = React.useState<MidiTab>('pattern');
   const [playingKey, setPlayingKey] = React.useState<string | null>(null);
+  const [midiExportMessage, setMidiExportMessage] = React.useState<string | null>(null);
+  const [midiExportBusy, setMidiExportBusy] = React.useState(false);
   const playTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const view = React.useMemo(() => buildDawStepsView(suggestion), [suggestion]);
   const audioAvailable = isAudioAvailable();
   const isPlaying = useAppStore((state) => state.isPlaying);
   const stop = useAppStore((state) => state.stop);
+  const hasProAccess = useAppStore((state) => state.hasProAccess);
+  const midiExportEnabled = isProFeatureEnabled('midi_export', hasProAccess);
   const stopPreviewBeforeAudition = React.useCallback(() => {
     if (isPlaying) stop();
   }, [isPlaying, stop]);
@@ -283,12 +357,31 @@ export function DawStepsPanel({ suggestion }: Props) {
     }
   }, []);
 
+  React.useEffect(() => {
+    setMidiExportMessage(null);
+  }, [suggestion]);
+
   function auditPlay(key: string, fn: () => void) {
     if (playTimer.current) clearTimeout(playTimer.current);
     stopPreviewBeforeAudition();
     setPlayingKey(key);
     fn();
     playTimer.current = setTimeout(() => setPlayingKey(null), 900);
+  }
+
+  async function handleMidiExport() {
+    if (midiExportBusy) return;
+    setMidiExportBusy(true);
+    setMidiExportMessage(null);
+    try {
+      const exported = buildMidiExport(suggestion);
+      const shared = await shareMidiExport(exported);
+      setMidiExportMessage(`${shared.filename} ready to share`);
+    } catch {
+      setMidiExportMessage('MIDI export failed. Try again from a development build.');
+    } finally {
+      setMidiExportBusy(false);
+    }
   }
 
   const chordNotesLabel = view.audition.chordNotes.map((note) => note.label).join(' ');
@@ -322,6 +415,14 @@ export function DawStepsPanel({ suggestion }: Props) {
           />
         ))}
       </View>
+
+      <MidiExportBar
+        enabled={midiExportEnabled}
+        busy={midiExportBusy}
+        message={midiExportMessage}
+        onExport={() => { void handleMidiExport(); }}
+        onUpgrade={() => router.push('/pro')}
+      />
 
       <View style={{ width: '100%', alignSelf: 'stretch', padding: 24, paddingBottom: 32 }}>
 
