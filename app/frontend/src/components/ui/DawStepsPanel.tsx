@@ -1,14 +1,13 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
 import type { MusicalSuggestion } from '../../features/vibe-map/types';
 import { buildDawStepsView } from '../../features/vibe-map/daw-view';
 import type { DawNoteView } from '../../features/vibe-map/daw-view';
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
 import { playAuditionChord, playAuditionNote } from '../../features/audio-engine/audition';
 import { useAppStore } from '../../data/store';
-import { isProFeatureEnabled } from '../../features/entitlements/pro-features';
 import { MIST, FONT } from '../../styles/theme';
+import { KickStepGrid } from './KickStepGrid';
 
 interface Props {
   suggestion: MusicalSuggestion;
@@ -17,7 +16,6 @@ interface Props {
 type MidiTab = 'pattern' | 'notes' | 'sound';
 const MIDI_TABS: readonly MidiTab[] = ['pattern', 'notes', 'sound'];
 const TAB_LABELS: Record<MidiTab, string> = { pattern: 'Pattern', notes: 'Notes', sound: 'Sound' };
-const STEP_LABELS = ['1', 'e', '&', 'a'];
 
 function AMiniLabel({ children }: { children: string }) {
   return (
@@ -36,33 +34,27 @@ function AMiniLabel({ children }: { children: string }) {
   );
 }
 
-function AHairline() {
-  return <View style={{ height: 1, backgroundColor: MIST.hairlineX, marginBottom: 4 }} />;
-}
-
-function ARow({ label, value }: { label: string; value: string }) {
+function ValueBlock({
+  label,
+  value,
+  mono = true,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'baseline',
-        justifyContent: 'space-between',
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: MIST.hairline,
-      }}
-    >
+    <View style={{ marginBottom: 12 }}>
       <AMiniLabel>{label}</AMiniLabel>
       <Text
         style={{
-          fontFamily: FONT.mono,
+          fontFamily: mono ? FONT.mono : FONT.sans,
           fontSize: 13,
           color: MIST.text,
           fontWeight: '400',
           letterSpacing: 0.4,
-          flexShrink: 1,
-          marginLeft: 8,
-          textAlign: 'right',
+          lineHeight: 19,
+          marginTop: 3,
         }}
       >
         {value}
@@ -74,82 +66,112 @@ function ARow({ label, value }: { label: string; value: string }) {
 function ASection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <View style={{ marginBottom: 28 }}>
-      <View style={{ marginBottom: 4 }}>
+      <View style={{ marginBottom: 8 }}>
         <AMiniLabel>{label}</AMiniLabel>
       </View>
-      <AHairline />
       {children}
     </View>
   );
 }
 
-function TabLink({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
-  return (
-    <Pressable
-      android_disableSound
-      onPress={onPress}
-      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 2 })}
-    >
-      <Text
-        style={{
-          fontFamily: FONT.mono,
-          fontSize: 10,
-          fontWeight: '500',
-          letterSpacing: 2.2,
-          textTransform: 'uppercase',
-          color: active ? MIST.accent : MIST.textFaint,
-        }}
-      >
-        {label}
-      </Text>
-      {active && <View style={{ height: 1, backgroundColor: MIST.accent, marginTop: 2 }} />}
-    </Pressable>
-  );
-}
-
-function ProAction({
-  title,
-  description,
-  enabled,
-  enabledLabel,
+function TabLink({
+  label,
+  active,
   onPress,
 }: {
-  title: string;
-  description: string;
-  enabled: boolean;
-  enabledLabel: string;
+  label: string;
+  active: boolean;
   onPress: () => void;
 }) {
   return (
-    <View style={{ borderWidth: 1, borderColor: enabled ? MIST.accent : MIST.hairlineX, padding: 16, marginBottom: 28 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <Text style={{ fontFamily: FONT.mono, fontSize: 10, fontWeight: '500', letterSpacing: 2.2, textTransform: 'uppercase', color: enabled ? MIST.accent : MIST.text }}>
-          {title}
-        </Text>
-        <Text style={{ fontFamily: FONT.mono, fontSize: 8, letterSpacing: 1.6, textTransform: 'uppercase', color: enabled ? MIST.accent : MIST.textFaint }}>
-          Pro
-        </Text>
-      </View>
-      <Text style={{ fontFamily: FONT.sans, fontSize: 12, color: MIST.textFaint, lineHeight: 18, marginTop: 10 }}>
-        {description}
-      </Text>
+    <View style={{ flex: 1, minWidth: 0, minHeight: 40, alignItems: 'stretch' }}>
       <Pressable
         android_disableSound
         onPress={onPress}
         style={({ pressed }) => ({
-          alignSelf: 'flex-start',
-          marginTop: 14,
-          paddingVertical: 10,
-          paddingHorizontal: 14,
-          borderWidth: 1,
-          borderColor: enabled ? MIST.accent : MIST.hairlineX,
-          opacity: pressed ? 0.6 : 1,
+          width: '100%',
+          height: 40,
+          minHeight: 40,
+          alignItems: 'center',
+          opacity: pressed ? 0.5 : 1,
+          paddingHorizontal: 12,
+          paddingTop: 8,
         })}
       >
-        <Text style={{ fontFamily: FONT.mono, fontSize: 9, fontWeight: '500', letterSpacing: 1.8, textTransform: 'uppercase', color: enabled ? MIST.accent : MIST.text }}>
-          {enabled ? enabledLabel : 'View Pro'}
+        <Text
+          style={{
+            fontFamily: FONT.mono,
+            fontSize: 10,
+            fontWeight: '500',
+            letterSpacing: 2.2,
+            textTransform: 'uppercase',
+            color: active ? MIST.accent : MIST.textFaint,
+            textAlign: 'center',
+          }}
+          numberOfLines={1}
+        >
+          {label}
         </Text>
+        <View
+          style={{
+            width: '100%',
+            height: 1,
+            marginTop: 8,
+            backgroundColor: active ? MIST.accent : 'transparent',
+          }}
+        />
       </Pressable>
+    </View>
+  );
+}
+
+function TrackNameBar({
+  title,
+  meta,
+}: {
+  title: string;
+  meta: string;
+}) {
+  return (
+    <View
+      style={{
+        width: '100%',
+        alignSelf: 'stretch',
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        gap: 12,
+        paddingHorizontal: 24,
+        paddingVertical: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: MIST.hairline,
+      }}
+    >
+      <Text
+        style={{
+          flex: 1,
+          fontFamily: FONT.sans,
+          fontSize: 20,
+          fontWeight: '300',
+          color: MIST.text,
+          letterSpacing: -0.4,
+          lineHeight: 20,
+        }}
+        numberOfLines={1}
+      >
+        {title}
+      </Text>
+      <Text
+        style={{
+          fontFamily: FONT.mono,
+          fontSize: 10,
+          color: MIST.textFaint,
+          letterSpacing: 1.8,
+          lineHeight: 12,
+          textAlign: 'right',
+        }}
+      >
+        {meta}
+      </Text>
     </View>
   );
 }
@@ -165,23 +187,34 @@ function AuditionPill({
   playing: boolean;
   onPress: () => void;
 }) {
-  const fg = disabled ? MIST.textGhost : playing ? MIST.accent : MIST.text;
+  const arrowColor = disabled ? MIST.textGhost : MIST.accent;
+  const labelColor = disabled ? MIST.textGhost : MIST.text;
   return (
     <Pressable
       android_disableSound
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => ({
-        paddingVertical: 10,
-        paddingHorizontal: 14,
-        borderWidth: 1,
-        borderColor: disabled ? MIST.hairline : playing ? MIST.accent : MIST.hairlineX,
         opacity: pressed ? 0.6 : 1,
       })}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Text style={{ fontFamily: FONT.mono, fontSize: 9, color: fg }}>▶</Text>
-        <Text style={{ fontFamily: FONT.mono, fontSize: 11, color: fg, letterSpacing: 0.5 }}>
+      <View
+        style={{
+          minHeight: 38,
+          minWidth: 58,
+          paddingVertical: 10,
+          paddingHorizontal: 14,
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor: disabled ? MIST.hairline : playing ? MIST.accent : 'rgba(255,255,255,0.2)',
+          backgroundColor: playing ? MIST.accentDim : 'transparent',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        <Text style={{ fontFamily: FONT.mono, fontSize: 9, color: arrowColor }}>▶</Text>
+        <Text style={{ fontFamily: FONT.mono, fontSize: 11, color: labelColor, letterSpacing: 0.5 }}>
           {label}
         </Text>
       </View>
@@ -203,24 +236,35 @@ function AuditionNoteGroup({
   onPlayNote: (midi: number) => void;
 }) {
   return (
-    <ASection label={label}>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingTop: 14, gap: 10 }}>
+    <View style={{ marginBottom: 12 }}>
+      <View style={{ marginBottom: 8 }}>
+        <AMiniLabel>{label}</AMiniLabel>
+      </View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginRight: -10, marginBottom: -10 }}>
         {notes.map((note, index) => (
-          <AuditionPill
-            key={`${label}-${index}-${note.midi}`}
-            label={note.label}
-            disabled={disabled}
-            playing={playingKey === String(note.midi)}
-            onPress={() => onPlayNote(note.midi)}
-          />
+          <View key={`${label}-${index}-${note.midi}`} style={{ marginRight: 10, marginBottom: 10 }}>
+            <AuditionPill
+              label={note.label}
+              disabled={disabled}
+              playing={playingKey === String(note.midi)}
+              onPress={() => onPlayNote(note.midi)}
+            />
+          </View>
         ))}
       </View>
-    </ASection>
+    </View>
   );
 }
 
+function hitStepsLabel(pattern?: readonly boolean[]): string {
+  if (!pattern) return 'none';
+  const steps = pattern
+    .map((hit, index) => (hit ? index + 1 : null))
+    .filter((step): step is number => step !== null);
+  return steps.length > 0 ? steps.join(' · ') : 'none';
+}
+
 export function DawStepsPanel({ suggestion }: Props) {
-  const router = useRouter();
   const [activeTab, setActiveTab] = React.useState<MidiTab>('pattern');
   const [playingKey, setPlayingKey] = React.useState<string | null>(null);
   const playTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -228,8 +272,6 @@ export function DawStepsPanel({ suggestion }: Props) {
   const audioAvailable = isAudioAvailable();
   const isPlaying = useAppStore((state) => state.isPlaying);
   const stop = useAppStore((state) => state.stop);
-  const hasProAccess = useAppStore((state) => state.hasProAccess);
-  const midiExportEnabled = isProFeatureEnabled('midi_export', hasProAccess);
   const stopPreviewBeforeAudition = React.useCallback(() => {
     if (isPlaying) stop();
   }, [isPlaying, stop]);
@@ -249,13 +291,22 @@ export function DawStepsPanel({ suggestion }: Props) {
     playTimer.current = setTimeout(() => setPlayingKey(null), 900);
   }
 
+  const chordNotesLabel = view.audition.chordNotes.map((note) => note.label).join(' ');
+  const bassNotesLabel = view.audition.bassNotes.map((note) => note.label).join(' · ');
+  const trackTitle = `${suggestion.scale.root} ${suggestion.scale.mode.replace('_', ' ')} · ${view.audition.chordLabel}`;
+  const trackMeta = `${view.bpm}\nBPM`;
+
   return (
-    <View>
+    <View style={{ width: '100%', alignSelf: 'stretch' }}>
+      <TrackNameBar title={trackTitle} meta={trackMeta} />
+
       {/* Tab row */}
       <View
         style={{
+          width: '100%',
+          alignSelf: 'stretch',
           flexDirection: 'row',
-          gap: 24,
+          gap: 0,
           paddingHorizontal: 24,
           paddingVertical: 10,
           borderBottomWidth: 1,
@@ -272,100 +323,67 @@ export function DawStepsPanel({ suggestion }: Props) {
         ))}
       </View>
 
-      <View style={{ padding: 24, paddingBottom: 32 }}>
+      <View style={{ width: '100%', alignSelf: 'stretch', padding: 24, paddingBottom: 32 }}>
 
-        {/* PATTERN — BPM + scale info, kick step grid, step placement */}
+        {/* PATTERN — setup info + kick step grid */}
         {activeTab === 'pattern' && (
           <>
-            <ProAction
-              title="MIDI export"
-              description="Prepare this track idea for DAW export. Real file writing will be connected after billing and release setup are ready."
-              enabled={midiExportEnabled}
-              enabledLabel="Prepared"
-              onPress={() => {
-                if (!midiExportEnabled) {
-                  router.push('/pro');
-                }
-              }}
-            />
-            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 28 }}>
-              <View style={{ paddingVertical: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: MIST.hairlineX }}>
-                <Text style={{ fontFamily: FONT.mono, fontSize: 24, color: MIST.text, letterSpacing: -0.5 }}>
-                  {view.bpm}
-                </Text>
-                <Text style={{ fontFamily: FONT.mono, fontSize: 8, color: MIST.textFaint, letterSpacing: 2.2, marginTop: 2 }}>
-                  BPM
-                </Text>
-              </View>
-              <View style={{ flex: 1, paddingVertical: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: MIST.hairline, justifyContent: 'center', gap: 5 }}>
-                <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textMute, letterSpacing: 1.5 }}>
-                  {suggestion.scale.root} {suggestion.scale.mode.replace('_', ' ').toUpperCase()}
-                </Text>
-                <Text style={{ fontFamily: FONT.mono, fontSize: 9, color: MIST.textFaint, letterSpacing: 1 }}>
-                  {view.audition.chordLabel.toUpperCase()}
-                </Text>
-              </View>
-            </View>
+            <ASection label="Setup">
+              <ValueBlock
+                label="Tempo"
+                value={`${view.bpm} BPM · 16 steps`}
+              />
+              <ValueBlock
+                label="Scale"
+                value={`${suggestion.scale.root} ${suggestion.scale.mode.replace('_', ' ')}`}
+              />
+              <ValueBlock
+                label="Chord"
+                value={`${view.audition.chordLabel} · ${chordNotesLabel}`}
+              />
+            </ASection>
 
-            <ASection label="Kick">
-              <View style={{ paddingTop: 14 }}>
-                <View style={{ flexDirection: 'row', gap: 4 }}>
-                  {view.kickPattern.map((hit, index) => (
-                    <Pressable
-                      key={`step-${index}`}
-                      android_disableSound
-                      style={({ pressed }) => ({
-                        flex: 1,
-                        aspectRatio: 1,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderWidth: 1,
-                        borderColor: hit ? MIST.accent : MIST.hairline,
-                        backgroundColor: hit
-                          ? (pressed ? MIST.accent : MIST.accentDim)
-                          : (pressed ? MIST.hairline : 'transparent'),
-                      })}
-                    >
-                      {hit && <View style={{ width: 4, height: 4, backgroundColor: MIST.accent }} />}
-                    </Pressable>
-                  ))}
-                </View>
-                <View style={{ flexDirection: 'row', gap: 4, marginTop: 6 }}>
-                  {Array.from({ length: 16 }).map((_, i) => (
-                    <View key={i} style={{ flex: 1, alignItems: 'center' }}>
-                      <Text style={{ fontFamily: FONT.mono, fontSize: 8, color: i % 4 === 0 ? MIST.textMute : MIST.textGhost, letterSpacing: 1 }}>
-                        {i % 4 === 0 ? `${i / 4 + 1}` : STEP_LABELS[i % 4]}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
+            <ASection label="Sequence">
+              <ValueBlock label="Bass notes" value={bassNotesLabel} />
+              <ValueBlock label="Note length" value="1/4 · long sustain (1.0s)" />
+              <ValueBlock label="Kick steps" value={hitStepsLabel(view.kickPattern)} />
+            </ASection>
+
+            <ASection label="Kick step grid">
+              <View style={{ width: '100%', alignSelf: 'stretch', paddingTop: 14 }}>
+                <KickStepGrid pattern={view.kickPattern} />
               </View>
             </ASection>
 
-            <ARow label="Bass" value={`steps ${view.patternSteps.bass}`} />
-            <ARow label="Chord" value={`steps ${view.patternSteps.chord}`} />
-            <ARow label="Noise" value={`steps ${view.patternSteps.noise}`} />
           </>
         )}
 
         {/* NOTES — playable chord, chord notes, bass notes, scale notes */}
         {activeTab === 'notes' && (
           <>
-            <ASection label="Chord">
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingTop: 14, gap: 10 }}>
-                <AuditionPill
-                  label={view.audition.chordLabel}
-                  disabled={!audioAvailable}
-                  playing={playingKey === 'chord'}
-                  onPress={() => auditPlay('chord', () => {
-                    void playAuditionChord(
-                      view.audition.chordNotes.map((note) => note.midi),
-                      suggestion
-                    );
-                  })}
-                />
+            <View style={{ marginBottom: 14 }}>
+              <AMiniLabel>Audition MIDI</AMiniLabel>
+            </View>
+            <View style={{ marginBottom: 12 }}>
+              <View style={{ marginBottom: 8 }}>
+                <AMiniLabel>Chord</AMiniLabel>
               </View>
-            </ASection>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginRight: -10, marginBottom: -10 }}>
+                <View style={{ marginRight: 10, marginBottom: 10 }}>
+                  <AuditionPill
+                    label={view.audition.chordLabel}
+                    disabled={!audioAvailable}
+                    playing={playingKey === 'chord'}
+                    onPress={() => auditPlay('chord', () => {
+                      void playAuditionChord(
+                        view.audition.chordNotes.map((note) => note.midi),
+                        suggestion
+                      );
+                    })}
+                  />
+                </View>
+              </View>
+            </View>
             <AuditionNoteGroup
               label="Chord notes"
               notes={view.audition.chordNotes}
@@ -395,28 +413,42 @@ export function DawStepsPanel({ suggestion }: Props) {
           </>
         )}
 
-        {/* SOUND — track name + variant name only */}
+        {/* SOUND — per-track details: variant, type, source, DAW target, FX */}
         {activeTab === 'sound' && (
-          <>
+          <ASection label="Track Setup">
             {view.trackSetupRows.map((row) => (
               <View
                 key={row.label}
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingVertical: 16,
-                  borderBottomWidth: 1,
-                  borderBottomColor: MIST.hairline,
+                  marginBottom: 12,
+                  padding: 12,
+                  borderWidth: 1,
+                  borderColor: MIST.hairline,
                 }}
               >
-                <AMiniLabel>{row.label}</AMiniLabel>
-                <Text style={{ fontFamily: FONT.sans, fontSize: 13, color: MIST.text, fontWeight: '400' }}>
-                  {row.variant}
+                <Text style={{
+                  fontFamily: FONT.sans,
+                  fontSize: 13,
+                  fontWeight: '900',
+                  color: MIST.text,
+                  marginBottom: 8,
+                }}>
+                  {row.label}
                 </Text>
+                {[
+                  { label: 'Variant',    value: row.variant },
+                  { label: 'Type',       value: row.type },
+                  { label: 'Source',     value: row.source },
+                  { label: 'DAW Target', value: row.target },
+                  { label: 'FX',         value: row.fx.split(';')[0].trim() },
+                ].map(({ label, value }) => (
+                  <View key={label} style={{ marginBottom: 10 }}>
+                    <ValueBlock label={label} value={value} mono={false} />
+                  </View>
+                ))}
               </View>
             ))}
-          </>
+          </ASection>
         )}
       </View>
     </View>

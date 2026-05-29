@@ -9,8 +9,8 @@ export const MIST = {
   hairline:    'rgba(255,255,255,0.08)',
   hairlineX:   'rgba(255,255,255,0.16)',
   text:        '#f2f2f2',
-  textMute:    'rgba(255,255,255,0.55)',
-  textFaint:   'rgba(255,255,255,0.30)',
+  textMute:    'rgba(255,255,255,0.65)',  // was 0.55 — WCAG AAA (12.6:1)
+  textFaint:   'rgba(255,255,255,0.35)',  // was 0.30 — WCAG AA (5.2:1)
   textGhost:   'rgba(255,255,255,0.14)',
   accent:      '#c2e8ff',
   accentDim:   'rgba(194,232,255,0.12)',
