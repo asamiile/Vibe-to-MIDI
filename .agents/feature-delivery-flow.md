@@ -147,6 +147,38 @@ If the feature affects native audio, Android navigation, in-app purchases, or me
 
 Use E2E tests only for critical Android user journeys, such as first launch, selecting a vibe, opening MIDI guidance, playback controls, Settings routes, and Pro gating. Keep E2E assertions user-visible; do not inspect React component internals or store state.
 
+### QA File Rule
+
+When a feature requires manual device testing that cannot be covered by automated tests, create a QA file:
+
+- Path: `.agents/qa-{feature-slug}.md`
+- Structure: prerequisite section, numbered test tables (Condition / Steps / Expected), pass criteria
+- Link it in `roadmap.md` Current Status entry: `— see .agents/qa-{feature-slug}.md`
+- Mark the roadmap checklist item as `[x]` with the QA file reference instead of leaving it open
+
+Do this automatically for any feature involving:
+
+- audio playback
+- video playback
+- file save/share
+- billing / purchases
+- Pro gate behavior
+- performance-sensitive UI
+
+## 5a. Design Backlog Rule
+
+When implementation produces UI that requires design polish but is not blocking the feature:
+
+- Add an entry to the **Design Backlog** section of `roadmap.md`
+- Include: location, current state description, file paths, and a "Needs design:" list
+- Do not leave design debt implicit — always surface it in the roadmap
+
+Do this automatically when:
+
+- a free vs Pro state difference is visible to users (upsell surfaces, locked states)
+- a temporary layout is used as a placeholder for a designed component
+- UI was built to unblock implementation but visual hierarchy or copy needs review
+
 ## 6. Final Summary
 
 Final responses for feature delivery should include:

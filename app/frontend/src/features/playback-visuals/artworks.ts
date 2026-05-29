@@ -22,6 +22,36 @@ export const PLAYBACK_ARTWORKS: readonly PlaybackArtwork[] = [
       portrait: require('../../../assets/visuals/free_bioluminescent-network_portrait.mp4'),
     },
   },
+  {
+    id: 'cybernetic-flora-corruption',
+    label: 'Cybernetic Flora Corruption',
+    shortLabel: 'CYBERNETIC',
+    plan: 'pro',
+    sources: {
+      landscape: require('../../../assets/visuals/pro_cybernetic-flora-corruption_landscape.mp4'),
+      portrait: require('../../../assets/visuals/pro_cybernetic-flora-corruption_portrait.mp4'),
+    },
+  },
+  {
+    id: 'quantum-interference-glitch',
+    label: 'Quantum Interference Glitch',
+    shortLabel: 'QUANTUM GLITCH',
+    plan: 'pro',
+    sources: {
+      landscape: require('../../../assets/visuals/pro_quantum-interference-glitch_landscape.mp4'),
+      portrait: require('../../../assets/visuals/pro_quantum-interference-glitch_portrait.mp4'),
+    },
+  },
+  {
+    id: 'quantum-orbital-electron-cloud',
+    label: 'Quantum Orbital Electron Cloud',
+    shortLabel: 'ORBITAL CLOUD',
+    plan: 'pro',
+    sources: {
+      landscape: require('../../../assets/visuals/pro_quantum-orbital-electron-cloud_landscape.mp4'),
+      portrait: require('../../../assets/visuals/pro_quantum-orbital-electron-cloud_portrait.mp4'),
+    },
+  },
 ];
 
 export function getPlaybackArtwork(id: string): PlaybackArtwork {

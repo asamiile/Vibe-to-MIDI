@@ -21,7 +21,7 @@ export const PRO_FEATURES: readonly ProFeature[] = [
     id: 'generative_art_playback',
     label: 'Generative Art playback',
     summary: 'Show project-owned Generative Art while the selected vibe is playing.',
-    status: 'planned',
+    status: 'ready_for_billing',
   },
 ];
 
