@@ -23,6 +23,7 @@ Status markers:
 - [x] Pro-gated MIDI export — bytes generation and Android file save/share transport
 - [x] MIDI File Save / Share — expo-sharing transport, success/failure states, tests — see `.agents/docs/qa/qa-midi-share.md`
 - [x] Pro Generative Art — 3 Pro artworks, video thumbnail picker, Pro gate, performance QA — see `.agents/docs/qa/qa-pro-art.md`
+- [~] Saved Ideas — save/load/delete generated ideas, duplicate guard, file storage — device QA pending, see `.agents/docs/qa/qa-persistence.md`
 
 ## Design Backlog
 
@@ -68,15 +69,7 @@ Batch these in a dedicated design phase.
 
 ## Next Work
 
-### 1. Persistence
-
-- [x] Choose persistence approach — expo-file-system/legacy + JSON
-- [x] Save favorite generated ideas — bookmark button in PlayerBar, duplicate guard via `isCurrentIdeaSaved`
-- [x] Restore saved ideas into playback/MIDI/Learn views — Saved Ideas modal, tap to load
-- [x] Add tests for saved idea serialization — 4 tests passing
-- [ ] QA on device — verify file read/write, load playback, delete
-
-### 2. Billing
+### 1. Billing
 
 See `.agents/docs/product/entitlements.md` for product ids, policy, and implementation
 rules.
@@ -98,7 +91,7 @@ rules.
 - [ ] Test restore purchases.
 - [ ] Add purchase/restore error states.
 
-### 3. Release Operations
+### 2. Release Operations
 
 See `.agents/docs/engineering/security-ci-release.md` for release guardrails.
 
