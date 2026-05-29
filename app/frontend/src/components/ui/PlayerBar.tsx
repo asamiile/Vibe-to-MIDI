@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, Modal, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAppStore } from '../../data/store';
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
 import { WaveformVisualizer } from './WaveformVisualizer';
@@ -261,14 +262,11 @@ export function PlayerBar() {
           onPress={() => (isPlaying ? stop() : play())}
           style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
         >
-          <Text
-            style={{
-              fontSize: 14,
-              color: idle ? MIST.textGhost : isPlaying ? MIST.accent : MIST.text,
-            }}
-          >
-            {isPlaying ? '■' : '▶'}
-          </Text>
+          <MaterialIcons
+            name={isPlaying ? 'stop' : 'play-arrow'}
+            size={14}
+            color={idle ? MIST.textGhost : isPlaying ? MIST.accent : MIST.text}
+          />
         </Pressable>
 
         <WaveformVisualizer isPlaying={isPlaying} />

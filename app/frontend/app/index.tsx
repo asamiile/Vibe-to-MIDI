@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAppStore } from '../src/data/store';
 import { isAudioAvailable } from '../src/features/audio-engine/adapter';
 import { PlaybackVisual } from '../src/components/ui/PlaybackVisual';
@@ -87,6 +88,34 @@ function NavLink({
   );
 }
 
+function IconButton({
+  name,
+  onPress,
+  size = 20,
+  color,
+}: {
+  name: React.ComponentProps<typeof MaterialIcons>['name'];
+  onPress: () => void;
+  size?: number;
+  color?: string;
+}) {
+  return (
+    <Pressable
+      android_disableSound
+      onPress={onPress}
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.5 : 1,
+        paddingVertical: 12,
+        paddingHorizontal: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+      })}
+    >
+      <MaterialIcons name={name} size={size} color={color ?? MIST.textFaint} />
+    </Pressable>
+  );
+}
+
 function SettingsModal({
   visible,
   onClose,
@@ -134,11 +163,9 @@ function SettingsModal({
             <Pressable
               android_disableSound
               onPress={onClose}
-              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 4 })}
             >
-              <Text style={{ fontFamily: FONT.mono, fontSize: 10, fontWeight: '500', letterSpacing: 2.2, color: MIST.textFaint, textTransform: 'uppercase' }}>
-                ← CLOSE
-              </Text>
+              <MaterialIcons name="close" size={20} color={MIST.textFaint} />
             </Pressable>
           </View>
           <Text style={{ fontFamily: FONT.sans, fontSize: 40, fontWeight: '300', color: MIST.text, letterSpacing: -1.2, lineHeight: 40 }}>
@@ -173,9 +200,7 @@ function SettingsModal({
                 <Text style={{ fontFamily: FONT.sans, fontSize: 15, color: item.accent ? MIST.accent : MIST.text, fontWeight: '400' }}>
                   {item.label}
                 </Text>
-                <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: item.accent ? MIST.accent : MIST.textFaint, letterSpacing: 1 }}>
-                  →
-                </Text>
+                <MaterialIcons name="chevron-right" size={16} color={item.accent ? MIST.accent : MIST.textFaint} />
               </View>
             </Pressable>
           ))}
@@ -265,7 +290,12 @@ export default function HomeScreen() {
                   />
                 </View>
               }
-              right={<NavLink label="≡" onPress={() => setSettingsVisible(true)} />}
+              right={
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <IconButton name="bookmark" onPress={() => {/* TODO: Saved Ideas */}} />
+                  <IconButton name="settings" onPress={() => setSettingsVisible(true)} />
+                </View>
+              }
             />
 
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
@@ -289,15 +319,12 @@ export default function HomeScreen() {
                   zIndex: 1,
                 })}
               >
-                <Text
-                  style={{
-                    marginLeft: 4,
-                    fontSize: 28,
-                    color: !audioAvailable ? MIST.textGhost : isPlaying ? MIST.accent : MIST.text,
-                  }}
-                >
-                  ▶
-                </Text>
+                <MaterialIcons
+                  name="play-arrow"
+                  size={28}
+                  color={!audioAvailable ? MIST.textGhost : isPlaying ? MIST.accent : MIST.text}
+                  style={{ marginLeft: 4 }}
+                />
               </Pressable>
             </View>
           </View>
@@ -322,7 +349,12 @@ export default function HomeScreen() {
                   />
                 </View>
               }
-              right={<NavLink label="≡" onPress={() => setSettingsVisible(true)} />}
+              right={
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <IconButton name="bookmark" onPress={() => {/* TODO: Saved Ideas */}} />
+                  <IconButton name="settings" onPress={() => setSettingsVisible(true)} />
+                </View>
+              }
             />
 
             <SuggestionPanel
