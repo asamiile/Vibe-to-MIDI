@@ -77,7 +77,7 @@ export function PlayerBar() {
                 key={layer}
                 android_disableSound
                 onPress={() => toggleLayer(layer)}
-                style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 4 })}
+                style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 10, minHeight: 44, justifyContent: 'center' })}
               >
                 <Text
                   style={{

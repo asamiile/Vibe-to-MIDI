@@ -9,6 +9,7 @@ import type { PlayerHandle } from '../../features/audio-engine/player';
 import { useAppStore } from '../../data/store';
 import { midiToNoteName } from '../../lib/notes';
 import { MIST, FONT } from '../../styles/theme';
+import { KickStepGrid } from './KickStepGrid';
 
 interface Props {
   suggestion: MusicalSuggestion;
@@ -16,7 +17,6 @@ interface Props {
 
 type CompareTarget = 'original' | 'changed';
 
-const STEP_LABELS = ['1', 'e', '&', 'a'];
 const FOCUS_OPTIONS: readonly LearningFocus[] = ['pulse', 'bass'];
 
 function AMiniLabel({ children, color }: { children: string; color?: string }) {
@@ -46,45 +46,97 @@ function TabLink({
   onPress: () => void;
 }) {
   return (
-    <Pressable
-      android_disableSound
-      onPress={onPress}
-      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 2 })}
-    >
-      <Text
-        style={{
-          fontFamily: FONT.mono,
-          fontSize: 10,
-          fontWeight: '500',
-          letterSpacing: 2.2,
-          textTransform: 'uppercase',
-          color: active ? MIST.accent : MIST.textFaint,
-        }}
+    <View style={{ flex: 1, minWidth: 0, minHeight: 40, alignItems: 'stretch' }}>
+      <Pressable
+        android_disableSound
+        onPress={onPress}
+        style={({ pressed }) => ({
+          width: '100%',
+          height: 40,
+          minHeight: 40,
+          alignItems: 'center',
+          opacity: pressed ? 0.5 : 1,
+          paddingHorizontal: 12,
+          paddingTop: 8,
+        })}
       >
-        {label}
-      </Text>
-      {active && (
-        <View style={{ height: 1, backgroundColor: MIST.accent, marginTop: 2 }} />
-      )}
-    </Pressable>
+        <Text
+          style={{
+            fontFamily: FONT.mono,
+            fontSize: 10,
+            fontWeight: '500',
+            letterSpacing: 2.2,
+            textTransform: 'uppercase',
+            color: active ? MIST.accent : MIST.textFaint,
+            textAlign: 'center',
+          }}
+          numberOfLines={1}
+        >
+          {label}
+        </Text>
+        <View
+          style={{
+            width: '100%',
+            height: 1,
+            marginTop: 8,
+            backgroundColor: active ? MIST.accent : 'transparent',
+          }}
+        />
+      </Pressable>
+    </View>
   );
 }
 
-function RhythmStrip({ pattern }: { pattern: readonly boolean[] }) {
+function CompareButton({
+  label,
+  disabled,
+  active,
+  onPress,
+}: {
+  label: string;
+  disabled: boolean;
+  active: boolean;
+  onPress: () => void;
+}) {
   return (
-    <View style={{ flexDirection: 'row', gap: 2 }}>
-      {pattern.map((hit, index) => (
-        <View
-          key={`pulse-${index}-${hit ? 'hit' : 'rest'}`}
+    <Pressable
+      android_disableSound
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        flex: 1,
+        opacity: disabled ? 0.35 : pressed ? 0.6 : 1,
+      })}
+    >
+      <View
+        style={{
+          minHeight: 48,
+          paddingVertical: 14,
+          paddingHorizontal: 16,
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor: disabled ? MIST.hairline : active ? MIST.accent : 'rgba(255,255,255,0.2)',
+          backgroundColor: active ? MIST.accentDim : 'transparent',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Text
           style={{
-            flex: 1,
-            height: 22,
-            borderLeftWidth: 1,
-            borderLeftColor: hit ? MIST.text : MIST.hairline,
+            fontFamily: FONT.mono,
+            fontSize: 9,
+            fontWeight: '500',
+            letterSpacing: 2.2,
+            textTransform: 'uppercase',
+            color: disabled ? MIST.textGhost : active ? MIST.accent : MIST.text,
+            textAlign: 'center',
           }}
-        />
-      ))}
-    </View>
+          numberOfLines={1}
+        >
+          {label}
+        </Text>
+      </View>
+    </Pressable>
   );
 }
 
@@ -180,7 +232,6 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
       <View
         style={{
           flexDirection: 'row',
-          gap: 24,
           paddingHorizontal: 24,
           paddingVertical: 10,
           borderBottomWidth: 1,
@@ -203,7 +254,7 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
       <View style={{ padding: 24 }}>
         {/* Goal */}
         <View style={{ marginBottom: 32 }}>
-          <AMiniLabel>{focus === 'pulse' ? 'the heartbeat' : 'the gravity'}</AMiniLabel>
+          <AMiniLabel>{focus === 'pulse' ? 'pulse · the heartbeat' : 'bass · the gravity'}</AMiniLabel>
           <Text
             style={{
               marginTop: 12,
@@ -229,47 +280,13 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
             ]).map((opt) => {
               const active = activeCompare === opt.k;
               return (
-                <Pressable
+                <CompareButton
                   key={opt.k}
-                  android_disableSound
                   disabled={!audioAvailable}
+                  active={active}
+                  label={opt.label}
                   onPress={() => { void playCompare(opt.k); }}
-                  style={({ pressed }) => ({
-                    flex: 1,
-                    paddingVertical: 14,
-                    paddingHorizontal: 16,
-                    borderWidth: 1,
-                    borderColor: active ? MIST.accent : MIST.hairline,
-                    backgroundColor: active ? MIST.accentDim : 'transparent',
-                    opacity: pressed ? 0.7 : 1,
-                  })}
-                >
-                  <AMiniLabel color={active ? MIST.accent : MIST.text}>{opt.label}</AMiniLabel>
-                </Pressable>
-              );
-            })}
-          </View>
-          {/* Rhythm strips — no gap, continuous */}
-          <View style={{ flexDirection: 'row' }}>
-            {([
-              { k: 'original' as CompareTarget, pattern: view.original.rhythmPattern },
-              { k: 'changed'  as CompareTarget, pattern: view.changed.rhythmPattern },
-            ]).map((opt) => {
-              const active = activeCompare === opt.k;
-              return (
-                <View key={opt.k} style={{ flex: 1, flexDirection: 'row', gap: 2 }}>
-                  {opt.pattern.map((h, j) => (
-                    <View
-                      key={j}
-                      style={{
-                        flex: 1,
-                        height: 20,
-                        borderLeftWidth: 1,
-                        borderLeftColor: h ? (active ? MIST.accent : MIST.text) : MIST.hairline,
-                      }}
-                    />
-                  ))}
-                </View>
+                />
               );
             })}
           </View>
@@ -303,21 +320,21 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
         <View style={{ marginBottom: 18 }}>
           <View style={{ marginBottom: 8 }}>
             <AMiniLabel>
-              {activeCompare === 'changed' ? view.tryLabel : view.originalLabel}
+              {activeCompare === 'changed' ? 'Try' : 'Original'}
             </AMiniLabel>
           </View>
           {focus === 'pulse' ? (
-            <RhythmStrip pattern={visualSource.rhythmPattern} />
+            <KickStepGrid pattern={visualSource.rhythmPattern} />
           ) : (
             <BassStrip notes={visualSource.bassNotes} />
           )}
           <Text
             style={{
-              marginTop: 14,
+              marginTop: 8,
               fontFamily: FONT.sans,
-              fontSize: 13,
+              fontSize: 12,
               color: MIST.textMute,
-              lineHeight: 20,
+              lineHeight: 17,
             }}
           >
             {view.reason}

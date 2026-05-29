@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text } from 'react-native';
 import type { VibeId } from '../../features/vibe-map/types';
+import { MIST } from '../../styles/theme';
 
 /* Geometric Unicode glyphs — one per vibe.
    Avoids react-native-svg (native rebuild required).
@@ -39,7 +40,7 @@ interface Props {
   color?: string;
 }
 
-export function VibeGlyph({ id, size = 32, color = '#f2f2f2' }: Props) {
+export function VibeGlyph({ id, size = 32, color = MIST.text }: Props) {
   return (
     <Text
       style={{
