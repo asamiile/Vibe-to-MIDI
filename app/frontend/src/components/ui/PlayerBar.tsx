@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, Modal, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAppStore } from '../../data/store';
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
 import { WaveformVisualizer } from './WaveformVisualizer';
@@ -142,6 +143,8 @@ export function PlayerBar() {
     hasProAccess,
     activeArtworkId,
     setActiveArtworkId,
+    saveCurrentIdea,
+    isCurrentIdeaSaved,
   } = useAppStore();
   const audioAvailable = isAudioAvailable();
   const artEnabled = isProFeatureEnabled('generative_art_playback', hasProAccess);
@@ -261,14 +264,11 @@ export function PlayerBar() {
           onPress={() => (isPlaying ? stop() : play())}
           style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
         >
-          <Text
-            style={{
-              fontSize: 14,
-              color: idle ? MIST.textGhost : isPlaying ? MIST.accent : MIST.text,
-            }}
-          >
-            {isPlaying ? '■' : '▶'}
-          </Text>
+          <MaterialIcons
+            name={isPlaying ? 'stop' : 'play-arrow'}
+            size={14}
+            color={idle ? MIST.textGhost : isPlaying ? MIST.accent : MIST.text}
+          />
         </Pressable>
 
         <WaveformVisualizer isPlaying={isPlaying} />
@@ -287,6 +287,22 @@ export function PlayerBar() {
         >
           {activeLabel || '— tap play —'}
         </Text>
+        {suggestion && (
+          <Pressable
+            android_disableSound
+            accessibilityRole="button"
+            accessibilityLabel="現在のアイデアを保存"
+            disabled={isCurrentIdeaSaved}
+            onPress={() => { void saveCurrentIdea(); }}
+            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 4 })}
+          >
+            <MaterialIcons
+              name={isCurrentIdeaSaved ? 'bookmark' : 'bookmark-border'}
+              size={20}
+              color={isCurrentIdeaSaved ? MIST.accent : MIST.textFaint}
+            />
+          </Pressable>
+        )}
       </View>
 
       <Modal

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAppStore } from '../src/data/store';
 import { isAudioAvailable } from '../src/features/audio-engine/adapter';
 import { PlaybackVisual } from '../src/components/ui/PlaybackVisual';
@@ -87,6 +88,34 @@ function NavLink({
   );
 }
 
+function IconButton({
+  name,
+  onPress,
+  size = 20,
+  color,
+}: {
+  name: React.ComponentProps<typeof MaterialIcons>['name'];
+  onPress: () => void;
+  size?: number;
+  color?: string;
+}) {
+  return (
+    <Pressable
+      android_disableSound
+      onPress={onPress}
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.5 : 1,
+        paddingVertical: 12,
+        paddingHorizontal: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+      })}
+    >
+      <MaterialIcons name={name} size={size} color={color ?? MIST.textFaint} />
+    </Pressable>
+  );
+}
+
 function SettingsModal({
   visible,
   onClose,
@@ -134,11 +163,9 @@ function SettingsModal({
             <Pressable
               android_disableSound
               onPress={onClose}
-              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 4 })}
             >
-              <Text style={{ fontFamily: FONT.mono, fontSize: 10, fontWeight: '500', letterSpacing: 2.2, color: MIST.textFaint, textTransform: 'uppercase' }}>
-                ← CLOSE
-              </Text>
+              <MaterialIcons name="close" size={20} color={MIST.textFaint} />
             </Pressable>
           </View>
           <Text style={{ fontFamily: FONT.sans, fontSize: 40, fontWeight: '300', color: MIST.text, letterSpacing: -1.2, lineHeight: 40 }}>
@@ -173,9 +200,7 @@ function SettingsModal({
                 <Text style={{ fontFamily: FONT.sans, fontSize: 15, color: item.accent ? MIST.accent : MIST.text, fontWeight: '400' }}>
                   {item.label}
                 </Text>
-                <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: item.accent ? MIST.accent : MIST.textFaint, letterSpacing: 1 }}>
-                  →
-                </Text>
+                <MaterialIcons name="chevron-right" size={16} color={item.accent ? MIST.accent : MIST.textFaint} />
               </View>
             </Pressable>
           ))}
@@ -196,6 +221,96 @@ function SettingsModal({
   );
 }
 
+function SavedIdeasModal({
+  visible,
+  onClose,
+}: {
+  visible: boolean;
+  onClose: () => void;
+}) {
+  const savedIdeas = useAppStore((state) => state.savedIdeas);
+  const loadIdea = useAppStore((state) => state.loadIdea);
+  const deleteIdea = useAppStore((state) => state.deleteIdea);
+
+  function formatDate(ts: number): string {
+    const d = new Date(ts);
+    return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+
+  return (
+    <Modal
+      visible={visible}
+      transparent={false}
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <SafeAreaView style={{ flex: 1, backgroundColor: MIST.bg }}>
+        <StatusBar barStyle="light-content" backgroundColor={MIST.bg} />
+
+        <View style={{ padding: 24, paddingBottom: 24, borderBottomWidth: 1, borderBottomColor: MIST.hairline }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
+            <Text style={{ fontFamily: FONT.mono, fontSize: 9, fontWeight: '500', letterSpacing: 2.2, color: MIST.textMute, textTransform: 'uppercase' }}>
+              SAVED
+            </Text>
+            <Pressable
+              android_disableSound
+              onPress={onClose}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 4 })}
+            >
+              <MaterialIcons name="close" size={20} color={MIST.textFaint} />
+            </Pressable>
+          </View>
+          <Text style={{ fontFamily: FONT.sans, fontSize: 40, fontWeight: '300', color: MIST.text, letterSpacing: -1.2, lineHeight: 40 }}>
+            Saved Ideas
+          </Text>
+        </View>
+
+        <ScrollView style={{ flex: 1 }}>
+          {savedIdeas.length === 0 ? (
+            <View style={{ paddingVertical: 48, alignItems: 'center' }}>
+              <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textGhost, letterSpacing: 1.3 }}>
+                NO SAVED IDEAS
+              </Text>
+            </View>
+          ) : (
+            savedIdeas.map((idea) => (
+              <View
+                key={idea.id}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  borderBottomWidth: 1,
+                  borderBottomColor: MIST.hairline,
+                }}
+              >
+                <Pressable
+                  android_disableSound
+                  onPress={() => { loadIdea(idea.id); onClose(); }}
+                  style={({ pressed }) => ({ flex: 1, opacity: pressed ? 0.6 : 1, paddingVertical: 20, paddingHorizontal: 24 })}
+                >
+                  <Text style={{ fontFamily: FONT.sans, fontSize: 15, color: MIST.text, fontWeight: '400' }}>
+                    {idea.chord.label} · {idea.activeBpm} BPM
+                  </Text>
+                  <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textFaint, letterSpacing: 1, marginTop: 4 }}>
+                    {idea.soundCombination.label.toUpperCase()} · {formatDate(idea.savedAt)}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  android_disableSound
+                  onPress={() => { void deleteIdea(idea.id); }}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 20, paddingHorizontal: 20 })}
+                >
+                  <MaterialIcons name="delete-outline" size={18} color={MIST.textFaint} />
+                </Pressable>
+              </View>
+            ))
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
+  );
+}
+
 export default function HomeScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ settings?: string }>();
@@ -203,9 +318,15 @@ export default function HomeScreen() {
   const isPlaying = useAppStore((state) => state.isPlaying);
   const activeArtworkId = useAppStore((state) => state.activeArtworkId);
   const playRandomSoundCombination = useAppStore((state) => state.playRandomSoundCombination);
+  const initSavedIdeas = useAppStore((state) => state.initSavedIdeas);
   const audioAvailable = isAudioAvailable();
   const [viewMode, setViewMode] = useState<ViewMode>('listen');
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [savedIdeasVisible, setSavedIdeasVisible] = useState(false);
+
+  useEffect(() => {
+    void initSavedIdeas();
+  }, [initSavedIdeas]);
 
   useEffect(() => {
     if (params.settings === '1') {
@@ -219,6 +340,10 @@ export default function HomeScreen() {
         setSettingsVisible(false);
         return true;
       }
+      if (savedIdeasVisible) {
+        setSavedIdeasVisible(false);
+        return true;
+      }
       if (viewMode !== 'listen') {
         setViewMode('listen');
         return true;
@@ -226,7 +351,7 @@ export default function HomeScreen() {
       return false;
     });
     return () => sub.remove();
-  }, [settingsVisible, viewMode]);
+  }, [settingsVisible, savedIdeasVisible, viewMode]);
 
   function handleRandomPress() {
     if (!audioAvailable) return;
@@ -265,7 +390,12 @@ export default function HomeScreen() {
                   />
                 </View>
               }
-              right={<NavLink label="≡" onPress={() => setSettingsVisible(true)} />}
+              right={
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <IconButton name="bookmark" onPress={() => setSavedIdeasVisible(true)} />
+                  <IconButton name="settings" onPress={() => setSettingsVisible(true)} />
+                </View>
+              }
             />
 
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
@@ -289,15 +419,12 @@ export default function HomeScreen() {
                   zIndex: 1,
                 })}
               >
-                <Text
-                  style={{
-                    marginLeft: 4,
-                    fontSize: 28,
-                    color: !audioAvailable ? MIST.textGhost : isPlaying ? MIST.accent : MIST.text,
-                  }}
-                >
-                  ▶
-                </Text>
+                <MaterialIcons
+                  name="play-arrow"
+                  size={28}
+                  color={!audioAvailable ? MIST.textGhost : isPlaying ? MIST.accent : MIST.text}
+                  style={{ marginLeft: 4 }}
+                />
               </Pressable>
             </View>
           </View>
@@ -322,7 +449,12 @@ export default function HomeScreen() {
                   />
                 </View>
               }
-              right={<NavLink label="≡" onPress={() => setSettingsVisible(true)} />}
+              right={
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <IconButton name="bookmark" onPress={() => setSavedIdeasVisible(true)} />
+                  <IconButton name="settings" onPress={() => setSettingsVisible(true)} />
+                </View>
+              }
             />
 
             <SuggestionPanel
@@ -345,6 +477,11 @@ export default function HomeScreen() {
           </View>
         )}
       </View>
+
+      <SavedIdeasModal
+        visible={savedIdeasVisible}
+        onClose={() => setSavedIdeasVisible(false)}
+      />
 
       <SettingsModal
         visible={settingsVisible}

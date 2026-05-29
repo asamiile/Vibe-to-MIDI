@@ -21,8 +21,9 @@ Status markers:
 - [x] Settings, licenses, privacy link, audio debug, and diagnostics
 - [x] Pro entitlement constants, Pro screen, and dev-only Pro Preview
 - [x] Pro-gated MIDI export — bytes generation and Android file save/share transport
-- [x] MIDI File Save / Share — expo-sharing transport, success/failure states, tests — see `.agents/qa-midi-share.md`
-- [x] Pro Generative Art — 3 Pro artworks, video thumbnail picker, Pro gate, performance QA — see `.agents/qa-pro-art.md`
+- [x] MIDI File Save / Share — expo-sharing transport, success/failure states, tests — see `.agents/docs/qa/qa-midi-share.md`
+- [x] Pro Generative Art — 3 Pro artworks, video thumbnail picker, Pro gate, performance QA — see `.agents/docs/qa/qa-pro-art.md`
+- [~] Saved Ideas — save/load/delete generated ideas, duplicate guard, file storage — device QA pending, see `.agents/docs/qa/qa-persistence.md`
 
 ## Design Backlog
 
@@ -70,7 +71,7 @@ Batch these in a dedicated design phase.
 
 ### 1. Billing
 
-See `.agents/entitlements.md` for product ids, policy, and implementation
+See `.agents/docs/product/entitlements.md` for product ids, policy, and implementation
 rules.
 
 - [ ] Re-check current official RevenueCat docs.
@@ -92,7 +93,7 @@ rules.
 
 ### 2. Release Operations
 
-See `.agents/security-ci-release.md` for release guardrails.
+See `.agents/docs/engineering/security-ci-release.md` for release guardrails.
 
 - [ ] Add Sentry for React Native / Expo crash reporting.
 - [ ] Configure EAS Build source map upload.
@@ -105,39 +106,6 @@ See `.agents/security-ci-release.md` for release guardrails.
 - [ ] Verify licenses screen.
 - [ ] Verify privacy policy link.
 - [ ] Monitor Google Play Android vitals after release.
-
-### 3. Pattern Editor
-
-Do this after MIDI export and billing are stable.
-
-- [ ] Define minimal editor scope.
-- [ ] Create `app/frontend/src/features/pattern-editor/`.
-- [ ] Add 16-step kick lane.
-- [ ] Add 16-step bass lane.
-- [ ] Add 16-step stab lane.
-- [ ] Generate updated MIDI guidance from edited state.
-- [ ] Generate updated MIDI export from edited state.
-- [ ] Keep the editor compact; do not build a full DAW.
-
-### 4. Persistence
-
-- [ ] Decide whether saved ideas belong before or after Pattern Editor.
-- [ ] Choose persistence approach.
-- [ ] Save favorite generated ideas.
-- [ ] Restore saved ideas into playback/MIDI/Learn views.
-- [ ] Add tests for saved idea serialization.
-
-### 5. Local AI / Advanced Variations
-
-See `.agents/local-ai-strategy.md`.
-
-- [ ] Reconfirm deterministic generation is useful before adding AI.
-- [ ] Define one narrow AI-assisted feature.
-- [ ] Keep the app usable without AI.
-- [ ] Avoid external AI APIs unless strategy changes.
-- [ ] Prototype MIDI variation generation.
-- [ ] Prototype rhythm variation generation.
-- [ ] Prototype synth parameter suggestions.
 
 ## Validation Checklist
 
