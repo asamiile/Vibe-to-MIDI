@@ -39,11 +39,11 @@ Use `.agents/README.md` as the index for agent-facing docs.
 Read only the files relevant to the task:
 
 - Next work / remaining scope: `.agents/roadmap.md`
-- Product or music decisions: `.agents/product.md`, `.agents/music-direction.md`
-- Implementation, stack, and Android commands: `.agents/implementation-plan.md`, `.agents/tech-stack.md`, `.agents/android-dev-guide.md`
-- Code, design, entitlement, release, or licensing rules: `.agents/coding-standards.md`, `.agents/design-system.md`, `.agents/entitlements.md`, `.agents/security-ci-release.md`, `.agents/audio-licensing.md`
-- Research or feature delivery workflow: `.agents/research-plan.md`, `.agents/feature-delivery-flow.md`
-- Agent workflow and installed skills policy: `.agents/agent-strategy.md`
+- Product or music decisions: `.agents/docs/product/product.md`, `.agents/docs/product/music-direction.md`
+- Implementation, stack, and Android commands: `.agents/docs/engineering/implementation-plan.md`, `.agents/docs/engineering/tech-stack.md`, `.agents/docs/engineering/android-dev-guide.md`
+- Code, design, entitlement, release, or licensing rules: `.agents/docs/engineering/coding-standards.md`, `.agents/docs/product/design-system.md`, `.agents/docs/product/entitlements.md`, `.agents/docs/engineering/security-ci-release.md`, `.agents/docs/research/audio-licensing.md`
+- Research or feature delivery workflow: `.agents/docs/research/research-plan.md`, `.agents/docs/engineering/feature-delivery-flow.md`
+- Agent workflow and installed skills policy: `.agents/docs/engineering/agent-strategy.md`
 
 Do not treat `.agents/skills/**` as project-authored roadmap docs. Those files
 come from installed skills managed by `skills-lock.json`; use them only when a
