@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable, Modal } from 'react-native';
+import { View, Text, Pressable, Modal, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppStore } from '../../data/store';
 import { isAudioAvailable } from '../../features/audio-engine/adapter';
@@ -11,7 +12,111 @@ import {
   getPlaybackArtwork,
   getSelectablePlaybackArtworks,
 } from '../../features/playback-visuals/artworks';
+import type { PlaybackArtwork } from '../../features/playback-visuals/artworks';
 import { MIST, FONT } from '../../styles/theme';
+
+type ExpoVideoModule = typeof import('expo-video');
+
+function loadExpoVideo(): ExpoVideoModule | null {
+  try {
+    return require('expo-video') as ExpoVideoModule;
+  } catch {
+    return null;
+  }
+}
+
+const THUMBNAIL_WIDTH = 88;
+const THUMBNAIL_HEIGHT = 128;
+
+function ArtworkCard({
+  artwork,
+  selected,
+  onPress,
+  expoVideo,
+}: {
+  artwork: PlaybackArtwork;
+  selected: boolean;
+  onPress: () => void;
+  expoVideo: ExpoVideoModule;
+}) {
+  const player = expoVideo.useVideoPlayer(artwork.sources.portrait, (instance) => {
+    instance.loop = true;
+    instance.muted = true;
+    instance.volume = 0;
+    instance.audioMixingMode = 'mixWithOthers';
+    instance.showNowPlayingNotification = false;
+  });
+
+  React.useEffect(() => {
+    player.play();
+  }, [player]);
+
+  return (
+    <Pressable
+      android_disableSound
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.7 : 1,
+        width: THUMBNAIL_WIDTH,
+        borderWidth: 1,
+        borderColor: selected ? MIST.accent : MIST.hairline,
+        backgroundColor: selected ? MIST.accentDim : 'transparent',
+        borderRadius: 6,
+        overflow: 'hidden',
+      })}
+    >
+      <expoVideo.VideoView
+        player={player}
+        nativeControls={false}
+        contentFit="cover"
+        allowsPictureInPicture={false}
+        surfaceType="textureView"
+        style={{ width: THUMBNAIL_WIDTH, height: THUMBNAIL_HEIGHT }}
+      />
+    </Pressable>
+  );
+}
+
+function ArtworkCardFallback({
+  artwork,
+  selected,
+  onPress,
+}: {
+  artwork: PlaybackArtwork;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      android_disableSound
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.62 : 1,
+        borderWidth: 1,
+        borderColor: selected ? MIST.accent : MIST.hairline,
+        backgroundColor: selected ? MIST.accentDim : 'transparent',
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+        borderRadius: 8,
+      })}
+    >
+      <Text
+        style={{
+          fontFamily: FONT.sans,
+          fontSize: 15,
+          fontWeight: '400',
+          color: selected ? MIST.accent : MIST.text,
+        }}
+      >
+        {artwork.label}
+      </Text>
+    </Pressable>
+  );
+}
 
 const LAYER_LABELS: Record<AudioLayer, string> = {
   kick: 'KICK',
@@ -22,7 +127,9 @@ const LAYER_LABELS: Record<AudioLayer, string> = {
 
 export function PlayerBar() {
   const { bottom } = useSafeAreaInsets();
+  const router = useRouter();
   const [artPickerVisible, setArtPickerVisible] = React.useState(false);
+  const expoVideo = React.useMemo(() => loadExpoVideo(), []);
   const {
     activeSoundCombination,
     activeChord,
@@ -94,7 +201,7 @@ export function PlayerBar() {
             );
           })}
           <View style={{ flex: 1 }} />
-          {artEnabled && (
+          {artEnabled ? (
             <Pressable
               android_disableSound
               accessibilityRole="button"
@@ -112,6 +219,26 @@ export function PlayerBar() {
                 }}
               >
                 ART: {activeArtwork.shortLabel}
+              </Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              android_disableSound
+              accessibilityRole="button"
+              accessibilityLabel="Pro でアートワークを解放"
+              onPress={() => router.push('/pro')}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 4 })}
+            >
+              <Text
+                style={{
+                  fontFamily: FONT.mono,
+                  fontSize: 9,
+                  fontWeight: '500',
+                  letterSpacing: 2.2,
+                  color: MIST.text,
+                }}
+              >
+                ART · PRO
               </Text>
             </Pressable>
           )}
@@ -221,41 +348,35 @@ export function PlayerBar() {
               </Pressable>
             </View>
 
-            {selectableArtworks.map((artwork) => {
-              const selected = artwork.id === activeArtworkId;
-              return (
-                <Pressable
-                  key={artwork.id}
-                  android_disableSound
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  onPress={() => {
-                    setActiveArtworkId(artwork.id);
-                    setArtPickerVisible(false);
-                  }}
-                  style={({ pressed }) => ({
-                    opacity: pressed ? 0.62 : 1,
-                    borderWidth: 1,
-                    borderColor: selected ? MIST.accent : MIST.hairline,
-                    backgroundColor: selected ? MIST.accentDim : 'transparent',
-                    paddingHorizontal: 16,
-                    paddingVertical: 16,
-                    borderRadius: 8,
-                  })}
-                >
-                  <Text
-                    style={{
-                      fontFamily: FONT.sans,
-                      fontSize: 15,
-                      fontWeight: '400',
-                      color: selected ? MIST.accent : MIST.text,
-                    }}
-                  >
-                    {artwork.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 10, paddingBottom: 4 }}
+            >
+              {selectableArtworks.map((artwork) => {
+                const selected = artwork.id === activeArtworkId;
+                const onPress = () => {
+                  setActiveArtworkId(artwork.id);
+                  setArtPickerVisible(false);
+                };
+                return expoVideo ? (
+                  <ArtworkCard
+                    key={artwork.id}
+                    artwork={artwork}
+                    selected={selected}
+                    onPress={onPress}
+                    expoVideo={expoVideo}
+                  />
+                ) : (
+                  <ArtworkCardFallback
+                    key={artwork.id}
+                    artwork={artwork}
+                    selected={selected}
+                    onPress={onPress}
+                  />
+                );
+              })}
+            </ScrollView>
           </Pressable>
         </Pressable>
       </Modal>
