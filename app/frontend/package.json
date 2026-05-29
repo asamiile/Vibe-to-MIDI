@@ -17,7 +17,8 @@
     "preset": "jest-expo",
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1",
-      "^react-native-audio-api$": "<rootDir>/src/__mocks__/react-native-audio-api.ts"
+      "^react-native-audio-api$": "<rootDir>/src/__mocks__/react-native-audio-api.ts",
+      "\\.mp4$": "<rootDir>/src/__mocks__/fileMock.ts"
     },
     "testMatch": [
       "**/__tests__/**/*.test.ts",
