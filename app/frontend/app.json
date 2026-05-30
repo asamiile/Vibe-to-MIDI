@@ -2,7 +2,7 @@
   "expo": {
     "name": "Vibe-to-MIDI",
     "slug": "vibe-to-midi",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "scheme": "vibe-to-midi",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "6"
+      "buildNumber": "7"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +25,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.asamiile.vibetomidi",
-      "versionCode": 6
+      "versionCode": 7
     },
     "web": {
       "bundler": "metro",
