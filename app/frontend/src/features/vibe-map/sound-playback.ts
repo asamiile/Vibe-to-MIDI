@@ -263,6 +263,39 @@ export function getNoisePlaybackProfile(variant: NoiseVariantId): NoisePlaybackP
 
 export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProfile {
   switch (variant) {
+    case 'dub-minor':
+      return {
+        notes: (midiNotes) => [midiNotes[0], midiNotes[0] + 3, midiNotes[0] + 7],
+        durationRatio: 1.2,
+        gainRatio: 0.95,
+        cutoffRatio: 0.7,
+        qRatio: 1.2,
+        delaySendRatio: 1.3,
+        repeatFilterRatio: 0.7,
+        repeatDurationRatio: 1.1,
+      };
+    case 'dub-sus4':
+      return {
+        notes: (midiNotes) => [midiNotes[0], midiNotes[0] + 5, midiNotes[0] + 7],
+        durationRatio: 1.2,
+        gainRatio: 0.95,
+        cutoffRatio: 0.75,
+        qRatio: 1.1,
+        delaySendRatio: 1.3,
+        repeatFilterRatio: 0.72,
+        repeatDurationRatio: 1.1,
+      };
+    case 'dub-minor9':
+      return {
+        notes: (midiNotes) => [midiNotes[0], midiNotes[0] + 7, midiNotes[0] + 10, midiNotes[0] + 14],
+        durationRatio: 1.4,
+        gainRatio: 0.85,
+        cutoffRatio: 0.65,
+        qRatio: 1.3,
+        delaySendRatio: 1.4,
+        repeatFilterRatio: 0.65,
+        repeatDurationRatio: 1.2,
+      };
     case 'rootless-voicing':
       return {
         notes: (midiNotes) => (midiNotes.length > 2 ? midiNotes.slice(1) : midiNotes),

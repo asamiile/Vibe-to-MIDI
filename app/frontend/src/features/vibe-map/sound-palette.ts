@@ -30,7 +30,10 @@ export type StabVariantId =
   | 'octave-shadow'
   | 'short-muted'
   | 'long-smear'
-  | 'inverted-stab';
+  | 'inverted-stab'
+  | 'dub-minor'
+  | 'dub-sus4'
+  | 'dub-minor9';
 export type NoiseVariantId =
   | 'tape-hiss'
   | 'closed-hat'
@@ -126,6 +129,9 @@ export const STAB_VARIANT_IDS: readonly StabVariantId[] = [
   'short-muted',
   'long-smear',
   'inverted-stab',
+  'dub-minor',
+  'dub-sus4',
+  'dub-minor9',
 ];
 
 export function pickKickVariant(random: () => number = Math.random): KickVariantId {
@@ -532,6 +538,33 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       source: 'inverted chord voicing for suspended movement',
       target: 'poly synth track',
       fxRole: 'lowpass, dub delay',
+      playback: 'preview',
+    },
+    {
+      id: 'dub-minor',
+      name: 'Dub minor',
+      type: 'Poly synth',
+      source: 'dark saw and square blend minor chord',
+      target: 'poly synth track',
+      fxRole: 'lowpass sweep, dub delay',
+      playback: 'preview',
+    },
+    {
+      id: 'dub-sus4',
+      name: 'Dub sus4',
+      type: 'Poly synth',
+      source: 'dark saw and square blend sus4 chord',
+      target: 'poly synth track',
+      fxRole: 'lowpass sweep, dub delay',
+      playback: 'preview',
+    },
+    {
+      id: 'dub-minor9',
+      name: 'Dub minor 9',
+      type: 'Poly synth',
+      source: 'deep minor 9th voicing',
+      target: 'poly synth track',
+      fxRole: 'lowpass sweep, heavy dub delay',
       playback: 'preview',
     },
   ],

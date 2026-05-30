@@ -486,6 +486,10 @@ function scheduleChordStab(
     if (variant === 'square-saw') {
       scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain * 0.58, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
       scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain * 0.42, effectiveFilterFreq * 0.88, effectiveFilterQ, 'square', scheduledNodes, sweep, panValue, shapeAmount);
+    } else if (variant === 'dub-minor' || variant === 'dub-sus4' || variant === 'dub-minor9') {
+      const dubSweep = sweep ?? { startRatio: 1.15, endRatio: 0.55 };
+      scheduleSynth(ctx, baseFreq * 0.998, startTime, effectiveDuration, voiceGain * 0.55, effectiveFilterFreq * 0.9, effectiveFilterQ * 1.1, 'sawtooth', scheduledNodes, dubSweep, panValue, shapeAmount ?? 0.1);
+      scheduleSynth(ctx, baseFreq * 1.002, startTime, effectiveDuration, voiceGain * 0.45, effectiveFilterFreq * 0.8, effectiveFilterQ * 1.1, 'square', scheduledNodes, dubSweep, panValue, shapeAmount ?? 0.1);
     } else if (variant === 'sampled-chord-like') {
       scheduleSynth(ctx, baseFreq, startTime, effectiveDuration * 0.72, voiceGain, effectiveFilterFreq * 0.82, effectiveFilterQ * 0.9, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
     } else if (variant === 'wide-detuned') {

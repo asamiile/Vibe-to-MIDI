@@ -27,7 +27,17 @@ Status markers:
 
 ## Next Work
 
-### 1. Billing
+### 1. Dub Techno Sound Expansion
+
+See `research/features/2026-05-22_dub-techno-sound-expansion/notebooks/analysis.ipynb` for research details.
+
+- [x] Dub Chord Stabs (Oscillator + Filter + Envelope)
+- [ ] Filtered Dub Delay (DelayNode + BiquadFilterNode with feedback clamping)
+- [ ] Generative Noise/Percussion (AudioBufferSourceNode + Filter)
+- [ ] Sub Bass & Rumble (Sine sub + Ducking + Filter)
+- [ ] Filter Motion (LFO/Automation for cutoff drift)
+
+### 2. Billing
 
 See `.agents/docs/product/entitlements.md` for product ids, policy, and implementation
 rules.
