@@ -368,26 +368,30 @@ export function DawStepsPanel({ suggestion }: Props) {
   }, [suggestion]);
 
   function auditPlay(key: string, fn: () => void) {
-    if (playTimer.current) clearTimeout(playTimer.current);
-    stopPreviewBeforeAudition();
-    setPlayingKey(key);
-    fn();
-    playTimer.current = setTimeout(() => setPlayingKey(null), 900);
+    requestAnimationFrame(() => {
+      if (playTimer.current) clearTimeout(playTimer.current);
+      stopPreviewBeforeAudition();
+      setPlayingKey(key);
+      fn();
+      playTimer.current = setTimeout(() => setPlayingKey(null), 900);
+    });
   }
 
   async function handleMidiExport() {
     if (midiExportBusy) return;
     setMidiExportBusy(true);
     setMidiExportMessage(null);
-    try {
-      const exported = buildMidiExport(suggestion);
-      const shared = await shareMidiExport(exported);
-      setMidiExportMessage(`${shared.filename} ready to share`);
-    } catch {
-      setMidiExportMessage('MIDI export failed. Try again from a development build.');
-    } finally {
-      setMidiExportBusy(false);
-    }
+    requestAnimationFrame(async () => {
+      try {
+        const exported = buildMidiExport(suggestion);
+        const shared = await shareMidiExport(exported);
+        setMidiExportMessage(`${shared.filename} ready to share`);
+      } catch {
+        setMidiExportMessage('MIDI export failed. Try again from a development build.');
+      } finally {
+        setMidiExportBusy(false);
+      }
+    });
   }
 
   const chordNotesLabel = view.audition.chordNotes.map((note) => note.label).join(' ');

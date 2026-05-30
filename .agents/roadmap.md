@@ -21,23 +21,14 @@ Status markers:
 - [x] Settings, licenses, privacy link, audio debug, and diagnostics
 - [x] Pro entitlement constants, Pro screen, and dev-only Pro Preview
 - [x] Pro-gated MIDI export — bytes generation and Android file save/share transport
-- [x] MIDI File Save / Share — expo-sharing transport, success/failure states, tests — see `.agents/docs/qa/qa-midi-share.md`
 - [x] Pro Generative Art — 3 Pro artworks, video thumbnail picker, Pro gate, performance QA — see `.agents/docs/qa/qa-pro-art.md`
-- [~] Saved Ideas — save/load/delete generated ideas, duplicate guard, file storage — device QA pending, see `.agents/docs/qa/qa-persistence.md`
+- [x] Dub Techno Sound Expansion — Chord stabs, Sub bass, Generative noise, Dub delays, and LFO motion.
+- [x] Performance Improvements — `requestAnimationFrame` wrappers, `babel-plugin-transform-remove-console`, and Hermes mmap optimization.
+
 
 ## Next Work
 
-### 1. Dub Techno Sound Expansion
-
-See `research/features/2026-05-22_dub-techno-sound-expansion/notebooks/analysis.ipynb` for research details.
-
-- [x] Dub Chord Stabs (Oscillator + Filter + Envelope)
-- [x] Filtered Dub Delay (DelayNode + BiquadFilterNode with feedback clamping)
-- [x] Generative Noise/Percussion (AudioBufferSourceNode + Filter)
-- [x] Sub Bass & Rumble (Sine sub + Ducking + Filter)
-- [x] Filter Motion (LFO/Automation for cutoff drift)
-
-### 2. Billing
+### 1. Billing
 
 See `.agents/docs/product/entitlements.md` for product ids, policy, and implementation
 rules.
@@ -116,6 +107,10 @@ Batch these in a dedicated design phase.
     - Generative Art preview — consider showing a Pro video clip as a teaser
     - free vs Pro comparison if needed
     - post-purchase / already-Pro state
+
+## QA Phase (Device Testing Pending)
+
+- [ ] Saved Ideas (Persistence) — save/load/delete generated ideas, duplicate guard, file storage — see `.agents/docs/qa/qa-persistence.md`
 
 ## Validation Checklist
 
