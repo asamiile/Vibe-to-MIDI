@@ -307,6 +307,24 @@ function scheduleKick(
   }
 }
 
+let whiteNoiseBuffer: any = null;
+function getWhiteNoiseBuffer(ctx: AudioCtx): any {
+  if (!whiteNoiseBuffer) {
+    const bufferSize = ctx.sampleRate * 2;
+    whiteNoiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = new Float32Array(bufferSize);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    if (typeof whiteNoiseBuffer.copyToChannel === 'function') {
+      whiteNoiseBuffer.copyToChannel(data, 0);
+    } else if (whiteNoiseBuffer.getChannelData) {
+      whiteNoiseBuffer.getChannelData(0).set(data);
+    }
+  }
+  return whiteNoiseBuffer;
+}
+
 function scheduleNoise(
   ctx: AudioCtx,
   startTime: number,
@@ -364,22 +382,38 @@ function scheduleNoise(
     gain.connect(ctx.destination);
   }
 
-  const oscs = profile.freqs.map((freq, index) => {
-    const osc = ctx.createOscillator();
-    osc.type = profile.type(index);
-    osc.frequency.value = freq;
-    osc.connect(bandpass);
-    osc.start(startTime);
-    osc.stop(startTime + effectiveDuration + 0.01);
-    return osc;
-  });
+  if ((profile as any).useWhiteNoise) {
+    const source = ctx.createBufferSource();
+    source.buffer = getWhiteNoiseBuffer(ctx);
+    source.loop = true;
+    source.connect(bandpass as unknown as Parameters<typeof source.connect>[0]);
+    source.start(startTime);
+    source.stop(startTime + effectiveDuration + 0.01);
 
-  cleanupFns.push((t) => {
-    gain.gain.cancelScheduledValues(t);
-    gain.gain.setValueAtTime(0, t);
-    oscs.forEach((osc) => { try { osc.stop(t); } catch {} });
-    panner?.disconnect();
-  });
+    cleanupFns.push((t) => {
+      gain.gain.cancelScheduledValues(t);
+      gain.gain.setValueAtTime(0, t);
+      try { source.stop(t); } catch {}
+      panner?.disconnect();
+    });
+  } else {
+    const oscs = profile.freqs.map((freq, index) => {
+      const osc = ctx.createOscillator();
+      osc.type = profile.type(index);
+      osc.frequency.value = freq;
+      osc.connect(bandpass as unknown as Parameters<typeof osc.connect>[0]);
+      osc.start(startTime);
+      osc.stop(startTime + effectiveDuration + 0.01);
+      return osc;
+    });
+
+    cleanupFns.push((t) => {
+      gain.gain.cancelScheduledValues(t);
+      gain.gain.setValueAtTime(0, t);
+      oscs.forEach((osc) => { try { osc.stop(t); } catch {} });
+      panner?.disconnect();
+    });
+  }
 }
 
 function scheduleSynth(

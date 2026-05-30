@@ -33,7 +33,7 @@ See `research/features/2026-05-22_dub-techno-sound-expansion/notebooks/analysis.
 
 - [x] Dub Chord Stabs (Oscillator + Filter + Envelope)
 - [x] Filtered Dub Delay (DelayNode + BiquadFilterNode with feedback clamping)
-- [ ] Generative Noise/Percussion (AudioBufferSourceNode + Filter)
+- [x] Generative Noise/Percussion (AudioBufferSourceNode + Filter)
 - [ ] Sub Bass & Rumble (Sine sub + Ducking + Filter)
 - [ ] Filter Motion (LFO/Automation for cutoff drift)
 

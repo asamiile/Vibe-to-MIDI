@@ -69,7 +69,9 @@ describe('sound playback profiles', () => {
   it.each(NOISE_VARIANT_IDS)('keeps noise profile gain controlled for %s', (variant) => {
     const profile = getNoisePlaybackProfile(variant);
 
-    expect(profile.freqs.length).toBeGreaterThan(0);
+    if (!profile.useWhiteNoise) {
+      expect(profile.freqs.length).toBeGreaterThan(0);
+    }
     expect(profile.durationRatio).toBeGreaterThan(0);
     expect(profile.gainRatio).toBeGreaterThan(0);
     expect(profile.gainRatio).toBeLessThanOrEqual(0.85);

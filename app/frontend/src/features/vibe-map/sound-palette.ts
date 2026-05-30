@@ -46,7 +46,8 @@ export type NoiseVariantId =
   | 'open-air-hat'
   | 'metal-tick'
   | 'sidechain-floor'
-  | 'tape-clicks';
+  | 'tape-clicks'
+  | 'generative-noise';
 export type SpaceVariantId = 'short-dub' | 'deep-feedback' | 'spring-style' | 'dark-plate' | 'analog-dub-delay' | 'tape-echo-dub';
 
 export type SoundPaletteLayer = 'kick' | 'bass' | 'noise' | 'stab' | 'space';
@@ -115,6 +116,7 @@ export const NOISE_VARIANT_IDS: readonly NoiseVariantId[] = [
   'metal-tick',
   'sidechain-floor',
   'tape-clicks',
+  'generative-noise',
 ];
 
 export const STAB_VARIANT_IDS: readonly StabVariantId[] = [
@@ -437,6 +439,15 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       source: 'small tape-style clicks and dusty ticks',
       target: 'noise or percussion track',
       fxRole: 'bandpass, random-like placement, low gain',
+      playback: 'preview',
+    },
+    {
+      id: 'generative-noise',
+      name: 'Generative Noise',
+      type: 'Synthesized',
+      source: 'true broadband white noise generated via AudioBuffer',
+      target: 'drum track or return',
+      fxRole: 'smooth atmospheric texture or filtered noise sweep',
       playback: 'preview',
     },
   ],

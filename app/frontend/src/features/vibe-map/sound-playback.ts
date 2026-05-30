@@ -45,6 +45,7 @@ export interface NoisePlaybackProfile {
   cutoffRatio: number;
   qRatio: number;
   continuous?: boolean;  // schedule one sustained node per loop instead of per-step hits
+  useWhiteNoise?: boolean;
 }
 
 export interface StabPlaybackProfile {
@@ -164,6 +165,7 @@ export function getNoisePlaybackProfile(variant: NoiseVariantId): NoisePlaybackP
         gainRatio: 0.32,
         cutoffRatio: 0.75,
         qRatio: 0.75,
+        useWhiteNoise: true,
       };
     case 'bandpass-tick':
       return {
@@ -247,6 +249,17 @@ export function getNoisePlaybackProfile(variant: NoiseVariantId): NoisePlaybackP
         gainRatio: 0.5,
         cutoffRatio: 0.92,
         qRatio: 1.9,
+      };
+    case 'generative-noise':
+      return {
+        freqs: [],
+        type: () => 'triangle',
+        durationRatio: 2.0,
+        gainRatio: 0.4,
+        cutoffRatio: 0.6,
+        qRatio: 0.6,
+        continuous: true,
+        useWhiteNoise: true,
       };
     case 'tape-hiss':
     default:
