@@ -10,6 +10,7 @@ import { useAppStore } from '../../data/store';
 import { midiToNoteName } from '../../lib/notes';
 import { MIST, FONT } from '../../styles/theme';
 import { KickStepGrid } from './KickStepGrid';
+import { AButton } from './AButton';
 
 interface Props {
   suggestion: MusicalSuggestion;
@@ -87,58 +88,7 @@ function TabLink({
   );
 }
 
-function CompareButton({
-  label,
-  disabled,
-  active,
-  onPress,
-}: {
-  label: string;
-  disabled: boolean;
-  active: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      android_disableSound
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => ({
-        flex: 1,
-        opacity: disabled ? 0.35 : pressed ? 0.6 : 1,
-      })}
-    >
-      <View
-        style={{
-          minHeight: 48,
-          paddingVertical: 14,
-          paddingHorizontal: 16,
-          borderWidth: 1,
-          borderStyle: 'solid',
-          borderColor: disabled ? MIST.hairline : active ? MIST.accent : 'rgba(255,255,255,0.2)',
-          backgroundColor: active ? MIST.accentDim : 'transparent',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Text
-          style={{
-            fontFamily: FONT.mono,
-            fontSize: 9,
-            fontWeight: '500',
-            letterSpacing: 2.2,
-            textTransform: 'uppercase',
-            color: disabled ? MIST.textGhost : active ? MIST.accent : MIST.text,
-            textAlign: 'center',
-          }}
-          numberOfLines={1}
-        >
-          {label}
-        </Text>
-      </View>
-    </Pressable>
-  );
-}
+
 
 function BassStrip({ notes }: { notes: readonly number[] }) {
   const labels = notes.map(midiToNoteName);
@@ -280,10 +230,11 @@ export function IntuitiveLearningPanel({ suggestion }: Props) {
             ]).map((opt) => {
               const active = activeCompare === opt.k;
               return (
-                <CompareButton
+                <AButton
                   key={opt.k}
+                  flex={true}
                   disabled={!audioAvailable}
-                  active={active}
+                  variant={active ? 'accent' : 'default'}
                   label={opt.label}
                   onPress={() => { void playCompare(opt.k); }}
                 />

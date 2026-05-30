@@ -12,6 +12,7 @@ import { buildMidiExport } from '../../features/midi-export/export-midi';
 import { shareMidiExport } from '../../features/midi-export/share-midi';
 import { MIST, FONT } from '../../styles/theme';
 import { KickStepGrid } from './KickStepGrid';
+import { AButton } from './AButton';
 
 interface Props {
   suggestion: MusicalSuggestion;
@@ -193,6 +194,34 @@ function MidiExportBar({
   onExport: () => void;
   onUpgrade: () => void;
 }) {
+  // State 1 · Free: hairlineX border, transparent bg, text color
+  // State 2 · Ready / 3 · Busy / 4 · Success / 5 · Error: accent border, accentDim bg, accent color
+  const btnLabel = enabled
+    ? (busy ? 'Exporting .mid' : 'Export .mid')
+    : 'Export MIDI · Pro';
+
+  // Sub-label color per state
+  const sublabelColor = busy
+    ? MIST.textFaint                                   // State 3 · Busy
+    : message?.includes('failed')
+      ? MIST.textFaint                                 // State 5 · Error
+      : message
+        ? MIST.textMute                                // State 4 · Success
+        : enabled ? MIST.textMute : MIST.textFaint;   // State 2 · Ready / State 1 · Free
+
+  const sublabelText = message
+    ?? (enabled
+      ? 'Share the current loop as a DAW-ready MIDI file.'
+      : 'Unlock .mid export for DAW editing.');
+
+  const buttonVariant = !enabled
+    ? 'default'
+    : busy
+      ? 'busy'
+      : message && !message.includes('failed')
+        ? 'success'
+        : 'accent';
+
   return (
     <View
       style={{
@@ -202,44 +231,21 @@ function MidiExportBar({
         borderBottomColor: MIST.hairline,
       }}
     >
-      <Pressable
-        android_disableSound
-        disabled={busy}
+      <AButton
+        variant={buttonVariant}
+        label={btnLabel}
         onPress={enabled ? onExport : onUpgrade}
-        style={({ pressed }) => ({
-          opacity: busy ? 0.5 : pressed ? 0.65 : 1,
-          paddingVertical: 12,
-          paddingHorizontal: 14,
-          borderWidth: 1,
-          borderColor: enabled ? MIST.accent : MIST.hairlineX,
-          backgroundColor: enabled ? MIST.accentDim : 'transparent',
-          alignItems: 'center',
-        })}
-      >
-        <Text
-          style={{
-            fontFamily: FONT.mono,
-            fontSize: 10,
-            fontWeight: '500',
-            letterSpacing: 2.2,
-            color: enabled ? MIST.accent : MIST.text,
-            textTransform: 'uppercase',
-          }}
-        >
-          {enabled ? (busy ? 'Exporting .mid' : 'Export .mid') : 'Export MIDI · Pro'}
-        </Text>
-      </Pressable>
+      />
       <Text
         style={{
           marginTop: 8,
           fontFamily: FONT.sans,
           fontSize: 11,
-          color: message ? MIST.textMute : MIST.textFaint,
           lineHeight: 16,
+          color: sublabelColor,
         }}
-        numberOfLines={2}
       >
-        {message ?? (enabled ? 'Share the current loop as a DAW-ready MIDI file.' : 'Unlock .mid export for DAW editing.')}
+        {sublabelText}
       </Text>
     </View>
   );
