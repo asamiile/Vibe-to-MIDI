@@ -196,7 +196,9 @@ function scheduleBass(
   scheduledNodes: ScheduledNode[],
   sweep?: { startRatio: number; endRatio: number },
   panValue?: number,
-  shapeAmount?: number
+  shapeAmount?: number,
+  duckingPattern?: readonly boolean[],
+  stepDuration?: number
 ): void {
   const osc = ctx.createOscillator();
   const filter = ctx.createBiquadFilter();
@@ -218,6 +220,23 @@ function scheduleBass(
   const safeGain = Math.min(gainValue, SAFETY_LIMITS.bassVoiceGain);
   gain.gain.setValueAtTime(0, startTime);
   gain.gain.linearRampToValueAtTime(safeGain, startTime + 0.01);
+
+  if (duckingPattern && stepDuration) {
+    const steps = Math.ceil(duration / stepDuration);
+    for (let i = 0; i < steps; i++) {
+      if (duckingPattern[i % duckingPattern.length]) {
+        const duckStart = startTime + i * stepDuration;
+        const duckBottom = duckStart + 0.02;
+        const duckRecovery = duckStart + stepDuration * 0.75;
+        if (duckStart < startTime + duration) {
+           gain.gain.linearRampToValueAtTime(safeGain, Math.max(startTime + 0.01, duckStart - 0.01));
+           gain.gain.linearRampToValueAtTime(safeGain * 0.1, duckBottom);
+           gain.gain.linearRampToValueAtTime(safeGain, Math.min(safeRampEnd(startTime, duration), duckRecovery));
+        }
+      }
+    }
+  }
+
   gain.gain.linearRampToValueAtTime(0, safeRampEnd(startTime, duration));
 
   osc.connect(filter);
@@ -617,7 +636,9 @@ export async function playPreview(
             nodeAcc,
             voice.sweep ?? bassSweep,
             bassPan,
-            voice.shapeAmount ?? bassShape
+            voice.shapeAmount ?? bassShape,
+            suggestion.rhythmPattern,
+            stepDuration
           );
         });
       });
