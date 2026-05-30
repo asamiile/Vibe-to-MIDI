@@ -25,48 +25,6 @@ Status markers:
 - [x] Pro Generative Art — 3 Pro artworks, video thumbnail picker, Pro gate, performance QA — see `.agents/docs/qa/qa-pro-art.md`
 - [~] Saved Ideas — save/load/delete generated ideas, duplicate guard, file storage — device QA pending, see `.agents/docs/qa/qa-persistence.md`
 
-## Design Backlog
-
-Batch these in a dedicated design phase.
-
-- [ ] MIDI Export CTA
-  - Location: MIDI screen, below `Pattern / Notes / Sound`.
-  - Current free state: `Export MIDI · Pro`, routes to Pro screen.
-  - Current Pro Preview state: `Export .mid`.
-  - Current success state: shared filename.
-  - Files:
-    - `app/frontend/src/components/ui/DawStepsPanel.tsx`
-    - `app/frontend/src/features/midi-export/export-midi.ts`
-  - Needs design:
-    - final placement
-    - free vs Pro state
-    - success / ready message
-    - failure state
-    - full-width command vs compact row vs Pro Pro prompt surface
-
-- [ ] ART · PRO Pro prompt button (PlayerBar)
-  - Location: PlayerBar, top-right (same position as `ART: <label>` for Pro users).
-  - Current free state: `ART · PRO` text button, routes to Pro screen.
-  - Current Pro state: `ART: <shortLabel>`, opens artwork picker modal.
-  - File: `app/frontend/src/components/ui/PlayerBar.tsx`
-  - Needs design:
-    - visual weight vs MIDI Export CTA (two Pro Pro prompt surfaces visible at once)
-    - whether to show `ART · PRO` only when playing, or always
-    - lock icon or text-only Pro prompt
-
-- [ ] Pro screen
-  - Location: `app/frontend/app/pro.tsx`
-  - Current state: placeholder layout — plain title, billing debug block, feature list, dev-only toggle.
-  - Billing connect is Phase 3; this design can be built without it.
-  - Needs design:
-    - hero treatment (visual or motion that communicates Pro value)
-    - purchase CTA button placement and copy (disabled until billing is live)
-    - price display (one-time unlock)
-    - feature list presentation (currently plain `ProRow` items)
-    - Generative Art preview — consider showing a Pro video clip as a teaser
-    - free vs Pro comparison if needed
-    - post-purchase / already-Pro state
-
 ## Next Work
 
 ### 1. Billing
@@ -106,6 +64,48 @@ See `.agents/docs/engineering/security-ci-release.md` for release guardrails.
 - [ ] Verify licenses screen.
 - [ ] Verify privacy policy link.
 - [ ] Monitor Google Play Android vitals after release.
+
+## Design Backlog
+
+Batch these in a dedicated design phase.
+
+- [x] MIDI Export CTA
+  - Location: MIDI screen, below `Pattern / Notes / Sound`.
+  - Current free state: `Export MIDI · Pro`, routes to Pro screen.
+  - Current Pro Preview state: `Export .mid`.
+  - Current success state: shared filename.
+  - Files:
+    - `app/frontend/src/components/ui/DawStepsPanel.tsx`
+    - `app/frontend/src/features/midi-export/export-midi.ts`
+  - Needs design:
+    - final placement
+    - free vs Pro state
+    - success / ready message
+    - failure state
+    - full-width command vs compact row vs Pro Pro prompt surface
+
+- [x] ART · PRO Pro prompt button (PlayerBar)
+  - Location: PlayerBar, top-right (same position as `ART: <label>` for Pro users).
+  - Current free state: `ART · PRO` text button, routes to Pro screen.
+  - Current Pro state: `ART: <shortLabel>`, opens artwork picker modal.
+  - File: `app/frontend/src/components/ui/PlayerBar.tsx`
+  - Needs design:
+    - visual weight vs MIDI Export CTA (two Pro Pro prompt surfaces visible at once)
+    - whether to show `ART · PRO` only when playing, or always
+    - lock icon or text-only Pro prompt
+
+- [x] Pro screen
+  - Location: `app/frontend/app/pro.tsx`
+  - Current state: placeholder layout — plain title, billing debug block, feature list, dev-only toggle.
+  - Billing connect is Phase 3; this design can be built without it.
+  - Needs design:
+    - hero treatment (visual or motion that communicates Pro value)
+    - purchase CTA button placement and copy (disabled until billing is live)
+    - price display (one-time unlock)
+    - feature list presentation (currently plain `ProRow` items)
+    - Generative Art preview — consider showing a Pro video clip as a teaser
+    - free vs Pro comparison if needed
+    - post-purchase / already-Pro state
 
 ## Validation Checklist
 
