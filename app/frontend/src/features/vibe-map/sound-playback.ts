@@ -45,6 +45,7 @@ export interface NoisePlaybackProfile {
   cutoffRatio: number;
   qRatio: number;
   continuous?: boolean;  // schedule one sustained node per loop instead of per-step hits
+  useWhiteNoise?: boolean;
 }
 
 export interface StabPlaybackProfile {
@@ -58,6 +59,7 @@ export interface StabPlaybackProfile {
   repeatFilterRatio: number;
   repeatDurationRatio: number;
   repeatShapeAmount?: number;
+  lfo?: { rate: number; depth: number };
 }
 
 export interface DubDelaySpec {
@@ -164,6 +166,7 @@ export function getNoisePlaybackProfile(variant: NoiseVariantId): NoisePlaybackP
         gainRatio: 0.32,
         cutoffRatio: 0.75,
         qRatio: 0.75,
+        useWhiteNoise: true,
       };
     case 'bandpass-tick':
       return {
@@ -248,6 +251,17 @@ export function getNoisePlaybackProfile(variant: NoiseVariantId): NoisePlaybackP
         cutoffRatio: 0.92,
         qRatio: 1.9,
       };
+    case 'generative-noise':
+      return {
+        freqs: [],
+        type: () => 'triangle',
+        durationRatio: 2.0,
+        gainRatio: 0.4,
+        cutoffRatio: 0.6,
+        qRatio: 0.6,
+        continuous: true,
+        useWhiteNoise: true,
+      };
     case 'tape-hiss':
     default:
       return {
@@ -263,6 +277,42 @@ export function getNoisePlaybackProfile(variant: NoiseVariantId): NoisePlaybackP
 
 export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProfile {
   switch (variant) {
+    case 'dub-minor':
+      return {
+        notes: (midiNotes) => [midiNotes[0], midiNotes[0] + 3, midiNotes[0] + 7],
+        durationRatio: 1.2,
+        gainRatio: 0.95,
+        cutoffRatio: 0.7,
+        qRatio: 1.2,
+        delaySendRatio: 1.3,
+        repeatFilterRatio: 0.7,
+        repeatDurationRatio: 1.1,
+        lfo: { rate: 0.08, depth: 600 },
+      };
+    case 'dub-sus4':
+      return {
+        notes: (midiNotes) => [midiNotes[0], midiNotes[0] + 5, midiNotes[0] + 7],
+        durationRatio: 1.2,
+        gainRatio: 0.95,
+        cutoffRatio: 0.75,
+        qRatio: 1.1,
+        delaySendRatio: 1.3,
+        repeatFilterRatio: 0.72,
+        repeatDurationRatio: 1.1,
+        lfo: { rate: 0.1, depth: 750 },
+      };
+    case 'dub-minor9':
+      return {
+        notes: (midiNotes) => [midiNotes[0], midiNotes[0] + 7, midiNotes[0] + 10, midiNotes[0] + 14],
+        durationRatio: 1.4,
+        gainRatio: 0.85,
+        cutoffRatio: 0.65,
+        qRatio: 1.3,
+        delaySendRatio: 1.4,
+        repeatFilterRatio: 0.65,
+        repeatDurationRatio: 1.2,
+        lfo: { rate: 0.06, depth: 850 },
+      };
     case 'rootless-voicing':
       return {
         notes: (midiNotes) => (midiNotes.length > 2 ? midiNotes.slice(1) : midiNotes),
@@ -338,8 +388,12 @@ export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProf
 }
 
 export function getEffectiveDubDelay(delay: DubDelaySpec, variant: SpaceVariantId): DubDelaySpec {
-  const capFeedback = (feedbackGain: number) => Math.min(Math.max(feedbackGain, 0.12), 0.46);
+  const capFeedback = (feedbackGain: number) => Math.min(Math.max(feedbackGain, 0.12), 0.6);
   switch (variant) {
+    case 'analog-dub-delay':
+      return { ...delay, analog: true, repeats: 0, feedbackGain: Math.min(capFeedback(delay.feedbackGain), 0.55) };
+    case 'tape-echo-dub':
+      return { ...delay, analog: true, repeats: 0, feedbackGain: Math.min(capFeedback(delay.feedbackGain), 0.60) };
     case 'short-dub':
       return { ...delay, repeats: Math.min(delay.repeats, 2), feedbackGain: Math.min(capFeedback(delay.feedbackGain), 0.28) };
     case 'deep-feedback':

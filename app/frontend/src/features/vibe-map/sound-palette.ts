@@ -30,7 +30,10 @@ export type StabVariantId =
   | 'octave-shadow'
   | 'short-muted'
   | 'long-smear'
-  | 'inverted-stab';
+  | 'inverted-stab'
+  | 'dub-minor'
+  | 'dub-sus4'
+  | 'dub-minor9';
 export type NoiseVariantId =
   | 'tape-hiss'
   | 'closed-hat'
@@ -43,8 +46,9 @@ export type NoiseVariantId =
   | 'open-air-hat'
   | 'metal-tick'
   | 'sidechain-floor'
-  | 'tape-clicks';
-export type SpaceVariantId = 'short-dub' | 'deep-feedback' | 'spring-style' | 'dark-plate';
+  | 'tape-clicks'
+  | 'generative-noise';
+export type SpaceVariantId = 'short-dub' | 'deep-feedback' | 'spring-style' | 'dark-plate' | 'analog-dub-delay' | 'tape-echo-dub';
 
 export type SoundPaletteLayer = 'kick' | 'bass' | 'noise' | 'stab' | 'space';
 
@@ -112,6 +116,7 @@ export const NOISE_VARIANT_IDS: readonly NoiseVariantId[] = [
   'metal-tick',
   'sidechain-floor',
   'tape-clicks',
+  'generative-noise',
 ];
 
 export const STAB_VARIANT_IDS: readonly StabVariantId[] = [
@@ -126,6 +131,9 @@ export const STAB_VARIANT_IDS: readonly StabVariantId[] = [
   'short-muted',
   'long-smear',
   'inverted-stab',
+  'dub-minor',
+  'dub-sus4',
+  'dub-minor9',
 ];
 
 export function pickKickVariant(random: () => number = Math.random): KickVariantId {
@@ -433,6 +441,15 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       fxRole: 'bandpass, random-like placement, low gain',
       playback: 'preview',
     },
+    {
+      id: 'generative-noise',
+      name: 'Generative Noise',
+      type: 'Synthesized',
+      source: 'true broadband white noise generated via AudioBuffer',
+      target: 'drum track or return',
+      fxRole: 'smooth atmospheric texture or filtered noise sweep',
+      playback: 'preview',
+    },
   ],
   stab: [
     {
@@ -534,6 +551,33 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       fxRole: 'lowpass, dub delay',
       playback: 'preview',
     },
+    {
+      id: 'dub-minor',
+      name: 'Dub minor',
+      type: 'Poly synth',
+      source: 'dark saw and square blend minor chord',
+      target: 'poly synth track',
+      fxRole: 'lowpass sweep, dub delay',
+      playback: 'preview',
+    },
+    {
+      id: 'dub-sus4',
+      name: 'Dub sus4',
+      type: 'Poly synth',
+      source: 'dark saw and square blend sus4 chord',
+      target: 'poly synth track',
+      fxRole: 'lowpass sweep, dub delay',
+      playback: 'preview',
+    },
+    {
+      id: 'dub-minor9',
+      name: 'Dub minor 9',
+      type: 'Poly synth',
+      source: 'deep minor 9th voicing',
+      target: 'poly synth track',
+      fxRole: 'lowpass sweep, heavy dub delay',
+      playback: 'preview',
+    },
   ],
   space: [
     {
@@ -571,6 +615,24 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       target: 'return track',
       fxRole: 'dark reverb wash, lowpass return',
       playback: 'guidance',
+    },
+    {
+      id: 'analog-dub-delay',
+      name: 'Analog Dub Delay',
+      type: 'Delay',
+      source: 'true DelayNode feedback loop with high/low pass filters',
+      target: 'delay return track',
+      fxRole: 'classic resonant dub echoes that evolve over time',
+      playback: 'preview',
+    },
+    {
+      id: 'tape-echo-dub',
+      name: 'Tape Echo Dub',
+      type: 'Delay',
+      source: 'true DelayNode feedback loop saturated over time',
+      target: 'delay return track',
+      fxRole: 'dark, warm, endless-feeling repeats',
+      playback: 'preview',
     },
   ],
 } as const;

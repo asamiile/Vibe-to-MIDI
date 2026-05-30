@@ -67,15 +67,20 @@ function createAnalogDelay(
   const delay    = (ctx as unknown as { createDelay: (max: number) => DelayNode }).createDelay(delaySeconds + 0.01);
   const feedback = ctx.createGain();
   const filter   = ctx.createBiquadFilter();
+  const hpFilter = ctx.createBiquadFilter();
 
   delay.delayTime.value  = delaySeconds;
-  feedback.gain.value    = clamp(feedbackGain, 0.05, 0.46);
+  feedback.gain.value    = clamp(feedbackGain, 0.05, 0.65);
   filter.type            = 'lowpass';
   filter.frequency.value = clamp(filterFreq, SAFETY_LIMITS.stabCutoff.min, SAFETY_LIMITS.stabCutoff.max);
 
-  // feedback loop: delay → filter → feedback gain → delay
+  hpFilter.type          = 'highpass';
+  hpFilter.frequency.value = 180; // Cut low-end mud in repeats
+
+  // feedback loop: delay → filter → hpFilter → feedback gain → delay
   delay.connect(filter as unknown as Parameters<typeof delay.connect>[0]);
-  filter.connect(feedback);
+  filter.connect(hpFilter);
+  hpFilter.connect(feedback);
   feedback.connect(delay as unknown as Parameters<Gain['connect']>[0]);
   delay.connect(ctx.destination as unknown as Parameters<typeof delay.connect>[0]);
 
@@ -84,6 +89,7 @@ function createAnalogDelay(
     disconnect: () => {
       delay.disconnect();
       filter.disconnect();
+      hpFilter.disconnect();
       feedback.disconnect();
     },
   };
@@ -190,7 +196,9 @@ function scheduleBass(
   scheduledNodes: ScheduledNode[],
   sweep?: { startRatio: number; endRatio: number },
   panValue?: number,
-  shapeAmount?: number
+  shapeAmount?: number,
+  duckingPattern?: readonly boolean[],
+  stepDuration?: number
 ): void {
   const osc = ctx.createOscillator();
   const filter = ctx.createBiquadFilter();
@@ -212,6 +220,23 @@ function scheduleBass(
   const safeGain = Math.min(gainValue, SAFETY_LIMITS.bassVoiceGain);
   gain.gain.setValueAtTime(0, startTime);
   gain.gain.linearRampToValueAtTime(safeGain, startTime + 0.01);
+
+  if (duckingPattern && stepDuration) {
+    const steps = Math.ceil(duration / stepDuration);
+    for (let i = 0; i < steps; i++) {
+      if (duckingPattern[i % duckingPattern.length]) {
+        const duckStart = startTime + i * stepDuration;
+        const duckBottom = duckStart + 0.02;
+        const duckRecovery = duckStart + stepDuration * 0.75;
+        if (duckStart < startTime + duration) {
+           gain.gain.linearRampToValueAtTime(safeGain, Math.max(startTime + 0.01, duckStart - 0.01));
+           gain.gain.linearRampToValueAtTime(safeGain * 0.1, duckBottom);
+           gain.gain.linearRampToValueAtTime(safeGain, Math.min(safeRampEnd(startTime, duration), duckRecovery));
+        }
+      }
+    }
+  }
+
   gain.gain.linearRampToValueAtTime(0, safeRampEnd(startTime, duration));
 
   osc.connect(filter);
@@ -301,6 +326,24 @@ function scheduleKick(
   }
 }
 
+let whiteNoiseBuffer: any = null;
+function getWhiteNoiseBuffer(ctx: AudioCtx): any {
+  if (!whiteNoiseBuffer) {
+    const bufferSize = ctx.sampleRate * 2;
+    whiteNoiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = new Float32Array(bufferSize);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    if (typeof whiteNoiseBuffer.copyToChannel === 'function') {
+      whiteNoiseBuffer.copyToChannel(data, 0);
+    } else if (whiteNoiseBuffer.getChannelData) {
+      whiteNoiseBuffer.getChannelData(0).set(data);
+    }
+  }
+  return whiteNoiseBuffer;
+}
+
 function scheduleNoise(
   ctx: AudioCtx,
   startTime: number,
@@ -358,22 +401,38 @@ function scheduleNoise(
     gain.connect(ctx.destination);
   }
 
-  const oscs = profile.freqs.map((freq, index) => {
-    const osc = ctx.createOscillator();
-    osc.type = profile.type(index);
-    osc.frequency.value = freq;
-    osc.connect(bandpass);
-    osc.start(startTime);
-    osc.stop(startTime + effectiveDuration + 0.01);
-    return osc;
-  });
+  if ((profile as any).useWhiteNoise) {
+    const source = ctx.createBufferSource();
+    source.buffer = getWhiteNoiseBuffer(ctx);
+    source.loop = true;
+    source.connect(bandpass as unknown as Parameters<typeof source.connect>[0]);
+    source.start(startTime);
+    source.stop(startTime + effectiveDuration + 0.01);
 
-  cleanupFns.push((t) => {
-    gain.gain.cancelScheduledValues(t);
-    gain.gain.setValueAtTime(0, t);
-    oscs.forEach((osc) => { try { osc.stop(t); } catch {} });
-    panner?.disconnect();
-  });
+    cleanupFns.push((t) => {
+      gain.gain.cancelScheduledValues(t);
+      gain.gain.setValueAtTime(0, t);
+      try { source.stop(t); } catch {}
+      panner?.disconnect();
+    });
+  } else {
+    const oscs = profile.freqs.map((freq, index) => {
+      const osc = ctx.createOscillator();
+      osc.type = profile.type(index);
+      osc.frequency.value = freq;
+      osc.connect(bandpass as unknown as Parameters<typeof osc.connect>[0]);
+      osc.start(startTime);
+      osc.stop(startTime + effectiveDuration + 0.01);
+      return osc;
+    });
+
+    cleanupFns.push((t) => {
+      gain.gain.cancelScheduledValues(t);
+      gain.gain.setValueAtTime(0, t);
+      oscs.forEach((osc) => { try { osc.stop(t); } catch {} });
+      panner?.disconnect();
+    });
+  }
 }
 
 function scheduleSynth(
@@ -389,7 +448,8 @@ function scheduleSynth(
   sweep?: { startRatio: number; endRatio: number },
   panValue?: number,
   shapeAmount?: number,
-  periodicWave?: PeriodicWaveObj
+  periodicWave?: PeriodicWaveObj,
+  lfo?: { rate: number; depth: number }
 ): void {
   const osc = ctx.createOscillator();
   const filter = ctx.createBiquadFilter();
@@ -410,6 +470,18 @@ function scheduleSynth(
     filter.frequency.exponentialRampToValueAtTime(clamp(safeFilterFreq * sweep.endRatio, SAFETY_LIMITS.stabCutoff.min, SAFETY_LIMITS.stabCutoff.max), startTime + duration);
   } else {
     filter.frequency.value = safeFilterFreq;
+  }
+
+  if (lfo) {
+    const lfoOsc = ctx.createOscillator();
+    lfoOsc.type = 'sine';
+    lfoOsc.frequency.value = lfo.rate;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = lfo.depth;
+    lfoOsc.connect(lfoGain);
+    lfoGain.connect(filter.frequency as unknown as Parameters<Gain['connect']>[0]);
+    lfoOsc.start(startTime);
+    lfoOsc.stop(startTime + duration);
   }
 
   const safeGain = Math.min(gainValue, SAFETY_LIMITS.stabVoiceGain);
@@ -484,23 +556,27 @@ function scheduleChordStab(
     const baseFreq = noteFreq(midi);
     const voiceGain = effectiveGain / effectiveNotes.length;
     if (variant === 'square-saw') {
-      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain * 0.58, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
-      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain * 0.42, effectiveFilterFreq * 0.88, effectiveFilterQ, 'square', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain * 0.58, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
+      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain * 0.42, effectiveFilterFreq * 0.88, effectiveFilterQ, 'square', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
+    } else if (variant === 'dub-minor' || variant === 'dub-sus4' || variant === 'dub-minor9') {
+      const dubSweep = sweep ?? { startRatio: 1.15, endRatio: 0.55 };
+      scheduleSynth(ctx, baseFreq * 0.998, startTime, effectiveDuration, voiceGain * 0.55, effectiveFilterFreq * 0.9, effectiveFilterQ * 1.1, 'sawtooth', scheduledNodes, dubSweep, panValue, shapeAmount ?? 0.1, undefined, profile.lfo);
+      scheduleSynth(ctx, baseFreq * 1.002, startTime, effectiveDuration, voiceGain * 0.45, effectiveFilterFreq * 0.8, effectiveFilterQ * 1.1, 'square', scheduledNodes, dubSweep, panValue, shapeAmount ?? 0.1, undefined, profile.lfo);
     } else if (variant === 'sampled-chord-like') {
-      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration * 0.72, voiceGain, effectiveFilterFreq * 0.82, effectiveFilterQ * 0.9, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration * 0.72, voiceGain, effectiveFilterFreq * 0.82, effectiveFilterQ * 0.9, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
     } else if (variant === 'wide-detuned') {
-      scheduleSynth(ctx, baseFreq * 0.997, startTime, effectiveDuration, voiceGain * 0.5, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
-      scheduleSynth(ctx, baseFreq * 1.003, startTime, effectiveDuration, voiceGain * 0.5, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq * 0.997, startTime, effectiveDuration, voiceGain * 0.5, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
+      scheduleSynth(ctx, baseFreq * 1.003, startTime, effectiveDuration, voiceGain * 0.5, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
     } else if (wave) {
-      scheduleSynth(ctx, baseFreq, startTime, bellDuration, voiceGain, effectiveFilterFreq, effectiveFilterQ, 'sine', scheduledNodes, sweep, panValue, shapeAmount, wave);
+      scheduleSynth(ctx, baseFreq, startTime, bellDuration, voiceGain, effectiveFilterFreq, effectiveFilterQ, 'sine', scheduledNodes, sweep, panValue, shapeAmount, wave, profile.lfo);
     } else {
-      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
     }
     if (index === 0) {
-      scheduleSynth(ctx, noteFreq(midi - 12), startTime, effectiveDuration, effectiveGain * 0.25, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, noteFreq(midi - 12), startTime, effectiveDuration, effectiveGain * 0.25, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
     }
     if (profile.octaveShadow) {
-      scheduleSynth(ctx, noteFreq(midi + 12), startTime, effectiveDuration * 0.75, voiceGain * 0.22, effectiveFilterFreq * 1.12, effectiveFilterQ * 0.85, 'triangle', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, noteFreq(midi + 12), startTime, effectiveDuration * 0.75, voiceGain * 0.22, effectiveFilterFreq * 1.12, effectiveFilterQ * 0.85, 'triangle', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
     }
   });
 }
@@ -573,7 +649,9 @@ export async function playPreview(
             nodeAcc,
             voice.sweep ?? bassSweep,
             bassPan,
-            voice.shapeAmount ?? bassShape
+            voice.shapeAmount ?? bassShape,
+            suggestion.rhythmPattern,
+            stepDuration
           );
         });
       });

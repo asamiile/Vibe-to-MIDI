@@ -186,7 +186,9 @@ export function PlayerBar() {
               <Pressable
                 key={layer}
                 android_disableSound
-                onPress={() => toggleLayer(layer)}
+                onPress={() => {
+                  requestAnimationFrame(() => toggleLayer(layer));
+                }}
                 style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 10, minHeight: 44, justifyContent: 'center' })}
               >
                 <Text
@@ -261,7 +263,12 @@ export function PlayerBar() {
         <Pressable
           android_disableSound
           disabled={!audioAvailable || idle}
-          onPress={() => (isPlaying ? stop() : play())}
+          onPress={() => {
+            requestAnimationFrame(() => {
+              if (isPlaying) stop();
+              else play();
+            });
+          }}
           style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
         >
           <MaterialIcons
@@ -293,7 +300,11 @@ export function PlayerBar() {
             accessibilityRole="button"
             accessibilityLabel="現在のアイデアを保存"
             disabled={isCurrentIdeaSaved}
-            onPress={() => { void saveCurrentIdea(); }}
+            onPress={() => {
+              requestAnimationFrame(() => {
+                void saveCurrentIdea();
+              });
+            }}
             style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 4 })}
           >
             <MaterialIcons
@@ -372,8 +383,10 @@ export function PlayerBar() {
               {selectableArtworks.map((artwork) => {
                 const selected = artwork.id === activeArtworkId;
                 const onPress = () => {
-                  setActiveArtworkId(artwork.id);
-                  setArtPickerVisible(false);
+                  requestAnimationFrame(() => {
+                    setActiveArtworkId(artwork.id);
+                    setArtPickerVisible(false);
+                  });
                 };
                 return expoVideo ? (
                   <ArtworkCard
