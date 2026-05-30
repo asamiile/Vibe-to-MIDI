@@ -59,6 +59,7 @@ export interface StabPlaybackProfile {
   repeatFilterRatio: number;
   repeatDurationRatio: number;
   repeatShapeAmount?: number;
+  lfo?: { rate: number; depth: number };
 }
 
 export interface DubDelaySpec {
@@ -286,6 +287,7 @@ export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProf
         delaySendRatio: 1.3,
         repeatFilterRatio: 0.7,
         repeatDurationRatio: 1.1,
+        lfo: { rate: 0.08, depth: 600 },
       };
     case 'dub-sus4':
       return {
@@ -297,6 +299,7 @@ export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProf
         delaySendRatio: 1.3,
         repeatFilterRatio: 0.72,
         repeatDurationRatio: 1.1,
+        lfo: { rate: 0.1, depth: 750 },
       };
     case 'dub-minor9':
       return {
@@ -308,6 +311,7 @@ export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProf
         delaySendRatio: 1.4,
         repeatFilterRatio: 0.65,
         repeatDurationRatio: 1.2,
+        lfo: { rate: 0.06, depth: 850 },
       };
     case 'rootless-voicing':
       return {

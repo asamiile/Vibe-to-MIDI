@@ -35,7 +35,7 @@ See `research/features/2026-05-22_dub-techno-sound-expansion/notebooks/analysis.
 - [x] Filtered Dub Delay (DelayNode + BiquadFilterNode with feedback clamping)
 - [x] Generative Noise/Percussion (AudioBufferSourceNode + Filter)
 - [x] Sub Bass & Rumble (Sine sub + Ducking + Filter)
-- [ ] Filter Motion (LFO/Automation for cutoff drift)
+- [x] Filter Motion (LFO/Automation for cutoff drift)
 
 ### 2. Billing
 

@@ -448,7 +448,8 @@ function scheduleSynth(
   sweep?: { startRatio: number; endRatio: number },
   panValue?: number,
   shapeAmount?: number,
-  periodicWave?: PeriodicWaveObj
+  periodicWave?: PeriodicWaveObj,
+  lfo?: { rate: number; depth: number }
 ): void {
   const osc = ctx.createOscillator();
   const filter = ctx.createBiquadFilter();
@@ -469,6 +470,18 @@ function scheduleSynth(
     filter.frequency.exponentialRampToValueAtTime(clamp(safeFilterFreq * sweep.endRatio, SAFETY_LIMITS.stabCutoff.min, SAFETY_LIMITS.stabCutoff.max), startTime + duration);
   } else {
     filter.frequency.value = safeFilterFreq;
+  }
+
+  if (lfo) {
+    const lfoOsc = ctx.createOscillator();
+    lfoOsc.type = 'sine';
+    lfoOsc.frequency.value = lfo.rate;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = lfo.depth;
+    lfoOsc.connect(lfoGain);
+    lfoGain.connect(filter.frequency as unknown as Parameters<Gain['connect']>[0]);
+    lfoOsc.start(startTime);
+    lfoOsc.stop(startTime + duration);
   }
 
   const safeGain = Math.min(gainValue, SAFETY_LIMITS.stabVoiceGain);
@@ -543,27 +556,27 @@ function scheduleChordStab(
     const baseFreq = noteFreq(midi);
     const voiceGain = effectiveGain / effectiveNotes.length;
     if (variant === 'square-saw') {
-      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain * 0.58, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
-      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain * 0.42, effectiveFilterFreq * 0.88, effectiveFilterQ, 'square', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain * 0.58, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
+      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain * 0.42, effectiveFilterFreq * 0.88, effectiveFilterQ, 'square', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
     } else if (variant === 'dub-minor' || variant === 'dub-sus4' || variant === 'dub-minor9') {
       const dubSweep = sweep ?? { startRatio: 1.15, endRatio: 0.55 };
-      scheduleSynth(ctx, baseFreq * 0.998, startTime, effectiveDuration, voiceGain * 0.55, effectiveFilterFreq * 0.9, effectiveFilterQ * 1.1, 'sawtooth', scheduledNodes, dubSweep, panValue, shapeAmount ?? 0.1);
-      scheduleSynth(ctx, baseFreq * 1.002, startTime, effectiveDuration, voiceGain * 0.45, effectiveFilterFreq * 0.8, effectiveFilterQ * 1.1, 'square', scheduledNodes, dubSweep, panValue, shapeAmount ?? 0.1);
+      scheduleSynth(ctx, baseFreq * 0.998, startTime, effectiveDuration, voiceGain * 0.55, effectiveFilterFreq * 0.9, effectiveFilterQ * 1.1, 'sawtooth', scheduledNodes, dubSweep, panValue, shapeAmount ?? 0.1, undefined, profile.lfo);
+      scheduleSynth(ctx, baseFreq * 1.002, startTime, effectiveDuration, voiceGain * 0.45, effectiveFilterFreq * 0.8, effectiveFilterQ * 1.1, 'square', scheduledNodes, dubSweep, panValue, shapeAmount ?? 0.1, undefined, profile.lfo);
     } else if (variant === 'sampled-chord-like') {
-      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration * 0.72, voiceGain, effectiveFilterFreq * 0.82, effectiveFilterQ * 0.9, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration * 0.72, voiceGain, effectiveFilterFreq * 0.82, effectiveFilterQ * 0.9, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
     } else if (variant === 'wide-detuned') {
-      scheduleSynth(ctx, baseFreq * 0.997, startTime, effectiveDuration, voiceGain * 0.5, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
-      scheduleSynth(ctx, baseFreq * 1.003, startTime, effectiveDuration, voiceGain * 0.5, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq * 0.997, startTime, effectiveDuration, voiceGain * 0.5, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
+      scheduleSynth(ctx, baseFreq * 1.003, startTime, effectiveDuration, voiceGain * 0.5, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
     } else if (wave) {
-      scheduleSynth(ctx, baseFreq, startTime, bellDuration, voiceGain, effectiveFilterFreq, effectiveFilterQ, 'sine', scheduledNodes, sweep, panValue, shapeAmount, wave);
+      scheduleSynth(ctx, baseFreq, startTime, bellDuration, voiceGain, effectiveFilterFreq, effectiveFilterQ, 'sine', scheduledNodes, sweep, panValue, shapeAmount, wave, profile.lfo);
     } else {
-      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, baseFreq, startTime, effectiveDuration, voiceGain, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
     }
     if (index === 0) {
-      scheduleSynth(ctx, noteFreq(midi - 12), startTime, effectiveDuration, effectiveGain * 0.25, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, noteFreq(midi - 12), startTime, effectiveDuration, effectiveGain * 0.25, effectiveFilterFreq, effectiveFilterQ, 'sawtooth', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
     }
     if (profile.octaveShadow) {
-      scheduleSynth(ctx, noteFreq(midi + 12), startTime, effectiveDuration * 0.75, voiceGain * 0.22, effectiveFilterFreq * 1.12, effectiveFilterQ * 0.85, 'triangle', scheduledNodes, sweep, panValue, shapeAmount);
+      scheduleSynth(ctx, noteFreq(midi + 12), startTime, effectiveDuration * 0.75, voiceGain * 0.22, effectiveFilterFreq * 1.12, effectiveFilterQ * 0.85, 'triangle', scheduledNodes, sweep, panValue, shapeAmount, undefined, profile.lfo);
     }
   });
 }
