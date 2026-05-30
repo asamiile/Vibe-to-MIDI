@@ -130,6 +130,6 @@ describe('sound playback profiles', () => {
     expect(getEffectiveDubDelay(
       { repeats: 5, stepOffset: 3, feedbackGain: 0.9 },
       'deep-feedback'
-    ).feedbackGain).toBe(0.46);
+    ).feedbackGain).toBe(0.6);
   });
 });

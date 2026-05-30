@@ -47,7 +47,7 @@ export type NoiseVariantId =
   | 'metal-tick'
   | 'sidechain-floor'
   | 'tape-clicks';
-export type SpaceVariantId = 'short-dub' | 'deep-feedback' | 'spring-style' | 'dark-plate';
+export type SpaceVariantId = 'short-dub' | 'deep-feedback' | 'spring-style' | 'dark-plate' | 'analog-dub-delay' | 'tape-echo-dub';
 
 export type SoundPaletteLayer = 'kick' | 'bass' | 'noise' | 'stab' | 'space';
 
@@ -604,6 +604,24 @@ export const SOUND_PALETTE: Record<SoundPaletteLayer, readonly SoundVariant[]> =
       target: 'return track',
       fxRole: 'dark reverb wash, lowpass return',
       playback: 'guidance',
+    },
+    {
+      id: 'analog-dub-delay',
+      name: 'Analog Dub Delay',
+      type: 'Delay',
+      source: 'true DelayNode feedback loop with high/low pass filters',
+      target: 'delay return track',
+      fxRole: 'classic resonant dub echoes that evolve over time',
+      playback: 'preview',
+    },
+    {
+      id: 'tape-echo-dub',
+      name: 'Tape Echo Dub',
+      type: 'Delay',
+      source: 'true DelayNode feedback loop saturated over time',
+      target: 'delay return track',
+      fxRole: 'dark, warm, endless-feeling repeats',
+      playback: 'preview',
     },
   ],
 } as const;

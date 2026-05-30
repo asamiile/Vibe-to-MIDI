@@ -371,8 +371,12 @@ export function getStabPlaybackProfile(variant: StabVariantId): StabPlaybackProf
 }
 
 export function getEffectiveDubDelay(delay: DubDelaySpec, variant: SpaceVariantId): DubDelaySpec {
-  const capFeedback = (feedbackGain: number) => Math.min(Math.max(feedbackGain, 0.12), 0.46);
+  const capFeedback = (feedbackGain: number) => Math.min(Math.max(feedbackGain, 0.12), 0.6);
   switch (variant) {
+    case 'analog-dub-delay':
+      return { ...delay, analog: true, repeats: 0, feedbackGain: Math.min(capFeedback(delay.feedbackGain), 0.55) };
+    case 'tape-echo-dub':
+      return { ...delay, analog: true, repeats: 0, feedbackGain: Math.min(capFeedback(delay.feedbackGain), 0.60) };
     case 'short-dub':
       return { ...delay, repeats: Math.min(delay.repeats, 2), feedbackGain: Math.min(capFeedback(delay.feedbackGain), 0.28) };
     case 'deep-feedback':

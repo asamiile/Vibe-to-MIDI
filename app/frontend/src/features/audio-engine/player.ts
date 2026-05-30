@@ -67,15 +67,20 @@ function createAnalogDelay(
   const delay    = (ctx as unknown as { createDelay: (max: number) => DelayNode }).createDelay(delaySeconds + 0.01);
   const feedback = ctx.createGain();
   const filter   = ctx.createBiquadFilter();
+  const hpFilter = ctx.createBiquadFilter();
 
   delay.delayTime.value  = delaySeconds;
-  feedback.gain.value    = clamp(feedbackGain, 0.05, 0.46);
+  feedback.gain.value    = clamp(feedbackGain, 0.05, 0.65);
   filter.type            = 'lowpass';
   filter.frequency.value = clamp(filterFreq, SAFETY_LIMITS.stabCutoff.min, SAFETY_LIMITS.stabCutoff.max);
 
-  // feedback loop: delay → filter → feedback gain → delay
+  hpFilter.type          = 'highpass';
+  hpFilter.frequency.value = 180; // Cut low-end mud in repeats
+
+  // feedback loop: delay → filter → hpFilter → feedback gain → delay
   delay.connect(filter as unknown as Parameters<typeof delay.connect>[0]);
-  filter.connect(feedback);
+  filter.connect(hpFilter);
+  hpFilter.connect(feedback);
   feedback.connect(delay as unknown as Parameters<Gain['connect']>[0]);
   delay.connect(ctx.destination as unknown as Parameters<typeof delay.connect>[0]);
 
@@ -84,6 +89,7 @@ function createAnalogDelay(
     disconnect: () => {
       delay.disconnect();
       filter.disconnect();
+      hpFilter.disconnect();
       feedback.disconnect();
     },
   };
