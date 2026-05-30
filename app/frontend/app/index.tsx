@@ -283,25 +283,33 @@ function SavedIdeasModal({
                   borderBottomColor: MIST.hairline,
                 }}
               >
-                <Pressable
-                  android_disableSound
-                  onPress={() => { loadIdea(idea.id); onClose(); }}
-                  style={({ pressed }) => ({ flex: 1, opacity: pressed ? 0.6 : 1, paddingVertical: 20, paddingHorizontal: 24 })}
-                >
-                  <Text style={{ fontFamily: FONT.sans, fontSize: 15, color: MIST.text, fontWeight: '400' }}>
-                    {idea.chord.label} · {idea.activeBpm} BPM
-                  </Text>
-                  <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textFaint, letterSpacing: 1, marginTop: 4 }}>
-                    {idea.soundCombination.label.toUpperCase()} · {formatDate(idea.savedAt)}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  android_disableSound
-                  onPress={() => { void deleteIdea(idea.id); }}
-                  style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 20, paddingHorizontal: 20 })}
-                >
-                  <MaterialIcons name="delete-outline" size={18} color={MIST.textFaint} />
-                </Pressable>
+                <View style={{ flex: 1 }}>
+                  <Pressable
+                    android_disableSound
+                    onPress={() => { loadIdea(idea.id); onClose(); }}
+                    style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+                  >
+                    <View style={{ paddingVertical: 20, paddingHorizontal: 24 }}>
+                      <Text style={{ fontFamily: FONT.sans, fontSize: 15, color: MIST.text, fontWeight: '400' }} numberOfLines={1}>
+                        {idea.chord.label} · {idea.activeBpm} BPM
+                      </Text>
+                      <Text style={{ fontFamily: FONT.mono, fontSize: 10, color: MIST.textFaint, letterSpacing: 1, marginTop: 4 }} numberOfLines={1}>
+                        {idea.soundCombination.label.toUpperCase()} · {formatDate(idea.savedAt)}
+                      </Text>
+                    </View>
+                  </Pressable>
+                </View>
+                <View>
+                  <Pressable
+                    android_disableSound
+                    onPress={() => { void deleteIdea(idea.id); }}
+                    style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+                  >
+                    <View style={{ paddingVertical: 20, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' }}>
+                      <MaterialIcons name="remove" size={18} color={MIST.textFaint} />
+                    </View>
+                  </Pressable>
+                </View>
               </View>
             ))
           )}
@@ -392,8 +400,8 @@ export default function HomeScreen() {
               }
               right={
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <IconButton name="bookmark" onPress={() => setSavedIdeasVisible(true)} />
-                  <IconButton name="settings" onPress={() => setSettingsVisible(true)} />
+                  <IconButton name="favorite" onPress={() => setSavedIdeasVisible(true)} />
+                  <IconButton name="tune" onPress={() => setSettingsVisible(true)} />
                 </View>
               }
             />
@@ -451,8 +459,8 @@ export default function HomeScreen() {
               }
               right={
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <IconButton name="bookmark" onPress={() => setSavedIdeasVisible(true)} />
-                  <IconButton name="settings" onPress={() => setSettingsVisible(true)} />
+                  <IconButton name="favorite" onPress={() => setSavedIdeasVisible(true)} />
+                  <IconButton name="tune" onPress={() => setSettingsVisible(true)} />
                 </View>
               }
             />

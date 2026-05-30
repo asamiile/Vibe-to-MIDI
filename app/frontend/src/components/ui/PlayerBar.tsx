@@ -297,7 +297,7 @@ export function PlayerBar() {
             style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 4 })}
           >
             <MaterialIcons
-              name={isCurrentIdeaSaved ? 'bookmark' : 'bookmark-border'}
+              name="star"
               size={20}
               color={isCurrentIdeaSaved ? MIST.accent : MIST.textFaint}
             />
